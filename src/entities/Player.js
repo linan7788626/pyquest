@@ -21,7 +21,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.body.setSize(60, 26).setOffset(66, 132);
     this.setCollideWorldBounds(true);
 
-    this.speed = 560;
+    this.speed = 1120;
     this.facing = 'right';
     this.invulUntil = 0;
     this.attackCdUntil = 0;
@@ -64,8 +64,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // 跑步扬尘（TS 尘土动画）
     if (moving && now > this.nextDust) {
       this.nextDust = now + 240;
-      const d = this.scene.add.sprite(this.x + Phaser.Math.Between(-10, 10), this.y + 4, 'dust')
-        .setDisplaySize(100, 100).setAlpha(0.8).setDepth(this.y - 0.4);
+      const d = this.scene.add.sprite(this.x + Phaser.Math.Between(-20, 20), this.y + 8, 'dust')
+        .setDisplaySize(200, 200).setAlpha(0.8).setDepth(this.y - 0.4);
       d.play('ts_dust');
       d.once('animationcomplete', () => d.destroy());
     }
@@ -115,7 +115,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // 击退
     const angle = Phaser.Math.Angle.Between(sx, sy, this.x, this.y);
-    this.setVelocity(Math.cos(angle) * 760, Math.sin(angle) * 760);
+    this.setVelocity(Math.cos(angle) * 1520, Math.sin(angle) * 1520);
     scene.time.delayedCall(140, () => { if (!this.dying) this.setVelocity(0, 0); });
 
     // 无敌闪烁

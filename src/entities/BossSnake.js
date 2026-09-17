@@ -10,8 +10,8 @@ import { G } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
 import { Slime } from './Slime.js';
 
-const SEG_GAP = 92;      // 体节间距（头部轨迹采样间隔；角色 ×2 后等比）
-const MAX_TRAIL = 2400;  // 头部轨迹记录长度
+const SEG_GAP = 184;      // 体节间距（头部轨迹采样间隔；角色 ×2 后等比）
+const MAX_TRAIL = 4800;  // 头部轨迹记录长度
 const HEAD_SCALE = 2.5; // 基础 ×2 后保持 1.25 比例
 const SEG_SCALE = 1.24;
 
@@ -29,15 +29,15 @@ export class BossSnake extends Slime {
 
     this.hp = 12;
     this.isBoss = true;
-    this.chaseRange = 640;
-    this.chaseSpeed = 175;
-    this.wanderSpeed = 85;
+    this.chaseRange = 1280;
+    this.chaseSpeed = 350;
+    this.wanderSpeed = 170;
     this.lost = 0; // 已断掉的体节数（决定提速）
 
     // 体节（无物理体的跟随精灵）
     this.segs = [];
     for (let i = 0; i < 6; i++) {
-      const s = scene.add.sprite(x, y - (i + 1) * 80, 'pawn_black_idle')
+      const s = scene.add.sprite(x, y - (i + 1) * 160, 'pawn_black_idle')
         .setScale(SEG_SCALE).setOrigin(0.5, 134 / 192);
       s.play('ts_pawn_black_idle');
       this.segs.push(s);
@@ -75,20 +75,20 @@ export class BossSnake extends Slime {
     } else if (now < this.dartUntil) {
       // 冲刺：保持触发时设置的速度
     } else if (p && !p.dying && dist < this.chaseRange) {
-      const speed = this.chaseSpeed + this.lost * 18;
+      const speed = this.chaseSpeed + this.lost * 36;
       const a = Phaser.Math.Angle.Between(this.x, this.y, p.x, p.y);
       // 蛇形走位
       const t = a + Math.sin(now / 240) * 0.5;
       this.setVelocity(Math.cos(t) * speed, Math.sin(t) * speed);
       // 触发冲刺突咬
-      if (dist < 520 && now > this.nextDartAt) {
+      if (dist < 1040 && now > this.nextDartAt) {
         this.nextDartAt = now + 3600;
         this.teleUntil = now + 420;
         this.dartUntil = now + 940;
         const dash = Phaser.Math.Angle.Between(this.x, this.y, p.x, p.y);
         this.scene.time.delayedCall(420, () => {
           if (this.dead) return;
-          this.setVelocity(Math.cos(dash) * 640, Math.sin(dash) * 640);
+          this.setVelocity(Math.cos(dash) * 1280, Math.sin(dash) * 1280);
         });
         sfx.swing();
       }
@@ -105,7 +105,7 @@ export class BossSnake extends Slime {
     this.shadow.setPosition(this.x, this.y + 2).setDepth(this.y - 0.5);
 
     // 记录轨迹 + 让体节跟随
-    this.trail.unshift({ x: this.x, y: this.y - 16 });
+    this.trail.unshift({ x: this.x, y: this.y - 32 });
     if (this.trail.length > MAX_TRAIL) this.trail.pop();
     this.segs.forEach((s, i) => {
       const t = this.trail[Math.min((i + 1) * SEG_GAP, this.trail.length - 1)];
@@ -113,7 +113,7 @@ export class BossSnake extends Slime {
       s.setFlipX(this.body.velocity.x < 0);
       s.setDepth(s.y);
       // 体节接触伤害（头部走 slimeGroup 的 overlap）
-      if (p && !p.dying && Phaser.Math.Distance.Between(s.x, s.y, p.x, p.y) < 104) {
+      if (p && !p.dying && Phaser.Math.Distance.Between(s.x, s.y, p.x, p.y) < 208) {
         p.takeDamage(1, s.x, s.y);
       }
     });
@@ -128,7 +128,7 @@ export class BossSnake extends Slime {
       this.scene.floatText(this.x, this.y - 110, '符文护盾抵消了攻击！', '#9fb8ff');
       sfx.hitEnemy();
       const angle = Phaser.Math.Angle.Between(fromX, fromY, this.x, this.y);
-      this.setVelocity(Math.cos(angle) * 260, Math.sin(angle) * 260);
+      this.setVelocity(Math.cos(angle) * 520, Math.sin(angle) * 520);
       this.knockUntil = now + 160;
       return;
     }

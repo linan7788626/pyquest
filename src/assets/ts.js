@@ -57,8 +57,8 @@ export const TS_IMAGES = {
   house1: `${P}/Buildings/Blue Buildings/House1.png`, // 128×192
   house2: `${P}/Buildings/Blue Buildings/House2.png`,
   house3: `${P}/Buildings/Blue Buildings/House3.png`,
-  castle: `${P}/Buildings/Blue Buildings/Castle.png`, // 320×256 大城堡
-  tower: `${P}/Buildings/Blue Buildings/Tower.png`,   // 128×256
+  castle: `${P}/Buildings/Blue Buildings/Monastery.png`, // 192×320 修道院（村庄主建筑）
+  tower: `${P}/Buildings/Blue Buildings/Tower.png`,      // 128×256 塔（森林引导石碑位）
   cloud1: `${P}/Terrain/Decorations/Clouds/Clouds_01.png`,
   cloud2: `${P}/Terrain/Decorations/Clouds/Clouds_02.png`,
   cloud3: `${P}/Terrain/Decorations/Clouds/Clouds_03.png`,
@@ -77,8 +77,8 @@ export const WATER_BG = '#47aba9'; // 官方水底色
 
 // tileset 内可用格子（64×64/格）
 export const GRASS_TILES = [
-  // TS 草 tile 按行成套（同列内纵向变体可互换，跨行拼接有描边缝）
-  // → 只从同一行取变体，保证相邻 tile 无缝
+  // TS 草 tile 按行成套（跨行拼接有描边缝）→ 只用第 1 行
+  // 整洁化：ground.js 实际只混用 [1,1]（纯草 72%）与 [2,1]（微噪点 28%）
   [0, 1], [1, 1], [2, 1], [3, 1],
 ];
 export const WATER_TILES = [

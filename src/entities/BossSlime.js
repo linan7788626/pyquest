@@ -23,9 +23,9 @@ export class BossSlime extends Slime {
 
     this.hp = 10;
     this.isBoss = true;
-    this.chaseRange = 620;
-    this.chaseSpeed = 160;
-    this.wanderSpeed = 80;
+    this.chaseRange = 1240;
+    this.chaseSpeed = 320;
+    this.wanderSpeed = 160;
 
     if (G.bossShielded) this.setTint(0x9fb8ff);
     this.shadow.setDisplaySize(220, 110);
@@ -67,7 +67,7 @@ export class BossSlime extends Slime {
       this.scene.floatText(this.x, this.y - 100, '护盾抵消了攻击！', '#9fb8ff');
       sfx.hitEnemy();
       const angle = Phaser.Math.Angle.Between(fromX, fromY, this.x, this.y);
-      this.setVelocity(Math.cos(angle) * 260, Math.sin(angle) * 260);
+      this.setVelocity(Math.cos(angle) * 520, Math.sin(angle) * 520);
       this.knockUntil = now + 160;
       return;
     }
@@ -76,14 +76,14 @@ export class BossSlime extends Slime {
 
     if (this.hp <= 6 && !this.spawnedWave1) {
       this.spawnedWave1 = true;
-      this.scene.spawnSlime(this.x - 120, this.y);
-      this.scene.spawnSlime(this.x + 120, this.y);
+      this.scene.spawnSlime(this.x - 240, this.y);
+      this.scene.spawnSlime(this.x + 240, this.y);
       this.scene.floatText(this.x, this.y - 130, '循环之王召唤了帮手！', '#ff9db3');
     }
     if (this.hp <= 3 && !this.spawnedWave2) {
       this.spawnedWave2 = true;
-      this.scene.spawnSlime(this.x - 120, this.y);
-      this.scene.spawnSlime(this.x + 120, this.y);
+      this.scene.spawnSlime(this.x - 240, this.y);
+      this.scene.spawnSlime(this.x + 240, this.y);
     }
   }
 

@@ -9,7 +9,7 @@
 import { T } from '../data/maps.js';
 import { GRASS_TILES, WATER_TILES, WATER_BG } from '../assets/ts.js';
 
-const TILE = 64;
+const TILE = 128; // tilemap 元素 ×2（TS tile 64px → 128px 网格）
 
 // 确定性伪随机（与地图布局一致）
 function lcg(seed) {
@@ -32,27 +32,26 @@ function drawOutdoor(ctx, def, tilesets) {
       const v = def.grid[y][x];
       const dx = x * TILE, dy = y * TILE;
       if (isWater(v)) {
-        // 统一纯底色 + 程序化波纹（TS 水波 tile 有 6-15% 透明区，
-        // 与纯底色混铺会产生深浅色块 → 不再使用）
+        // 统一纯底色 + 程序化波纹（TS 水波 tile 有透明区，混铺会产生色块 → 不用）
         ctx.fillStyle = WATER_BG;
         ctx.fillRect(dx, dy, TILE, TILE);
         const r = lcg(x * 7919 + y * 104729 + 17);
-        if (r() < 0.55) {
-          // 浅色短波纹
+        if (r() < 0.5) {
+          // 浅色短波纹（整洁：只 1 条主波纹 + 1 条次波纹）
           ctx.fillStyle = 'rgba(140,195,196,0.85)';
-          const wx = dx + 6 + r() * 36, wy = dy + 8 + r() * 44;
-          ctx.fillRect(wx, wy, 14 + r() * 10, 3);
-          ctx.fillRect(wx + 4, wy + 8 + r() * 6, 8 + r() * 8, 2);
+          const wx = dx + 12 + r() * 72, wy = dy + 16 + r() * 88;
+          ctx.fillRect(wx, wy, 28 + r() * 20, 6);
+          ctx.fillRect(wx + 8, wy + 16 + r() * 12, 16 + r() * 16, 4);
         }
-        if (r() < 0.3) {
-          // 深色水斑
-          ctx.fillStyle = 'rgba(60,120,130,0.35)';
-          ctx.fillRect(dx + 10 + r() * 30, dy + 12 + r() * 32, 16 + r() * 12, 6);
+        if (r() < 0.22) {
+          // 深色水斑（少量）
+          ctx.fillStyle = 'rgba(60,120,130,0.3)';
+          ctx.fillRect(dx + 20 + r() * 60, dy + 24 + r() * 64, 32 + r() * 24, 12);
         }
-        if (r() < 0.35) {
+        if (r() < 0.25) {
           // 波光点
           ctx.fillStyle = 'rgba(234,252,255,0.8)';
-          ctx.fillRect(dx + 8 + r() * 44, dy + 8 + r() * 44, 3, 2);
+          ctx.fillRect(dx + 16 + r() * 88, dy + 16 + r() * 88, 6, 4);
         }
       } else if (isPath(v)) {
         // 沙黄土路：圆角连接（外角内收）
@@ -63,29 +62,29 @@ function drawOutdoor(ctx, def, tilesets) {
         const [tx, ty] = GRASS_TILES[Math.floor(rand() * 4)]; // 前 4 个素净变体
         ctx.save();
         ctx.beginPath();
-        const R = 14;
+        const R = 28;
         const r = (a, b) => (!a && !b ? R : 0);
-        ctx.roundRect(dx + 2, dy + 2, TILE - 4, TILE - 4,
-          [r(nb.l, nb.t), r(nb.t, nb.r), r(nb.r, nb.b), r(nb.b, nb.l)].map((v) => v || 2));
+        ctx.roundRect(dx + 4, dy + 4, TILE - 8, TILE - 8,
+          [r(nb.l, nb.t), r(nb.t, nb.r), r(nb.r, nb.b), r(nb.b, nb.l)].map((v) => v || 4));
         ctx.clip();
-        ctx.drawImage(pathImg, tx * TILE, ty * TILE, TILE, TILE, dx, dy, TILE, TILE);
+        ctx.drawImage(pathImg, tx * 64, ty * 64, 64, 64, dx, dy, TILE, TILE);
         ctx.restore();
       } else {
-        // 草地：16 变体随机铺贴（tileset 自带噪点，直接拼即无缝）
-        const [tx, ty] = GRASS_TILES[Math.floor(rand() * GRASS_TILES.length)];
-        ctx.drawImage(grassImg, tx * TILE, ty * TILE, TILE, TILE, dx, dy, TILE, TILE);
-        // 花地瓦片叠加小花
+        // 草地：整洁化——只用 2 个同族变体（1,1 纯草 + 2,1 微噪点），大幅降低杂色
+        const [tx, ty] = rand() < 0.72 ? GRASS_TILES[1] : GRASS_TILES[2];
+        ctx.drawImage(grassImg, tx * 64, ty * 64, 64, 64, dx, dy, TILE, TILE);
+        // 花地瓦片叠加小花（柔和圆形）
         if (v === T.FLOWER) {
           const r = lcg(x * 7919 + y * 104729 + 5);
           for (let i = 0; i < 3; i++) {
-            const fx = dx + 10 + r() * 44, fy = dy + 10 + r() * 44;
+            const fx = dx + 20 + r() * 88, fy = dy + 20 + r() * 88;
             ctx.fillStyle = ['#ffd257', '#ff8aa0', '#fff5f0', '#e86a92'][Math.floor(r() * 4)];
             ctx.beginPath();
-            ctx.arc(fx, fy, 2.6 + r() * 1.6, 0, Math.PI * 2);
+            ctx.arc(fx, fy, 5 + r() * 3, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = '#fffbe8';
             ctx.beginPath();
-            ctx.arc(fx, fy, 1.1, 0, Math.PI * 2);
+            ctx.arc(fx, fy, 2.2, 0, Math.PI * 2);
             ctx.fill();
           }
         }

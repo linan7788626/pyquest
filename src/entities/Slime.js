@@ -22,17 +22,17 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
 
     this.hp = 2;
-    this.chaseRange = 420;
-    this.chaseSpeed = 210;
-    this.wanderSpeed = 120;
+    this.chaseRange = 840;
+    this.chaseSpeed = 420;
+    this.wanderSpeed = 240;
     this.dead = false;
     this.knockUntil = 0;
     this.hurtCdUntil = 0;
     this.wanderUntil = 0;
     if (big) {
       this.hp = 3;
-      this.chaseSpeed = 250;
-      this.wanderSpeed = 145;
+      this.chaseSpeed = 500;
+      this.wanderSpeed = 290;
     }
     this.play(big ? 'ts_warrior_black_idle' : 'ts_pawn_red_idle');
     this.animIdle = big ? 'ts_warrior_black_idle' : 'ts_pawn_red_idle';
@@ -83,7 +83,7 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
     this.burst([0xffffff, 0xffd257], 6);
 
     const angle = Phaser.Math.Angle.Between(fromX, fromY, this.x, this.y);
-    this.setVelocity(Math.cos(angle) * 700, Math.sin(angle) * 700);
+    this.setVelocity(Math.cos(angle) * 1400, Math.sin(angle) * 1400);
     this.knockUntil = now + 220;
 
     if (this.hp <= 0) this.die();
