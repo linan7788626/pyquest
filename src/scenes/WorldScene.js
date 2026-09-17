@@ -85,7 +85,7 @@ export class WorldScene extends Phaser.Scene {
     // ---------- 相机 ----------
     const cam = this.cameras.main;
     cam.setBounds(0, 0, def.w * 128, def.h * 128);
-    cam.setZoom(0.5); // 视角内元素缩小一半（视野扩大一倍；世界逻辑尺寸不变）
+    cam.setZoom(1.5); // 视角内元素放大 1.5 倍（视野相应缩小；世界逻辑尺寸不变）
     cam.startFollow(this.player, true, 0.12, 0.12);
     if (def.ambient) cam.setBackgroundColor(def.ambient);
 

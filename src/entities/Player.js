@@ -110,8 +110,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     sfx.hurt();
     scene.cameras.main.shake(120, 0.004);
     // 受击镜头微缩放（冲击感）
-    scene.cameras.main.zoomTo(0.56, 70, 'Sine.easeOut');
-    scene.time.delayedCall(100, () => scene.cameras.main.zoomTo(0.5, 140));
+    scene.cameras.main.zoomTo(1.65, 70, 'Sine.easeOut');
+    scene.time.delayedCall(100, () => scene.cameras.main.zoomTo(1.5, 140));
 
     // 击退
     const angle = Phaser.Math.Angle.Between(sx, sy, this.x, this.y);
