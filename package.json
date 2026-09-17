@@ -1,0 +1,19 @@
+{
+  "name": "pyquest",
+  "private": true,
+  "version": "0.1.0",
+  "description": "PyQuest —— 用塞尔达式动作冒险学习 Python 基础的网页游戏",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0",
+    "vite": "^7.1.0"
+  }
+}

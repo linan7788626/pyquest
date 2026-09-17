@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyQuest · Python 冒险记</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --panel: #fff8ea;
+      --panel-border: #b98a4e;
+      --ink: #4a3b32;
+      --accent: #e86a6a;
+      --gold: #ffd257;
+      --teal: #3ddad7;
+      --green: #57b34a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #2c2438;
+      font-family: "ZCOOL KuaiLe", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      overflow: hidden;
+    }
+    #wrap {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #stage {
+      position: relative;
+      width: 960px; height: 640px;
+      max-width: 100vw; max-height: 100vh;
+      /* 保持 3:2，缩放由 JS 控制 */
+    }
+    #stage > #game { position: absolute; inset: 0; }
+    #stage > canvas { position: absolute; inset: 0; image-rendering: pixelated; }
+
+    /* ---------- DOM UI 层（覆盖在画布上） ---------- */
+    #ui {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+    #ui > * { pointer-events: auto; }
+
+    /* HUD 顶部 */
+    #hud-top {
+      position: absolute; top: 10px; left: 12px; right: 12px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      pointer-events: none;
+    }
+    .hearts { display: flex; gap: 4px; }
+    .hearts svg { width: 26px; height: 26px; filter: drop-shadow(0 2px 0 rgba(0,0,0,.35)); }
+    .hud-right {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(42, 32, 24, .72);
+      border: 2px solid #6b4f2e; border-radius: 12px;
+      padding: 6px 12px; color: #fff;
+      font-size: 15px; letter-spacing: 1px;
+      pointer-events: none;
+    }
+    .hud-right svg { width: 16px; height: 20px; }
+    #shard-count.gain svg { animation: gainPop .45s ease-out; }
+    @keyframes gainPop {
+      0% { transform: scale(1); } 40% { transform: scale(1.7) rotate(-12deg); }
+      100% { transform: scale(1); }
+    }
+    #objective { color: var(--gold); font-size: 13px; }
+
+    /* 提示条 */
+    #hint {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      background: rgba(42, 32, 24, .72);
+      border: 2px solid #6b4f2e; border-radius: 12px;
+      color: #fff; font-size: 14px; letter-spacing: 1px;
+      padding: 6px 14px; white-space: nowrap;
+      pointer-events: none;
+      transition: opacity .15s;
+    }
+    #hint b { color: var(--gold); }
+    #hint.hidden { opacity: 0; }
+
+    /* 按键帽 */
+    kbd {
+      display: inline-block; min-width: 18px; text-align: center;
+      background: #fff; border: 2px solid #b98a4e; border-bottom-width: 3px;
+      border-radius: 6px; padding: 0 6px; margin: 0 2px;
+      font-size: 12px; line-height: 18px; color: #4a3b32; font-family: inherit;
+      box-shadow: 0 2px 0 rgba(0,0,0,.18);
+    }
+
+    /* 暗角（氛围） */
+    #vignette {
+      position: absolute; inset: 0; pointer-events: none; z-index: 5;
+      background: radial-gradient(ellipse at center, transparent 52%, rgba(24,16,38,.34) 100%);
+    }
+
+    /* 塞尔达式圆形转场 */
+    #wipe {
+      position: absolute; inset: 0; pointer-events: none; z-index: 60;
+      background: #241c2e;
+      clip-path: circle(0% at 50% 50%);
+    }
+
+    /* 对话框 */
+    #dialogue {
+      position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%);
+      width: min(680px, 92%);
+      background: var(--panel);
+      border: 3px solid var(--panel-border);
+      border-radius: 14px;
+      box-shadow: 0 6px 0 rgba(0,0,0,.25);
+      padding: 14px 18px 12px;
+      display: none;
+    }
+    #dialogue.show { display: block; }
+    #dlg-name { color: var(--accent); font-size: 15px; margin-bottom: 4px; }
+    #dlg-text { font-size: 17px; line-height: 1.55; min-height: 52px; }
+    #dlg-next { text-align: right; font-size: 13px; color: #9a7f5a; animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: .25; } }
+
+    /* 答题面板 */
+    #quiz-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(20, 14, 30, .55);
+      display: none;
+      align-items: center; justify-content: center;
+    }
+    #quiz-backdrop.show { display: flex; }
+    #quiz {
+      width: min(560px, 94%);
+      background: var(--panel);
+      border: 3px solid var(--panel-border);
+      border-radius: 16px;
+      box-shadow: 0 8px 0 rgba(0,0,0,.3);
+      padding: 16px 18px;
+      animation: pop .18s ease-out;
+    }
+    @keyframes pop { from { transform: scale(.92); opacity: 0; } }
+    #quiz.shake { animation: shake .35s; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); } 40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); } 80% { transform: translateX(5px); }
+    }
+    .quiz-chapter {
+      display: inline-block; background: var(--teal); color: #083b3a;
+      font-size: 13px; border-radius: 8px; padding: 2px 10px; margin-bottom: 6px;
+    }
+    .quiz-chapter.boss { background: #d591ff; }
+    #quiz-prompt { font-size: 17px; line-height: 1.5; margin-bottom: 10px; }
+    .code-block {
+      font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+      font-size: 15px; line-height: 1.6;
+      background: #2f2a3d; color: #e8e3f5;
+      border-radius: 10px; padding: 10px 14px; margin-bottom: 12px;
+      white-space: pre; overflow-x: auto;
+    }
+    .code-block .blank {
+      display: inline-block; min-width: 52px; text-align: center;
+      border-bottom: 2px dashed var(--gold); color: var(--gold);
+      padding: 0 6px; cursor: default;
+    }
+    .code-block .kw { color: #ff9db8; }
+    .code-block .fn { color: #8fd6ff; }
+    .code-block .str { color: #b5e48c; }
+    .code-block .num { color: #ffd257; }
+    #quiz-options { display: flex; flex-direction: column; gap: 8px; }
+    .opt {
+      text-align: left; font-family: inherit;
+      font-size: 16px; color: var(--ink);
+      background: #fff; border: 2px solid #d8c193;
+      border-radius: 10px; padding: 9px 14px; cursor: pointer;
+      transition: transform .06s, border-color .12s, background .12s;
+    }
+    .opt:hover { border-color: var(--panel-border); transform: translateX(3px); }
+    .opt.selected { border-color: var(--teal); background: #e7fbfa; }
+    .opt.right { border-color: var(--green); background: #e9f8e4; }
+    .opt.wrong { border-color: var(--accent); background: #fdeaea; }
+    .opt.right::after { content: '✓'; float: right; color: #2e7d32; font-weight: bold; animation: stampIn .28s ease-out; }
+    .opt.wrong::after { content: '✗'; float: right; color: #c62828; font-weight: bold; animation: stampIn .28s ease-out; }
+    @keyframes stampIn { from { transform: scale(2.2); opacity: 0; } }
+    .opt code, .fill-preview { font-family: "JetBrains Mono", Consolas, monospace; font-size: 14px; }
+    #quiz-feedback { font-size: 15px; line-height: 1.5; min-height: 22px; margin-top: 10px; }
+    #quiz-feedback.ok { color: #2e7d32; }
+    #quiz-feedback.bad { color: #c62828; }
+    #quiz-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+    .btn {
+      font-family: inherit; font-size: 15px; cursor: pointer;
+      border: 2px solid var(--panel-border); border-radius: 10px;
+      padding: 7px 18px; background: #fff; color: var(--ink);
+      box-shadow: 0 3px 0 rgba(0,0,0,.15);
+      transition: transform .06s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(1px); box-shadow: none; }
+    .btn.primary { background: var(--green); border-color: #3d8f3d; color: #fff; }
+    .btn.ghost { background: transparent; border-color: rgba(255,255,255,.4); color: #d8d2ea; box-shadow: none; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* 标题画面 / 胜利画面 */
+    .full-modal {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, #2c2438 0%, #3a2d52 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; text-align: center; color: #fff;
+      overflow: hidden;
+    }
+    .full-modal .stars {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        radial-gradient(circle, rgba(255,210,87,.5) 1.5px, transparent 2px),
+        radial-gradient(circle, rgba(255,255,255,.4) 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(125,218,255,.45) 1.5px, transparent 2px);
+      background-size: 190px 170px, 120px 140px, 260px 210px;
+      background-position: 0 0, 40px 60px, 80px 20px;
+      animation: starDrift 60s linear infinite;
+      opacity: .8;
+    }
+    @keyframes starDrift {
+      from { background-position: 0 0, 40px 60px, 80px 20px; }
+      to { background-position: 190px 340px, 160px 280px, 340px 420px; }
+    }
+    .full-modal.hidden { display: none; }
+    #title h1 {
+      font-size: 64px; color: var(--gold);
+      text-shadow: 0 4px 0 #8a5a00, 0 8px 18px rgba(0,0,0,.5);
+      letter-spacing: 6px;
+    }
+    #title .subtitle { font-size: 20px; color: #cfd6ff; letter-spacing: 3px; }
+    #title .keys {
+      margin-top: 10px; font-size: 15px; color: #b9c0e8; line-height: 2;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 12px; padding: 10px 26px;
+    }
+    #title .keys b { color: var(--gold); }
+    #btn-start {
+      margin-top: 18px; font-size: 22px; letter-spacing: 4px;
+      padding: 12px 46px; border-radius: 14px;
+      background: var(--accent); border-color: #a83d3d; color: #fff;
+      box-shadow: 0 5px 0 #7d2b2b;
+    }
+    #victory h1 { font-size: 44px; color: var(--gold); text-shadow: 0 4px 0 #8a5a00; }
+    #victory p { font-size: 17px; line-height: 1.8; color: #dfe4ff; }
+    #victory .stats { color: var(--teal); font-size: 19px; }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <div id="stage">
+      <div id="game"></div>
+      <div id="ui">
+        <div id="vignette"></div>
+        <div id="wipe"></div>
+        <div id="hud-top" style="display:none">
+          <div class="hearts" id="hearts"></div>
+          <div class="hud-right">
+            <span id="shard-count"></span>
+            <span id="objective"></span>
+          </div>
+        </div>
+        <div id="hint" class="hidden"></div>
+
+        <div id="dialogue">
+          <div id="dlg-name"></div>
+          <div id="dlg-text"></div>
+          <div id="dlg-next">▼ 按 E / 点击 继续</div>
+        </div>
+
+        <div id="quiz-backdrop">
+          <div id="quiz">
+            <span class="quiz-chapter" id="quiz-chapter"></span>
+            <div id="quiz-prompt"></div>
+            <div class="code-block" id="quiz-code"></div>
+            <div id="quiz-options"></div>
+            <div id="quiz-feedback"></div>
+            <div id="quiz-actions">
+              <button class="btn" id="quiz-cancel">先不回答</button>
+              <button class="btn primary" id="quiz-confirm" disabled>确认</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="title" class="full-modal">
+          <div class="stars"></div>
+          <h1>P y Q u e s t</h1>
+          <div class="subtitle">~ 用冒险学会 Python 基础 ~</div>
+          <div class="keys">
+            <b>方向键 / WASD</b> 移动 &nbsp;·&nbsp; <b>J / 空格</b> 挥剑 &nbsp;·&nbsp; <b>E</b> 交互 / 对话<br />
+            解开符文石的 Python 谜题，击败循环史莱姆王；再进入第二章，掌握函数与列表，封印巨蟒毕森！
+          </div>
+          <button class="btn primary" id="btn-start">开始冒险</button>
+          <button class="btn ghost" id="btn-new" style="display:none">新的冒险</button>
+        </div>
+
+        <div id="victory" class="full-modal hidden">
+          <div class="stars"></div>
+          <h1 id="victory-title">🎉 冒险成功！</h1>
+          <p id="victory-text">…</p>
+          <p class="stats" id="victory-stats"></p>
+          <button class="btn primary" id="btn-next">▶ 进入第二章</button>
+          <button class="btn ghost" id="btn-restart">重新开始</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
