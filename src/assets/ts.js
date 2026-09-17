@@ -39,6 +39,12 @@ export const TS_SHEETS = {
   bush2: [`${P}/Terrain/Decorations/Bushes/Bushe2.png`, 128, 128],
   bush3: [`${P}/Terrain/Decorations/Bushes/Bushe3.png`, 128, 128],
   bush4: [`${P}/Terrain/Decorations/Bushes/Bushe4.png`, 128, 128],
+  // 地形装饰（点缀进 ground.js 画布）
+  bush1: [`${P}/Terrain/Decorations/Bushes/Bushe1.png`, 128, 128],
+  bush2: [`${P}/Terrain/Decorations/Bushes/Bushe2.png`, 128, 128],
+  bush3: [`${P}/Terrain/Decorations/Bushes/Bushe3.png`, 128, 128],
+  bush4: [`${P}/Terrain/Decorations/Bushes/Bushe4.png`, 128, 128],
+
   // 粒子特效
   dust: [`${P}/Particle FX/Dust_01.png`, 64, 64],
   fire: [`${P}/Particle FX/Fire_01.png`, 64, 64],
@@ -50,10 +56,15 @@ export const TS_SHEETS = {
 // ---------- 静态图片 ----------
 export const TS_IMAGES = {
   ts_shadow: `${P}/Terrain/Tileset/Shadow.png`,     // 192×192 官方椭圆阴影
-  rock1: `${P}/Terrain/Decorations/Rocks/Rock1.png`,
+  rock1: `${P}/Terrain/Decorations/Rocks/Rock1.png`, // 64×64
   rock2: `${P}/Terrain/Decorations/Rocks/Rock2.png`,
   rock3: `${P}/Terrain/Decorations/Rocks/Rock3.png`,
   rock4: `${P}/Terrain/Decorations/Rocks/Rock4.png`,
+  waterRock1: `${P}/Terrain/Decorations/Rocks in the Water/Water Rocks_01.png`, // 64×64
+  waterRock2: `${P}/Terrain/Decorations/Rocks in the Water/Water Rocks_02.png`,
+  waterRock3: `${P}/Terrain/Decorations/Rocks in the Water/Water Rocks_03.png`,
+  waterRock4: `${P}/Terrain/Decorations/Rocks in the Water/Water Rocks_04.png`,
+  duck: `${P}/Terrain/Decorations/Rubber Duck/Rubber duck.png`, // 96×32
   house1: `${P}/Buildings/Blue Buildings/House1.png`, // 128×192
   house2: `${P}/Buildings/Blue Buildings/House2.png`,
   house3: `${P}/Buildings/Blue Buildings/House3.png`,

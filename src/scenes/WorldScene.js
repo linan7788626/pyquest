@@ -85,7 +85,7 @@ export class WorldScene extends Phaser.Scene {
     // ---------- 相机 ----------
     const cam = this.cameras.main;
     cam.setBounds(0, 0, def.w * 128, def.h * 128);
-    cam.setZoom(1);
+    cam.setZoom(2); // 视角内元素缩小一半（世界逻辑尺寸不变）
     cam.startFollow(this.player, true, 0.12, 0.12);
     if (def.ambient) cam.setBackgroundColor(def.ambient);
 
@@ -244,19 +244,20 @@ export class WorldScene extends Phaser.Scene {
         break;
       }
       case 'rune': {
-        const s = this.add.image(p.x, p.y, 'rune').setOrigin(0.5, 0.92).setDisplaySize(240, 252);
+        // 符文石图标 → TS Tower（128×256 原尺寸；破解后变灰表示已领悟）
+        const s = this.add.image(p.x, p.y + 16, 'tower').setOrigin(0.5, 0.94);
         s.setDepth(p.y);
-        this.add.image(p.x, p.y + 4, 'ts_shadow').setDisplaySize(176, 88).setAlpha(0.5).setDepth(p.y - 1);
+        this.add.image(p.x, p.y + 4, 'ts_shadow').setDisplaySize(120, 60).setAlpha(0.5).setDepth(p.y - 1);
         const it = {
           kind: 'rune', x: p.x, y: p.y, qid: p.qid,
           bossRune: !!p.bossRune, healRune: !!p.healRune, sprite: s, alive: true,
         };
         if (G.answered.has(p.qid)) {
           it.alive = false;
-          s.setTexture('rune_cracked');
+          s.setTint(0x8a8496); // 已破解：整体变灰
         } else {
-          // 光晕呼吸 + 石碑本体轻微起伏（幅度控制在 ±1.5% 内，几乎察觉不到跳动）
-          const aura = this.add.image(p.x, p.y - 88, 'particle')
+          // 青色光晕呼吸（可交互标识）+ 轻微起伏（±1.5%，几乎察觉不到）
+          const aura = this.add.image(p.x, p.y - 130, 'particle')
             .setTint(0x3ddad7).setAlpha(0.2).setScale(44).setDepth(p.y - 0.5);
           this.tweens.add({ targets: aura, alpha: 0.32, scale: 52, duration: 1400, yoyo: true, repeat: -1, ease: 'sine.inout' });
           this.tweens.add({
@@ -378,7 +379,7 @@ export class WorldScene extends Phaser.Scene {
       onCorrect: () => {
         markRuneSolved(it.qid, q.id); // 槽位破解 + 题目记为已用
         it.alive = false;
-        it.sprite.setTexture('rune_cracked');
+        it.sprite.setTint(0x8a8496); // 符文塔变灰表示已领悟
         sfx.pickup();
         if (it.bossRune) {
           this.breakBossShield();

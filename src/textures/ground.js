@@ -17,8 +17,8 @@ function lcg(seed) {
   return () => (s = (s * 16807) % 2147483647) / 2147483647;
 }
 
-/** 野外：TS tileset 拼接 */
-function drawOutdoor(ctx, def, tilesets) {
+/** 野外：平整大草原 + TS 装饰点缀 */
+function drawOutdoor(ctx, def, tilesets, scene) {
   const grassImg = tilesets[def.key === 'Forest' ? 'forest' : 'grass'];
   const pathImg = tilesets.path;
   const rand = lcg(def.key === 'Forest' ? 20261001 : 20260916);
@@ -27,6 +27,7 @@ function drawOutdoor(ctx, def, tilesets) {
   const isWater = (v) => v === T.WATER || v === T.WATER2 || v === T.WATER3;
   const isPath = (v) => v === T.PATH;
 
+  // ---------- 第一遍：地形 ----------
   for (let y = 0; y < def.h; y++) {
     for (let x = 0; x < def.w; x++) {
       const v = def.grid[y][x];
@@ -37,19 +38,16 @@ function drawOutdoor(ctx, def, tilesets) {
         ctx.fillRect(dx, dy, TILE, TILE);
         const r = lcg(x * 7919 + y * 104729 + 17);
         if (r() < 0.5) {
-          // 浅色短波纹（整洁：只 1 条主波纹 + 1 条次波纹）
           ctx.fillStyle = 'rgba(140,195,196,0.85)';
           const wx = dx + 12 + r() * 72, wy = dy + 16 + r() * 88;
           ctx.fillRect(wx, wy, 28 + r() * 20, 6);
           ctx.fillRect(wx + 8, wy + 16 + r() * 12, 16 + r() * 16, 4);
         }
         if (r() < 0.22) {
-          // 深色水斑（少量）
           ctx.fillStyle = 'rgba(60,120,130,0.3)';
           ctx.fillRect(dx + 20 + r() * 60, dy + 24 + r() * 64, 32 + r() * 24, 12);
         }
         if (r() < 0.25) {
-          // 波光点
           ctx.fillStyle = 'rgba(234,252,255,0.8)';
           ctx.fillRect(dx + 16 + r() * 88, dy + 16 + r() * 88, 6, 4);
         }
@@ -70,9 +68,8 @@ function drawOutdoor(ctx, def, tilesets) {
         ctx.drawImage(pathImg, tx * 64, ty * 64, 64, 64, dx, dy, TILE, TILE);
         ctx.restore();
       } else {
-        // 草地：整洁化——只用 2 个同族变体（1,1 纯草 + 2,1 微噪点），大幅降低杂色
-        const [tx, ty] = rand() < 0.72 ? GRASS_TILES[1] : GRASS_TILES[2];
-        ctx.drawImage(grassImg, tx * 64, ty * 64, 64, 64, dx, dy, TILE, TILE);
+        // 平整连续大草原：单一纯草 tile 平铺（无变体混拼 → 完全连续无缝）
+        ctx.drawImage(grassImg, 1 * 64, 1 * 64, 64, 64, dx, dy, TILE, TILE);
         // 花地瓦片叠加小花（柔和圆形）
         if (v === T.FLOWER) {
           const r = lcg(x * 7919 + y * 104729 + 5);
@@ -88,6 +85,78 @@ function drawOutdoor(ctx, def, tilesets) {
             ctx.fill();
           }
         }
+      }
+    }
+  }
+
+  // ---------- 第二遍：TS 装饰随机点缀（草原/水岸/花地的视觉丰富层） ----------
+  decorateGround(ctx, def, scene, at, isWater, isPath);
+}
+
+/** 草地装饰（静态，画进整图地面）：灌木/岩石 随机散布 */
+function decorateGround(ctx, def, scene, at, isWater, isPath) {
+  const tex = (k) => {
+    const t = scene.textures.get(k);
+    return t && t.getSourceImage ? t.getSourceImage() : null;
+  };
+  const landDecor = [
+    'bush1', 'bush2', 'bush3', 'bush4',       // 灌木（128×128 帧，取首帧）
+    'rock1', 'rock2', 'rock3', 'rock4',       // 岩石（64×64）
+  ];
+  const waterDecor = ['waterRock1', 'waterRock2', 'waterRock3', 'waterRock4']; // 64×64（取首帧）
+
+  // 装饰散布密度：每 ~6 个草地格 1 个装饰（约 16% 格子）
+  const rand = lcg(def.key === 'Forest' ? 777 : 555);
+  for (let y = 0; y < def.h; y++) {
+    for (let x = 0; x < def.w; x++) {
+      const v = def.grid[y][x];
+      if (isWater(v) || isPath(v) || v === T.DWALL || v === T.VOID) continue;
+      if (rand() > 0.16) continue;
+      // 避开出生点附近（前 3 行 / 玩家常走的路两侧不严格限制）
+      const dx = x * TILE, dy = y * TILE;
+      const isBush = rand() < 0.55;
+      const key = isBush
+        ? landDecor[Math.floor(rand() * 4)]
+        : landDecor[4 + Math.floor(rand() * 4)];
+      const img = tex(key);
+      if (!img) continue;
+      // 灌木帧 128×128（取首帧 1/8 宽）；岩石 64×64
+      const sw = isBush ? 128 : 64, sh = isBush ? 128 : 64;
+      // 随机翻转 + 尺寸 0.7~1.0（视觉多样性）
+      const s = 0.7 + rand() * 0.3;
+      const dw = (isBush ? 128 : 64) * s, dh = sh * s;
+      const ox = dx + rand() * (TILE - dw), oy = dy + rand() * (TILE - dh * 0.5) - dh * 0.2;
+      ctx.save();
+      if (rand() < 0.5) { ctx.translate(ox + dw, oy); ctx.scale(-1, 1); ctx.drawImage(img, 0, 0, sw, sh, 0, 0, dw, dh); }
+      else ctx.drawImage(img, 0, 0, sw, sh, ox, oy, dw, dh);
+      ctx.restore();
+    }
+  }
+
+  // 水面装饰：水岩（靠岸水域）+ 橡皮鸭（开阔水面）
+  for (let y = 0; y < def.h; y++) {
+    for (let x = 0; x < def.w; x++) {
+      if (!isWater(def.grid[y][x])) continue;
+      const r = lcg(x * 31337 + y * 4242 + 99);
+      // 四邻有陆地 → 候选水岩（10%）
+      const nb = [[x, y - 1], [x, y + 1], [x - 1, y], [x + 1, y]];
+      const nearLand = nb.some(([nx, ny]) => {
+        const inside = nx >= 0 && ny >= 0 && nx < def.w && ny < def.h;
+        return !inside || !isWater(def.grid[ny][nx]);
+      });
+      const dx = x * TILE, dy = y * TILE;
+      if (nearLand && r() < 0.1) {
+        const img = tex(waterDecor[Math.floor(r() * 4)]);
+        if (!img) continue;
+        const s = 0.7 + r() * 0.3;
+        // 水岩贴岸摆放（向陆地一侧偏移）
+        ctx.drawImage(img, 0, 0, 64, 64, dx + r() * 40, dy + r() * 40, 64 * s, 64 * s);
+      } else if (!nearLand && r() < 0.05) {
+        // 开阔水面的橡皮鸭（96×32 静态图）
+        const img = tex('duck');
+        if (!img) continue;
+        const s = 0.8 + r() * 0.4;
+        ctx.drawImage(img, dx + 20 + r() * 40, dy + 40 + r() * 40, 96 * s * 0.7, 32 * s * 0.7);
       }
     }
   }
@@ -164,7 +233,7 @@ export function makeGroundTexture(scene, def) {
       ctx.fillStyle = '#93ba4f';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else {
-      drawOutdoor(ctx, def, tilesets);
+      drawOutdoor(ctx, def, tilesets, scene);
     }
   }
 

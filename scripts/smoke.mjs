@@ -45,7 +45,7 @@ try {
   for (const [k, v] of Object.entries(textures)) {
     if (!v.w || !v.h) fail(`贴图 ${k} 尺寸异常`);
   }
-  const need = ['rune', 'rune_cracked', 'shard',
+  const need = ['shard',
     'heart_full', 'heart_half', 'heart_empty',
     'portal_door', 'tablet', 'crystal', 'shroom',
     'gate_closed', 'gate_open', 'torch_0',
