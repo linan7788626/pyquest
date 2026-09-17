@@ -1,30 +1,35 @@
 // ============================================================
-// 玩家：四方向移动、挥剑攻击、受击/无敌闪烁、死亡重生
+// 玩家：0x72 骑士（knight_m）—— 移动/挥剑攻击/受击/死亡重生
+// 贴图 16×28（×2 显示 32×56），正面视角 + 左右翻转
 // ============================================================
 import Phaser from 'phaser';
 import { G, updateHud } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
 import { wipeTransition } from '../ui/wipe.js';
-import { CS } from '../core/scale.js';
+
+const SCALE = 2; // 16×28 → 32×56（整数倍，像素完美）
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
-    super(scene, x, y, 'player_down_0');
+    super(scene, x, y, 'knight_m_idle_anim_f0');
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    this.setOrigin(0.5, 0.9);
-    this.setDisplaySize(16 * CS, 16 * CS); // 32×32 模板 1:1 显示（像素完美）
-    this.body.setSize(14, 9).setOffset(9, 21);
+    this.setOrigin(0.5, 0.95);          // 脚底锚点（帧底 y=27/28）
+    this.setDisplaySize(16 * SCALE, 28 * SCALE);
+    // body：世界尺寸 20×10；纹素偏移（×SCALE 后生效）
+    this.body.setSize(20, 10).setOffset(3, 22);
     this.setCollideWorldBounds(true);
 
     this.speed = 150;
     this.facing = 'down';
     this.invulUntil = 0;
     this.attackCdUntil = 0;
+    this.attackAnimUntil = 0;
     this.dying = false;
     this.nextDust = 0;
     this.setDepth(this.y);
+    this.play('knight_idle');
 
     // 脚下软阴影
     this.shadow = scene.add.image(x, y + 1, 'shadow')
@@ -33,6 +38,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   update(keys) {
     if (this.dying) return;
+    const now = this.scene.time.now;
     const speed = this.speed;
 
     let vx = 0, vy = 0;
@@ -48,14 +54,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     else if (vy > 0) this.facing = 'down';
     else if (vy < 0) this.facing = 'up';
 
-    const dirName = this.facing === 'left' ? 'right' : this.facing;
     this.setFlipX(this.facing === 'left');
-    this.anims.play(moving ? `player_${dirName}` : `player_idle_${dirName}`, true);
+    this.anims.play(moving ? 'knight_run' : 'knight_idle', true);
     this.setDepth(this.y);
     this.shadow.setPosition(this.x, this.y + 1).setDepth(this.y - 0.5);
 
     // 走路扬尘
-    const now = this.scene.time.now;
     if (moving && now > this.nextDust) {
       this.nextDust = now + 230;
       const d = this.scene.add.image(this.x + Phaser.Math.Between(-3, 3), this.y + 2, 'particle')
@@ -72,6 +76,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const now = scene.time.now;
     if (this.dying || now < this.attackCdUntil) return;
     this.attackCdUntil = now + 320;
+    this.attackAnimUntil = 0; // 0x72 帧无攻击动画，用挥剑弧光表现
     sfx.swing();
 
     const offsets = { down: [0, 12], up: [0, -14], left: [-14, 0], right: [14, 0] };

@@ -219,27 +219,42 @@ export class WorldScene extends Phaser.Scene {
   spawnProp(p) {
     switch (p.type) {
       case 'tree': {
-        const t = this.add.image(p.x, p.y, 'tree').setDisplaySize(40, 40);
+        // Kenney 小树（16×16 ×3 = 48×48，整数倍像素完美）
+        const variants = ['tt_5', 'tt_3', 'tt_27', 'tt_28', 'tt_5', 'tt_5'];
+        const tex = variants[Phaser.Math.Between(0, variants.length - 1)];
+        const t = this.add.image(p.x, p.y + 14, tex).setOrigin(0.5, 0.92).setDisplaySize(48, 48);
         this.solids.add(t);
-        t.body.setSize(10, 10).setOffset(15, 28); // 树干（模板 40×40，干在 x17-23/y26-38）
+        t.body.setSize(14, 12).setOffset(5, 10);
         t.setDepth(p.y + 4);
-        this.add.image(p.x, p.y + 5, 'shadow').setDisplaySize(44, 22).setAlpha(0.5).setDepth(p.y + 3);
+        this.add.image(p.x, p.y + 15, 'shadow').setDisplaySize(40, 20).setAlpha(0.4).setDepth(p.y + 3);
         break;
       }
       case 'house': {
-        const h = this.add.image(p.x, p.y, 'house').setOrigin(0.5, 1).setDisplaySize(128, 112);
+        // CC0 拼合小屋（128×96：红瓦顶 + 石墙 + 蓝窗 + 红门）
+        const h = this.add.image(p.x, p.y, 'house').setOrigin(0.5, 1).setDisplaySize(128, 96);
         this.solids.add(h);
-        h.body.setSize(128, 52).setOffset(0, 56); // 墙体（模板 128×112）
+        h.body.setSize(120, 42).setOffset(4, 50);
         h.setDepth(p.y);
-        this.add.image(p.x, p.y - 3, 'shadow').setDisplaySize(140, 27).setAlpha(0.45).setDepth(p.y - 1);        break;
+        this.add.image(p.x, p.y - 2, 'shadow').setDisplaySize(140, 27).setAlpha(0.4).setDepth(p.y - 1);        break;
       }
       case 'npc': {
-        const big = p.id === 'tablet' ? [40, 46] : [32, 32];
-        const e = this.add.image(p.x, p.y, p.tex || 'elder').setOrigin(0.5, 0.9).setDisplaySize(big[0], big[1]);
-        e.setDepth(p.y);
-        this.add.image(p.x, p.y + 1, 'shadow').setDisplaySize(24, 12).setAlpha(0.5).setDepth(p.y - 1);
-        this.tweens.add({ targets: e, y: p.y - 1.5, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
-        this.npc = { x: p.x, y: p.y, id: p.id, sprite: e };
+        if (p.id === 'tablet') {
+          // 函数石碑（程序化贴图）+ 符文光晕
+          const e = this.add.image(p.x, p.y, 'tablet').setOrigin(0.5, 0.92).setDisplaySize(40, 46);
+          e.setDepth(p.y);
+          const aura = this.add.image(p.x, p.y - 8, 'particle')
+            .setTint(0x3ddad7).setAlpha(0.18).setScale(7).setDepth(p.y - 0.5);
+          this.tweens.add({ targets: aura, alpha: 0.3, scale: 9, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
+          this.npc = { x: p.x, y: p.y, id: p.id, sprite: e };
+        } else {
+          // 长老：0x72 蓝袍巫师（16×28 ×2 = 32×56，idle 动画）
+          const e = this.add.sprite(p.x, p.y + 18, 'wizzard_m_idle_anim_f0')
+            .setOrigin(0.5, 0.95).setDisplaySize(32, 56);
+          e.play('wizzard_idle');
+          e.setDepth(p.y);
+          this.add.image(p.x, p.y + 19, 'shadow').setDisplaySize(24, 12).setAlpha(0.5).setDepth(p.y - 1);
+          this.npc = { x: p.x, y: p.y, id: p.id, sprite: e };
+        }
         break;
       }
       case 'rune': {
@@ -264,27 +279,29 @@ export class WorldScene extends Phaser.Scene {
         break;
       }
       case 'gate': {
-        const g = this.add.image(p.x, p.y, G.gateOpen ? 'gate_open' : 'gate_closed').setDisplaySize(64, 64);
+        // 0x72 大门（32×32 ×2 = 64×64）
+        const g = this.add.image(p.x, p.y, G.gateOpen ? 'x_door_open' : 'x_door_closed').setDisplaySize(64, 64);
         g.setDepth(p.y + 16);
         this.gate = { x: p.x, y: p.y, sprite: g };
         if (!G.gateOpen) {
           this.solids.add(g);
-          g.body.setSize(64, 64);
+          g.body.setSize(60, 56).setOffset(2, 4);
         }
         break;
       }
       case 'torch': {
-        const t = this.add.sprite(p.x, p.y, 'torch_0').setOrigin(0.5, 0.9).setDisplaySize(16, 32);
-        t.play('torch_burn');
+        // Kenney 火盆（td_29，16×16 ×2 = 32×32）+ 呼吸火光
+        const t = this.add.image(p.x, p.y + 10, 'td_29').setOrigin(0.5, 0.92).setDisplaySize(32, 32);
         t.setDepth(p.y - 6);
         this.torches.push({ x: p.x, y: p.y });
-        const glow = this.add.image(p.x, p.y - 14, 'particle')
+        const glow = this.add.image(p.x, p.y - 2, 'particle')
           .setScale(7).setAlpha(0.16).setTint(0xffb84d).setDepth(p.y - 7);
-        this.tweens.add({ targets: glow, alpha: 0.26, scale: 7.8, duration: 520, yoyo: true, repeat: -1 });
+        this.tweens.add({ targets: glow, alpha: 0.26, scale: 8.5, duration: 520, yoyo: true, repeat: -1 });
         break;
       }
       case 'bush': {
-        this.add.image(p.x, p.y, 'bush').setOrigin(0.5, 0.9).setDisplaySize(30, 22).setDepth(p.y - 0.5);
+        // Kenney 灌木（tt_19，16×16 ×2 = 32×32）
+        this.add.image(p.x, p.y + 6, 'tt_19').setOrigin(0.5, 0.92).setDisplaySize(32, 32).setDepth(p.y - 0.5);
         break;
       }
       case 'crystal': {

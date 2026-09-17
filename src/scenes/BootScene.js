@@ -1,9 +1,11 @@
 // ============================================================
-// BootScene：生成全部程序化贴图与动画，然后等待玩家选择
+// BootScene：加载 CC0 素材（0x72 / Kenney）+ 生成程序化贴图
+// （符文石/爱心/碎片等游戏专属元素），然后等待玩家选择
 // 「继续冒险」（读档）或「新的冒险」（清档重来）
 // ============================================================
 import Phaser from 'phaser';
 import { generateAllTextures, createAnimations } from '../textures/pixelArt.js';
+import { loadCC0Assets, createCC0Animations, buildHouseTexture } from '../assets/cc0.js';
 import { initTitle } from '../ui/modal.js';
 import { G, resetState } from '../core/state.js';
 import { clearSave, loadGame } from '../core/save.js';
@@ -11,9 +13,15 @@ import { clearSave, loadGame } from '../core/save.js';
 export default class BootScene extends Phaser.Scene {
   constructor() { super('Boot'); }
 
+  preload() {
+    loadCC0Assets(this);
+  }
+
   create() {
     generateAllTextures(this);
     createAnimations(this);
+    createCC0Animations(this);
+    buildHouseTexture(this);
 
     initTitle({
       onNew: () => {

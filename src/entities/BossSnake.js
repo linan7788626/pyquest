@@ -1,6 +1,6 @@
 // ============================================================
 // 列表巨蟒 毕森（第二章 BOSS）
-// - 身体 = 一条会动的「列表」：头 + 若干体节沿轨迹跟随
+// - 身体 = 一条会动的「列表」：slug 头 + tiny_slug 体节沿轨迹跟随
 // - 符文护盾期免伤（答对 boss2 符文才能破盾）
 // - 破盾后攻击头部造成伤害；每损失 2 HP 断掉一节尾巴并提速
 // - 蓄力后向前冲刺突咬
@@ -9,20 +9,22 @@ import Phaser from 'phaser';
 import { G } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
 import { Slime } from './Slime.js';
-import { CS } from '../core/scale.js';
 
-const SEG_GAP = 15;     // 体节间距（头部轨迹采样间隔）
-const MAX_TRAIL = 300;  // 头部轨迹记录长度
+const SEG_GAP = 15;      // 体节间距（头部轨迹采样间隔）
+const MAX_TRAIL = 300;   // 头部轨迹记录长度
+const SCALE = 2;         // 头 16×23→32×46；体节 16×16→32×32
 
 export class BossSnake extends Slime {
   constructor(scene, x, y) {
     super(scene, x, y);
-    this.setTexture('snake_head');
-    this.setDisplaySize(18 * CS, 18 * CS); // 36×36 模板 1:1 显示（像素完美）
-    this.k = this.scaleX;
-    this.anims.stop(); // 停止继承的史莱姆动画，防止覆盖贴图
-    this.setOrigin(0.5, 0.82);
-    this.body.setSize(20, 14).setOffset(8, 16);
+    this.setTexture('slug_anim_f0');
+    this.setDisplaySize(16 * SCALE, 23 * SCALE);
+    this.setOrigin(0.5, 0.96);
+    this.body.setSize(20, 10).setOffset(3, 17);
+    this.anims.stop();
+    this.animIdle = 'slug_anim';
+    this.animRun = 'slug_anim';
+    this.play('slug_anim');
 
     this.hp = 12;
     this.isBoss = true;
@@ -31,10 +33,12 @@ export class BossSnake extends Slime {
     this.wanderSpeed = 22;
     this.lost = 0; // 已断掉的体节数（决定提速）
 
-    // 体节（无物理体的跟随图片，28×28 模板 1:1）
+    // 体节（无物理体的跟随精灵）
     this.segs = [];
     for (let i = 0; i < 6; i++) {
-      const s = scene.add.image(x, y - i * 4, 'snake_body').setDisplaySize(14 * CS, 14 * CS);
+      const s = scene.add.sprite(x, y - i * 4, 'tiny_slug_anim_f0')
+        .setOrigin(0.5, 0.96).setDisplaySize(16 * SCALE, 16 * SCALE);
+      s.play('tiny_slug_anim');
       this.segs.push(s);
     }
     this.trail = [];
@@ -50,9 +54,6 @@ export class BossSnake extends Slime {
   update() {
     if (this.dead) return;
     const now = this.scene.time.now;
-    // 呼吸感
-    const wob = Math.sin(now / 170) * 0.055;
-    this.setScale(this.k * (1 + wob), this.k * (1 - wob));
     if (now < this.knockUntil) return;
 
     const p = this.scene.player;
@@ -68,7 +69,6 @@ export class BossSnake extends Slime {
     } else if (now < this.teleUntil) {
       // 蓄力：短暂定身 + 抖动
       this.setVelocity(0, 0);
-      this.setScale(this.k * (1 + Math.sin(now / 24) * 0.09), this.k * (1 - Math.sin(now / 24) * 0.09));
     } else if (now < this.dartUntil) {
       // 冲刺：保持触发时设置的速度
     } else if (p && !p.dying && dist < this.chaseRange) {
@@ -105,6 +105,7 @@ export class BossSnake extends Slime {
     this.segs.forEach((s, i) => {
       const t = this.trail[Math.min((i + 1) * SEG_GAP, this.trail.length - 1)];
       if (t) s.setPosition(t.x, t.y);
+      s.setFlipX(this.body.velocity.x < 0);
       s.setDepth(s.y);
       // 体节接触伤害（头部走 slimeGroup 的 overlap）
       if (p && !p.dying && Phaser.Math.Distance.Between(s.x, s.y, p.x, p.y) < 14) {

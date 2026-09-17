@@ -1,21 +1,24 @@
 // ============================================================
-// 史莱姆：游荡 + 靠近追击，被击退，死亡掉落爱心
-// variant: 'red'（猩红小怪）| 'crimson'（深红小怪，第二章，更快更硬）
+// 敌方小怪：0x72 角色
+// variant: 'red'（红鬼 chort · 村庄/地牢）| 'crimson'（绿萨满 orc_shaman · 森林，更快更硬）
 // ============================================================
 import Phaser from 'phaser';
 import { sfx } from '../audio/sfx.js';
-import { CS } from '../core/scale.js';
+
+const SCALE = 2;
 
 export class Slime extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, variant = 'red') {
-    super(scene, x, y, variant === 'crimson' ? 'slime_blue_0' : 'slime_0');
+    const big = variant === 'crimson';
+    super(scene, x, y, big ? 'orc_shaman_idle_anim_f0' : 'chort_idle_anim_f0');
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    this.setOrigin(0.5, 0.9);
-    this.setDisplaySize(16 * CS, 16 * CS); // 32×32 模板 1:1 显示（像素完美）
-    this.k = this.scaleX; // 果冻感缩放的基准（1:1 下即 1）
-    this.body.setSize(22, 8).setOffset(5, 21);
+    this.variant = variant;
+    // chort/orc_shaman 均为 16×23 帧
+    this.setOrigin(0.5, 0.96);
+    this.setDisplaySize(16 * SCALE, 23 * SCALE);
+    this.body.setSize(18, 8).setOffset(4, 18);
     this.setCollideWorldBounds(true);
 
     this.hp = 2;
@@ -26,12 +29,14 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
     this.knockUntil = 0;
     this.hurtCdUntil = 0;
     this.wanderUntil = 0;
-    this.play(variant === 'crimson' ? 'slime_blue_move' : 'slime_move');
-    if (variant === 'crimson') {
+    this.animIdle = big ? 'shaman_idle' : 'chort_idle';
+    this.animRun = big ? 'shaman_run' : 'chort_run';
+    if (big) {
       this.hp = 3;
       this.chaseSpeed = 68;
       this.wanderSpeed = 38;
     }
+    this.play(this.animIdle);
     this.setDepth(this.y);
 
     // 脚下软阴影
@@ -42,9 +47,6 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
   update() {
     if (this.dead) return;
     const now = this.scene.time.now;
-    // 果冻感：X/Y 反向呼吸
-    const wob = Math.sin(now / 150) * 0.055;
-    this.setScale(this.k * (1 + wob), this.k * (1 - wob));
     if (now < this.knockUntil) return;
 
     const p = this.scene.player;
@@ -61,7 +63,9 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
         this.setVelocity(Math.cos(a) * this.wanderSpeed, Math.sin(a) * this.wanderSpeed);
       }
     }
+    const moving = Math.abs(this.body.velocity.x) + Math.abs(this.body.velocity.y) > 10;
     this.setFlipX(this.body.velocity.x < 0);
+    this.anims.play(moving ? this.animRun : this.animIdle, true);
     this.setDepth(this.y);
     this.shadow.setPosition(this.x, this.y + 1).setDepth(this.y - 0.5);
   }

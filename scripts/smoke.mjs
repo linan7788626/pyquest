@@ -32,6 +32,7 @@ const sceneStub = {
   textures: {
     canvasKeys: new Set(),
     exists(key) { return this.canvasKeys.has(key); },
+    get() { return null; }, // CC0 tile 未加载 → ground 走占位分支（数据层测试不看像素）
     addCanvas(key, canvas) {
       this.canvasKeys.add(key);
       textures[key] = { w: canvas.width, h: canvas.height };
@@ -44,15 +45,12 @@ try {
   for (const [k, v] of Object.entries(textures)) {
     if (!v.w || !v.h) fail(`贴图 ${k} 尺寸异常`);
   }
-  const need = ['player_down_0', 'player_down_1', 'player_down_2', 'player_up_0', 'player_up_1', 'player_up_2',
-    'player_right_0', 'player_right_1', 'player_right_2', 'elder',
-    'slime_0', 'slime_1', 'slime_blue_0', 'slime_blue_1', 'boss',
-    'snake_head', 'snake_body', 'tablet', 'bush', 'crystal', 'shroom',
-    'tree', 'rune', 'rune_cracked', 'shard',
-    'heart_full', 'heart_half', 'heart_empty', 'torch_0', 'torch_1',
-    'slash_0', 'slash_1', 'slash_2', 'gate_closed', 'gate_open', 'house', 'portal_door',
-    'water_0', 'water_1', 'water_2', 'particle',
-    'shadow', 'cloudshadow', 'foam_n', 'foam_s', 'foam_e', 'foam_w'];
+  const need = ['rune', 'rune_cracked', 'shard',
+    'heart_full', 'heart_half', 'heart_empty',
+    'portal_door', 'tablet', 'crystal', 'shroom',
+    'water_0', 'water_1', 'water_2',
+    'slash_0', 'slash_1', 'slash_2',
+    'particle', 'shadow', 'cloudshadow', 'foam_n', 'foam_s', 'foam_e', 'foam_w'];
   for (const k of need) if (!textures[k]) fail(`缺少贴图 ${k}`);
   // 水面动画帧应为 16×16（像素版 1:1）
   for (const k of ['water_0', 'water_1', 'water_2']) {
