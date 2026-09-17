@@ -60,7 +60,7 @@ const quizAnswer = () => page.evaluate(() => window.__PYQUEST__.active().quiz.q.
 const quizOptCount = () => page.locator('#quiz-options .opt').count();
 
 // ---- 符文石答题（正确路径）----
-await tele(280, 112); // 符文 v1 (280,88) 正下方 24px
+await tele(1120, 448); // 符文 v1 (1120,352) 正下方 96px
 await page.waitForTimeout(300);
 await page.keyboard.press('KeyE');
 await page.waitForTimeout(500);
@@ -79,7 +79,7 @@ const answered = await page.evaluate(() => window.__PYQUEST__.G.answered.has('v1
 check(answered, '符文已标记为已领悟');
 
 // ---- 答错路径 ----
-await tele(104, 280); // 符文 v2 (104,256) 下方
+await tele(416, 1120); // 符文 v2 (416,1024) 下方
 await page.waitForTimeout(300);
 await page.keyboard.press('KeyE');
 await page.waitForTimeout(400);
@@ -95,7 +95,7 @@ await page.click('#quiz-cancel');
 await page.waitForTimeout(300);
 
 // ---- 石门（碎片不足）----
-await tele(200, 90);
+await tele(800, 360);
 await page.waitForTimeout(300);
 await page.keyboard.press('KeyE');
 await page.waitForTimeout(400);
@@ -111,14 +111,14 @@ check(await page.locator('#dialogue.show').count() === 0, '对话可关闭');
 
 // ---- 集齐碎片开门 → 传送地牢 ----
 await page.evaluate(() => { window.__PYQUEST__.G.shards = 5; });
-await tele(200, 80);
+await tele(800, 320);
 await page.waitForTimeout(200);
 await page.keyboard.press('KeyE');
 await page.waitForTimeout(600);
 const gateOpen = await page.evaluate(() => window.__PYQUEST__.G.gateOpen);
 check(gateOpen, '5 枚碎片打开石门');
 
-await tele(200, 14); // 走进门后传送区
+await tele(800, 56); // 走进门后传送区
 // 等待地牢场景就绪（圆形转场约需 500ms）
 await page.waitForFunction(() => {
   const s = window.__PYQUEST__ && window.__PYQUEST__.scene('Dungeon');
@@ -138,7 +138,7 @@ await page.evaluate(() => {
 });
 
 // ---- BOSS 符文破盾 ----
-await tele(152, 128); // boss 符文 (152,104) 正下方
+await tele(608, 512); // boss 符文 (608,416) 正下方
 await page.waitForTimeout(300);
 await page.keyboard.press('KeyE');
 await page.waitForTimeout(400);
@@ -153,13 +153,13 @@ check(shielded === false, '答对循环谜题，BOSS 护盾破碎');
 await shot('08-boss-shield-broken');
 
 // ---- 攻击 BOSS → 通关 ----
-await tele(224, 64); // BOSS (224,88) 正上方
+await tele(896, 256); // BOSS (896,352) 正上方
 await page.evaluate(() => {
   const s = window.__PYQUEST__.scene('Dungeon');
   s.boss.setVelocity(0, 0);
   s.boss.knockUntil = 1e12; // 冻结 BOSS AI 便于确定性命中
-  s.boss.setPosition(224, 88);
-  s.boss.body.reset(224, 88);
+  s.boss.setPosition(896, 352);
+  s.boss.body.reset(896, 352);
 });
 await page.waitForTimeout(200);
 await page.keyboard.press('KeyJ'); // 向下挥剑
@@ -172,7 +172,7 @@ check(bossHpAfterHit === 9, `破盾后挥剑可命中 BOSS（hp=${bossHpAfterHit
 
 await page.evaluate(() => {
   const s = window.__PYQUEST__.scene('Dungeon');
-  if (s.boss) { s.boss.hp = 1; s.boss.hurt(1, 224, 124); } // 最后一击
+  if (s.boss) { s.boss.hp = 1; s.boss.hurt(1, 896, 496); } // 最后一击
 });
 await page.waitForTimeout(2400);
 const defeated = await page.evaluate(() => window.__PYQUEST__.G.bossDefeated);

@@ -43,7 +43,7 @@ const waitForScene = (key) => page.waitForFunction((k) => {
 
 /** 传送到符文下方并按 E 打开答题面板 */
 async function openRune(x, y, label) {
-  await tele(x, y + 24);
+  await tele(x, y + 96);
   await page.waitForTimeout(320);
   await page.keyboard.press('KeyE');
   await page.waitForTimeout(480);
@@ -91,15 +91,15 @@ await freeze();
 await shot('20-forest');
 
 // ---- 函数之森：5 块碎片符文（题目从函数题池随机抽取，难度一致） ----
-await openRune(88, 208, '符文 f1');   // pc(5), pc(12.5)
+await openRune(352, 832, '符文 f1');   // pc(5), pc(12.5)
 await answerCorrect('f1（函数题池随机题）');
-await openRune(504, 256, '符文 f2');  // pc(31), pc(15.5)
+await openRune(2016, 1024, '符文 f2');  // pc(31), pc(15.5)
 await answerCorrect('f2（函数题池随机题）');
-await openRune(200, 120, '符文 f3');  // pc(12), pc(7)
+await openRune(800, 480, '符文 f3');  // pc(12), pc(7)
 await answerCorrect('f3（函数题池随机题）');
-await openRune(552, 104, '符文 f4');  // pc(34), pc(6)
+await openRune(2208, 416, '符文 f4');  // pc(34), pc(6)
 await answerCorrect('f4（函数题池随机题）');
-await openRune(360, 264, '符文 f5');  // pc(22), pc(16)
+await openRune(1440, 1056, '符文 f5');  // pc(22), pc(16)
 await answerCorrect('f5（函数题池随机题）');
 const g1 = await G();
 check(g1.ch2Shards === 5, `集齐 5 枚函数碎片（实际 ${g1.ch2Shards}）`);
@@ -107,7 +107,7 @@ check(g1.ch2Shards === 5, `集齐 5 枚函数碎片（实际 ${g1.ch2Shards}）`
 // ---- 洞窟封印：碎片不足时锁定，集齐后按 E 解开 ----
 // 先验证锁定态（临时扣掉碎片）
 await page.evaluate(() => { window.__PYQUEST__.G.ch2Shards = 0; });
-await tele(448, 86);
+await tele(1792, 344);
 await page.waitForTimeout(300);
 await page.keyboard.press('KeyE');
 await page.waitForTimeout(400);
@@ -118,7 +118,7 @@ for (let i = 0; i < 6; i++) {
   await page.waitForTimeout(260);
 }
 await page.evaluate(() => { window.__PYQUEST__.G.ch2Shards = 5; });
-await tele(448, 86);
+await tele(1792, 344);
 await page.waitForTimeout(300);
 await page.keyboard.press('KeyE');
 await page.waitForTimeout(500);
@@ -126,7 +126,7 @@ const gateOpen2 = await page.evaluate(() => window.__PYQUEST__.G.ch2GateOpen);
 check(gateOpen2, '集齐碎片后封印解开');
 
 // ---- 穿过洞窟之门 → 列表洞窟 ----
-await tele(448, 34); // 传送区
+await tele(1792, 136); // 传送区
 await waitForScene('Cave');
 await page.waitForTimeout(700);
 check(await activeKey() === 'Cave', '进入列表洞窟');
@@ -148,16 +148,16 @@ const snakeShielded = await page.evaluate(() => window.__PYQUEST__.G.boss2Shield
 check(snakeShielded, '巨蟒初始处于符文护盾状态');
 
 // ---- 列表符文（祝福：回心不产碎片，题目从列表题池随机抽取）×3 + BOSS 符文 ----
-await openRune(104, 200, '符文 l1');   // pc(6), pc(12)
+await openRune(416, 800, '符文 l1');   // pc(6), pc(12)
 await answerCorrect('l1（列表题池随机题）');
 const healCheck = await page.evaluate(() => window.__PYQUEST__.G.ch2Shards);
 check(healCheck === 5, `祝福符文不产碎片（碎片仍 ${healCheck}）`);
-await openRune(408, 200, '符文 l2');   // pc(25), pc(12)
+await openRune(1632, 800, '符文 l2');   // pc(25), pc(12)
 await answerCorrect('l2（列表题池随机题）');
-await openRune(136, 328, '符文 l3');   // pc(8), pc(20)
+await openRune(544, 1312, '符文 l3');   // pc(8), pc(20)
 await answerCorrect('l3（列表题池随机题）');
 
-await openRune(256, 176, 'BOSS 符文 boss2'); // pc(15.5), pc(10.5)
+await openRune(1024, 704, 'BOSS 符文 boss2'); // pc(15.5), pc(10.5)
 await answerCorrect('boss2（列表综合随机题）');
 const shieldBroken = await page.evaluate(() => window.__PYQUEST__.G.boss2Shielded === false);
 check(shieldBroken, '答对列表谜题，巨蟒护盾破碎');
@@ -167,10 +167,10 @@ await page.evaluate(() => {
   const s = window.__PYQUEST__.scene('Cave');
   s.boss.setVelocity(0, 0);
   s.boss.knockUntil = 1e12; // 冻结 AI 便于确定性命中
-  s.boss.setPosition(256, 72);
-  s.boss.body.reset(256, 72);
+  s.boss.setPosition(1024, 288);
+  s.boss.body.reset(1024, 288);
 });
-await tele(256, 48); // 巨蟒正上方，向下挥剑
+await tele(1024, 192); // 巨蟒正上方，向下挥剑
 await page.waitForTimeout(250);
 await page.keyboard.press('KeyJ');
 await page.waitForTimeout(320);
@@ -185,8 +185,8 @@ await page.evaluate(() => {
   const s = window.__PYQUEST__.scene('Cave');
   s.boss.setVelocity(0, 0);
   s.boss.knockUntil = 1e12;
-  s.boss.setPosition(256, 72);
-  s.boss.body.reset(256, 72);
+  s.boss.setPosition(1024, 288);
+  s.boss.body.reset(1024, 288);
 });
 await page.waitForTimeout(420); // 等攻击与受击硬直结束
 await page.keyboard.press('KeyJ'); // 第二击 → hp 10（偶数）触发断尾
@@ -201,7 +201,7 @@ await shot('22-snake');
 
 await page.evaluate(() => {
   const s = window.__PYQUEST__.scene('Cave');
-  if (s.boss) { s.boss.hp = 1; s.boss.hurt(1, 256, 100); } // 最后一击
+  if (s.boss) { s.boss.hp = 1; s.boss.hurt(1, 1024, 400); } // 最后一击
 });
 await page.waitForTimeout(2600);
 const gEnd = await G();

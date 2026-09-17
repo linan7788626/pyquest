@@ -1,34 +1,38 @@
 // ============================================================
-// 循环之王（第一章 BOSS）：0x72 大恶魔（big_demon 32×36）
-// 护盾状态下免伤（答对 boss 符文破盾），血量 6/3 时召唤小怪
+// 循环之王（第一章 BOSS）：紫军勇士 · 1.6x 巨型化 + 头顶金徽
+// 护盾状态下免伤（答对 boss 符文破盾），血量 6/3 时召唤小兵
 // ============================================================
 import Phaser from 'phaser';
 import { G } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
 import { Slime } from './Slime.js';
 
-const SCALE = 2; // 32×36 → 64×72
+const BOSS_SCALE = 1.6;
 
 export class BossSlime extends Slime {
   constructor(scene, x, y) {
     super(scene, x, y);
-    this.setTexture('big_demon_idle_anim_f0');
-    this.setDisplaySize(32 * SCALE, 36 * SCALE);
-    this.setOrigin(0.5, 0.94);
-    this.body.setSize(40, 14).setOffset(12, 30);
+    this.setTexture('warrior_purple_idle');
+    this.setScale(BOSS_SCALE);
+    this.setOrigin(0.5, 136 / 192);
+    this.body.setSize(60, 26).setOffset(66, 132);
     this.anims.stop();
-    this.animIdle = 'demon_idle';
-    this.animRun = 'demon_run';
-    this.play('demon_idle');
+    this.play('ts_warrior_purple_idle');
+    this.animIdle = 'ts_warrior_purple_idle';
+    this.animRun = 'ts_warrior_purple_run';
 
     this.hp = 10;
     this.isBoss = true;
-    this.chaseRange = 170;
-    this.chaseSpeed = 44;
-    this.wanderSpeed = 22;
+    this.chaseRange = 620;
+    this.chaseSpeed = 160;
+    this.wanderSpeed = 80;
 
     if (G.bossShielded) this.setTint(0x9fb8ff);
-    this.shadow.setDisplaySize(48, 24);
+    this.shadow.setDisplaySize(110, 55);
+
+    // 头顶金色王徽（代码碎片贴图，缓慢浮动）
+    this.crown = scene.add.image(x, y - 150, 'shard')
+      .setDisplaySize(44, 44).setDepth(this.y + 1);
   }
 
   update() {
@@ -50,7 +54,8 @@ export class BossSlime extends Slime {
     this.setFlipX(this.body.velocity.x < 0);
     this.anims.play(moving ? this.animRun : this.animIdle, true);
     this.setDepth(this.y);
-    this.shadow.setPosition(this.x, this.y + 1).setDepth(this.y - 0.5);
+    this.shadow.setPosition(this.x, this.y + 2).setDepth(this.y - 0.5);
+    this.crown.setPosition(this.x, this.y - 146 + Math.sin(now / 400) * 7).setDepth(this.y + 1);
   }
 
   hurt(dmg, fromX, fromY) {
@@ -59,10 +64,10 @@ export class BossSlime extends Slime {
       const now = this.scene.time.now;
       if (now < this.hurtCdUntil) return;
       this.hurtCdUntil = now + 400;
-      this.scene.floatText(this.x, this.y - 28, '护盾抵消了攻击！', '#9fb8ff');
+      this.scene.floatText(this.x, this.y - 100, '护盾抵消了攻击！', '#9fb8ff');
       sfx.hitEnemy();
       const angle = Phaser.Math.Angle.Between(fromX, fromY, this.x, this.y);
-      this.setVelocity(Math.cos(angle) * 70, Math.sin(angle) * 70);
+      this.setVelocity(Math.cos(angle) * 260, Math.sin(angle) * 260);
       this.knockUntil = now + 160;
       return;
     }
@@ -71,14 +76,14 @@ export class BossSlime extends Slime {
 
     if (this.hp <= 6 && !this.spawnedWave1) {
       this.spawnedWave1 = true;
-      this.scene.spawnSlime(this.x - 32, this.y);
-      this.scene.spawnSlime(this.x + 32, this.y);
-      this.scene.floatText(this.x, this.y - 36, '循环之王召唤了帮手！', '#ff9db3');
+      this.scene.spawnSlime(this.x - 120, this.y);
+      this.scene.spawnSlime(this.x + 120, this.y);
+      this.scene.floatText(this.x, this.y - 130, '循环之王召唤了帮手！', '#ff9db3');
     }
     if (this.hp <= 3 && !this.spawnedWave2) {
       this.spawnedWave2 = true;
-      this.scene.spawnSlime(this.x - 32, this.y);
-      this.scene.spawnSlime(this.x + 32, this.y);
+      this.scene.spawnSlime(this.x - 120, this.y);
+      this.scene.spawnSlime(this.x + 120, this.y);
     }
   }
 
@@ -86,8 +91,9 @@ export class BossSlime extends Slime {
     this.dead = true;
     const scene = this.scene;
     sfx.bossDie();
-    this.burst([0xb57ae0, 0xffd257, 0xffffff, 0x9355c7], 28);
+    this.burst([0xb57ae0, 0xffd257, 0xffffff, 0x9355c7], 30);
     scene.cameras.main.flash(400);
+    if (this.crown) this.crown.destroy();
     if (this.shadow) this.shadow.destroy();
     this.destroy();
     scene.onBossDefeated();

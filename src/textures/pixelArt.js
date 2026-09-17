@@ -279,6 +279,58 @@ function makeParticle(scene) {
 }
 
 // ============================================================
+// 石门（关/开）与火炬（TS 尺度模板，显示时 ×3 / ×3.5）
+// ============================================================
+function drawGate(ctx, open) {
+  const w = 64, h = 64;
+  // 门洞
+  rect(ctx, 12, 10, 40, 50, '#1c1830');
+  if (!open) {
+    // 木栅栏
+    for (const bx of [16, 26, 36, 46]) {
+      rect(ctx, bx, 10, 4, 50, '#8a5a33');
+      px(ctx, bx, 16, '#6e4426'); px(ctx, bx + 2, 30, '#6e4426');
+    }
+    hline(ctx, 12, 52, 22, '#6e4426');
+    hline(ctx, 12, 52, 44, '#6e4426');
+  } else {
+    rect(ctx, 12, 10, 40, 14, 'rgba(61,218,215,0.15)');
+  }
+  // 石柱
+  for (const pxx of [4, 48]) {
+    rect(ctx, pxx, 8, 12, 52, P.stone);
+    rect(ctx, pxx, 8, 12, 3, P.stoneL);
+    rect(ctx, pxx, 56, 12, 4, P.stoneD);
+    hline(ctx, pxx + 1, pxx + 10, 20, P.stoneD);
+    hline(ctx, pxx + 1, pxx + 10, 36, P.stoneD);
+    px(ctx, pxx + 2, 50, '#6aaa5a');
+  }
+  // 顶梁
+  rect(ctx, 0, 2, 64, 8, P.stone);
+  rect(ctx, 0, 2, 64, 3, P.stoneL);
+  rect(ctx, 0, 8, 64, 2, P.stoneDD);
+  for (let i = 0; i < 8; i++) px(ctx, 18, 10 + i * 2, '#6fbf5e');
+  for (let i = 0; i < 6; i++) px(ctx, 44, 10 + i * 3, '#6fbf5e');
+  outline(ctx, w, h);
+}
+
+function drawTorch(ctx) {
+  const cx = 8;
+  // 木杆
+  rect(ctx, cx - 1, 12, 3, 18, '#8a5a33');
+  px(ctx, cx - 1, 16, '#6e4426'); px(ctx, cx + 1, 20, '#6e4426');
+  rect(ctx, cx - 2, 12, 5, 2, '#6e4426');
+  edisc(ctx, cx, 11, 5, 2, P.stoneD);
+  // 火焰（静态柱；动态火焰由 TS fire 动画叠加）
+  px(ctx, cx, 2, '#fff3b0');
+  rect(ctx, cx - 1, 3, 3, 2, '#ffc35c');
+  rect(ctx, cx - 2, 5, 5, 3, '#f07830');
+  rect(ctx, cx - 1, 8, 3, 2, '#ffc35c');
+  px(ctx, cx + 1, 4, '#fff3b0');
+  outline(ctx, 16, 32);
+}
+
+// ============================================================
 // 入口：生成全部程序化贴图
 // ============================================================
 export function generateAllTextures(scene) {
@@ -292,6 +344,9 @@ export function generateAllTextures(scene) {
   makePx(scene, 'tablet', 40, 46, drawTablet);
   makePx(scene, 'crystal', 32, 36, drawCrystal);
   makePx(scene, 'shroom', 20, 20, drawShroom);
+  makePx(scene, 'gate_closed', 64, 64, (ctx) => drawGate(ctx, false));
+  makePx(scene, 'gate_open', 64, 64, (ctx) => drawGate(ctx, true));
+  makePx(scene, 'torch_0', 16, 32, drawTorch);
 
   // 水面动画帧
   for (let f = 0; f < 3; f++) {

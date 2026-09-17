@@ -48,6 +48,7 @@ try {
   const need = ['rune', 'rune_cracked', 'shard',
     'heart_full', 'heart_half', 'heart_empty',
     'portal_door', 'tablet', 'crystal', 'shroom',
+    'gate_closed', 'gate_open', 'torch_0',
     'water_0', 'water_1', 'water_2',
     'slash_0', 'slash_1', 'slash_2',
     'particle', 'shadow', 'cloudshadow', 'foam_n', 'foam_s', 'foam_e', 'foam_w'];
@@ -65,9 +66,9 @@ try {
   const g3 = makeGroundTexture(sceneStub, buildForest());
   const g4 = makeGroundTexture(sceneStub, buildCave());
   if (!textures[g1] || !textures[g2] || !textures[g3] || !textures[g4]) fail('地面画布生成失败');
-  if (textures[g1] && textures[g1].w !== buildVillage().w * 16) fail(`地面画布宽度异常: ${textures[g1].w}`);
-  if (textures[g3] && textures[g3].w !== buildForest().w * 16) fail(`森林地面画布宽度异常: ${textures[g3].w}`);
-  if (textures[g4] && textures[g4].w !== buildCave().w * 16) fail(`洞窟地面画布宽度异常: ${textures[g4].w}`);
+  if (textures[g1] && textures[g1].w !== buildVillage().w * 64) fail(`地面画布宽度异常: ${textures[g1].w}`);
+  if (textures[g3] && textures[g3].w !== buildForest().w * 64) fail(`森林地面画布宽度异常: ${textures[g3].w}`);
+  if (textures[g4] && textures[g4].w !== buildCave().w * 64) fail(`洞窟地面画布宽度异常: ${textures[g4].w}`);
   ok(`地面画布 ${g1}(${textures[g1].w}x${textures[g1].h}) / ${g2}(${textures[g2].w}x${textures[g2].h}) / ${g3}(${textures[g3].w}x${textures[g3].h}) / ${g4}(${textures[g4].w}x${textures[g4].h})`);
 } catch (e) { fail(`地面画布异常: ${e.message}`); }
 
@@ -80,18 +81,18 @@ function checkMap(def, isDungeon) {
     row.forEach((v, x) => { if (!Number.isInteger(v) || v < 0 || v > 11) fail(`${def.key} (${x},${y}) 非法瓦片 ${v}`); });
   });
   const inRange = (p, label) => {
-    if (p.x < 8 || p.x > def.w * 16 - 8 || p.y < 8 || p.y > def.h * 16 - 8) fail(`${def.key} ${label} 越界: (${p.x},${p.y})`);
+    if (p.x < 32 || p.x > def.w * 64 - 32 || p.y < 32 || p.y > def.h * 64 - 32) fail(`${def.key} ${label} 越界: (${p.x},${p.y})`);
   };
   def.props.forEach((p) => inRange(p, `prop:${p.type}`));
   (def.slimes || []).forEach((p) => inRange(p, 'slime'));
   Object.values(def.spawns).forEach((p) => inRange(p, 'spawn'));
   (def.portals || []).forEach((p) => {
     const r = p.rect;
-    if (r.x < 0 || r.y < 0 || r.x + r.w > def.w * 16 || r.y + r.h > def.h * 16) fail(`${def.key} 传送门越界`);
+    if (r.x < 0 || r.y < 0 || r.x + r.w > def.w * 64 || r.y + r.h > def.h * 64) fail(`${def.key} 传送门越界`);
   });
   // 出生点不能在碰撞瓦片里
   const solidAt = (x, y) => {
-    const tx = Math.floor(x / 16), ty = Math.floor(y / 16);
+    const tx = Math.floor(x / 64), ty = Math.floor(y / 64);
     return def.colliding.includes(def.grid[ty] && def.grid[ty][tx]);
   };
   Object.entries(def.spawns).forEach(([k, p]) => {

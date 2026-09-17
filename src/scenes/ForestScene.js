@@ -60,11 +60,11 @@ export default class ForestScene extends WorldScene {
       it.locked = false;
       it.sprite.clearTint();
       if (it.body) it.body.body.enable = false;
-      const aura = this.add.image(it.x, it.y - 20, 'particle')
-        .setTint(0x3ddad7).setAlpha(0.16).setScale(6).setDepth(it.y - 2);
-      this.tweens.add({ targets: aura, alpha: 0.3, scale: 7, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
+      const aura = this.add.image(it.x, it.y - 36, 'particle')
+        .setTint(0x3ddad7).setAlpha(0.16).setScale(18).setDepth(it.y - 2);
+      this.tweens.add({ targets: aura, alpha: 0.3, scale: 21, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
       this.cameras.main.shake(240, 0.004);
-      this.floatText(it.x, it.y + 26, '封印瓦解了！', '#3ddad7');
+      this.floatText(it.x, it.y + 90, '封印瓦解了！', '#3ddad7');
       updateHud();
     } else {
       this.dialogue.say({

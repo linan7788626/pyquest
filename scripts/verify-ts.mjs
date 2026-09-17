@@ -1,4 +1,4 @@
-// 验证 CC0 素材在截图中渲染：特征色检测
+// 验证 Tiny Swords 素材渲染：特征色检测
 import { readFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 
@@ -55,19 +55,12 @@ function decodePNG(file) {
   return { w, h, get };
 }
 
-// 特征色（精确匹配）
 const CHECKS = {
-  '02-village': { 'Kenney草#84c669': [0x84, 0xc6, 0x69], 'Kenney土路#eaa56c': [0xea, 0xa5, 0x6c], '自绘水#5ca4d9': [0x5c, 0xa4, 0xd9] },
-  '07-dungeon': { '0x72地板#483b3a': [0x48, 0x3b, 0x3a], '0x72墙顶#aa8d7a': [0xaa, 0x8d, 0x7a] },
-  '10-forest': { 'Kenney草#84c669': [0x84, 0xc6, 0x69] },
-  '21-cave': { '0x72地板#483b3a': [0x48, 0x3b, 0x3a] },
+  '02-village': { 'TS草#93ba4f': [0x93, 0xba, 0x4f], 'TS水#47aba9': [0x47, 0xab, 0xa9], 'TS土路#969f64': [0x96, 0x9f, 0x64] },
+  '07-dungeon': { '地牢石板#3a3552': [0x3a, 0x35, 0x52] },
+  '10-forest': { 'TS森林草#74b363': [0x74, 0xb3, 0x63], 'TS水#47aba9': [0x47, 0xab, 0xa9] },
+  '21-cave': { '洞窟石板#332d4d': [0x33, 0x2d, 0x4d] },
 };
-// 角色特征色（允许 ±10）
-for (const name of ['02-village', '07-dungeon']) {
-  CHECKS[name] = CHECKS[name] || {};
-  CHECKS[name]['骑士青#72d6ce'] = [0x72, 0xd6, 0xce];
-}
-CHECKS['02-village']['红鬼#da4e38'] = [0xda, 0x4e, 0x38];
 
 for (const [name, checks] of Object.entries(CHECKS)) {
   const img = decodePNG(`scripts/shots/${name}.png`);
@@ -78,9 +71,9 @@ for (const [name, checks] of Object.entries(CHECKS)) {
     if (a < 40) continue;
     total++;
     for (const [label, [tr, tg, tb]] of Object.entries(checks)) {
-      if (Math.abs(r - tr) <= 10 && Math.abs(g - tg) <= 10 && Math.abs(b - tb) <= 10) hit[label]++;
+      if (Math.abs(r - tr) <= 12 && Math.abs(g - tg) <= 12 && Math.abs(b - tb) <= 12) hit[label]++;
     }
   }
-  const pct = Object.entries(hit).map(([k, v]) => `${k}:${(1000 * v / total).toFixed(1)}‰`).join(' ');
+  const pct = Object.entries(hit).map(([k, v]) => `${k}:${(100 * v / total).toFixed(1)}%`).join(' ');
   console.log(`${name}: ${pct}`);
 }

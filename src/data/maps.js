@@ -14,8 +14,8 @@ function lcg(seed) {
   return () => (s = (s * 16807) % 2147483647) / 2147483647;
 }
 
-const px = (t) => t * 16;      // 瓦片 → 像素
-const pc = (t) => t * 16 + 8;  // 瓦片 → 像素（格子中心）
+const px = (t) => t * 64;      // 瓦片 → 像素（Tiny Swords tile = 64px）
+const pc = (t) => t * 64 + 32; // 瓦片 → 像素（格子中心）
 
 // ------------------------------------------------------------
 // 诺瓦村庄（36 × 24）
@@ -110,8 +110,8 @@ export function buildVillage() {
       { x: pc(8), y: pc(14) },
     ],
     portals: [
-      { rect: { x: px(12), y: 0, w: 32, h: 20 }, to: 'Dungeon', spawn: 'fromVillage', label: '循环地牢' },
-      { rect: { x: px(34.2), y: px(9.2), w: 26, h: 40 }, to: 'Forest', spawn: 'fromVillage',
+      { rect: { x: px(12), y: 0, w: 128, h: 80 }, to: 'Dungeon', spawn: 'fromVillage', label: '循环地牢' },
+      { rect: { x: px(34.2), y: px(9.2), w: 104, h: 160 }, to: 'Forest', spawn: 'fromVillage',
         label: '森林传送门', requires: 'ch1Done', lockHint: '迷雾封锁着森林传送门……' },
     ],
   };
@@ -137,7 +137,7 @@ export function buildDungeon() {
   const torches = [
     [4, 1], [10, 1], [17, 1], [23, 1],
     [4, 10], [23, 10], [9, 15], [18, 15],
-  ].map(([tx, ty]) => ({ type: 'torch', x: pc(tx), y: pc(ty) + 4 }));
+  ].map(([tx, ty]) => ({ type: 'torch', x: pc(tx), y: pc(ty) + 16 }));
 
   return {
     key: 'Dungeon',
@@ -165,7 +165,7 @@ export function buildDungeon() {
     ],
     boss: { x: pc(13.5), y: pc(5.5) },
     portals: [
-      { rect: { x: pc(13.5) - 14, y: px(18), w: 28, h: 32 }, to: 'Village', spawn: 'fromDungeon', label: '诺瓦村庄' },
+      { rect: { x: pc(13.5) - 56, y: px(18), w: 112, h: 128 }, to: 'Village', spawn: 'fromDungeon', label: '诺瓦村庄' },
     ],
   };
 }
@@ -227,11 +227,11 @@ export function buildForest() {
 
   const bushes = [
     [7, 12], [13, 16], [22, 11], [29, 18], [10, 21], [26, 8], [33, 16], [5, 17],
-  ].map(([tx, ty]) => ({ type: 'bush', x: pc(tx), y: pc(ty) + 3 }));
+  ].map(([tx, ty]) => ({ type: 'bush', x: pc(tx), y: pc(ty) + 12 }));
 
   const shrooms = [
     [4, 5], [6, 4], [3, 20], [30, 10], [21, 21],
-  ].map(([tx, ty]) => ({ type: 'shroom', x: pc(tx), y: pc(ty) + 4 }));
+  ].map(([tx, ty]) => ({ type: 'shroom', x: pc(tx), y: pc(ty) + 16 }));
 
   return {
     key: 'Forest',
@@ -269,8 +269,8 @@ export function buildForest() {
       { x: pc(30), y: pc(5) },
     ],
     portals: [
-      { rect: { x: px(8), y: px(26.1), w: 32, h: 30 }, to: 'Village', spawn: 'fromForest', label: '诺瓦村庄' },
-      { rect: { x: pc(27.5) - 16, y: px(1.2), w: 32, h: 30 }, to: 'Cave', spawn: 'fromForest',
+      { rect: { x: px(8), y: px(26.1), w: 128, h: 120 }, to: 'Village', spawn: 'fromForest', label: '诺瓦村庄' },
+      { rect: { x: pc(27.5) - 64, y: px(1.2), w: 128, h: 120 }, to: 'Cave', spawn: 'fromForest',
         label: '洞窟封印', requires: 'ch2GateOpen', lockHint: '洞窟之门纹丝不动……' },
     ],
   };
@@ -297,7 +297,7 @@ export function buildCave() {
   const torches = [
     [4, 9], [11, 9], [20, 9], [27, 9],
     [4, 16], [27, 16], [8, 24], [23, 24],
-  ].map(([tx, ty]) => ({ type: 'torch', x: pc(tx), y: pc(ty) + 4 }));
+  ].map(([tx, ty]) => ({ type: 'torch', x: pc(tx), y: pc(ty) + 16 }));
 
   const crystals = [
     [12, 10], [19, 14], [6, 15], [25, 10], [10, 3], [21, 4], [13, 5],
@@ -305,7 +305,7 @@ export function buildCave() {
 
   const shrooms = [
     [9, 14], [23, 11], [13, 20], [18, 22], [7, 4], [26, 5],
-  ].map(([tx, ty]) => ({ type: 'shroom', x: pc(tx), y: pc(ty) + 4 }));
+  ].map(([tx, ty]) => ({ type: 'shroom', x: pc(tx), y: pc(ty) + 16 }));
 
   return {
     key: 'Cave',
@@ -337,7 +337,7 @@ export function buildCave() {
     ],
     boss: { type: 'snake', x: pc(15.5), y: pc(4) },
     portals: [
-      { rect: { x: pc(15.5) - 14, y: px(24), w: 28, h: 32 }, to: 'Forest', spawn: 'fromCave', label: '函数之森' },
+      { rect: { x: pc(15.5) - 56, y: px(24), w: 112, h: 128 }, to: 'Forest', spawn: 'fromCave', label: '函数之森' },
     ],
   };
 }

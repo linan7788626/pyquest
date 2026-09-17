@@ -114,16 +114,22 @@ scripts/
 └── e2e-ch2.mjs              # 第二章 E2E（森林/洞窟/巨蟒/读档续玩）
 ```
 
-## 🎨 画面技术（CC0 像素素材 + 程序化补充）
+## 🎨 画面技术（Tiny Swords 素材 + CC0/程序化补充）
 
-- **素材**：公共领域 CC0 素材包（可自由使用与再分发，随仓库分发）：
+- **主素材**：[Tiny Swords](https://pixelfrog-assets.itch.io/tiny-swords)（Pixel Frog · Free Pack，
+  本地 `assets/TinySwordsFreePack/`，**许可证禁止再分发 → .gitignore 排除，需自行下载**）——
+  角色全套（蓝勇士/僧侣/红小兵/黑勇士/紫勇士）、tileset 地形、树/灌木/云/岩石/民居、
+  尘土/火焰/水花/爆炸/泡沫特效
+- **CC0 补充**（`assets/cc0/`，随仓库分发）：
   - [0x72 DungeonTileset II v1.7](https://0x72.itch.io/dungeontileset-ii)（`assets/cc0/0x72/`）——
     骑士主角（待机/奔跑动画）、红鬼/绿萨满小怪、大恶魔 BOSS、鼻涕虫巨蟒、
     石柱/宝箱/大门等地牢元素
   - [Kenney Tiny Town / Tiny Dungeon](https://kenney.nl/assets/tiny-town)（`assets/cc0/kenney/`）——
     草地/花地/土路 tileset、树木、火盆
-  - 角色映射：勇者=骑士（青蓝铠甲）、长老=蓝袍巫师、村庄小怪=红鬼、森林小怪=绿萨满、
-    第一章 BOSS=大恶魔（循环之王）、巨蟒=鼻涕虫头+蛞蝓体节
+  - **TS 坐标系**：逻辑 tile 64px（相机 1x、单位帧 192×192 原尺寸 1:1 渲染，像素完美）
+- 角色映射：勇者=蓝军勇士（待机/奔跑/挥剑动画）、长老=蓝军僧侣、村庄小怪=红小兵、
+    森林小怪=黑勇士、第一章 BOSS=紫勇士巨型化+金徽（循环之王）、巨蟒=黑勇士头+黑小兵体节
+- 符文石待解状态仅做 ±0.7% 微缩放呼吸（视觉跳动 < 1px），不干扰辨识
 - **像素完美渲染**：16px tile × 相机 4x 整数放大，`pixelArt: true`，无插值模糊
 - **地形拼接**：`ground.js` 把 tileset 拼成整图画布——野外用 Kenney 草/土路
   （邻接草色咬边），水面按 Kenney 平涂+深紫描边风格自绘（含岸线/浅水带/波纹），
