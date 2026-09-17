@@ -18,10 +18,10 @@ const config = {
   parent: 'game',
   width: GAME_W,
   height: GAME_H,
-  // 平滑卡通渲染（织梦岛风）：关闭像素画模式，开启抗锯齿 + 线性过滤
-  pixelArt: false,
-  antialias: true,
-  roundPixels: false,
+  // 像素完美渲染：16px 贴图 × 相机 4x 整数放大，锐利无插值
+  pixelArt: true,
+  antialias: false,
+  roundPixels: true,
   backgroundColor: '#2c2438',
   physics: {
     default: 'arcade',

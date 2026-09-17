@@ -13,9 +13,9 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.setOrigin(0.5, 0.9);
-    this.setDisplaySize(16 * CS, 16 * CS); // 角色 2 倍显示
-    this.k = this.scaleX; // 高清贴图的缩放基准（果冻感缩放用）
-    this.body.setSize(14, 10).setOffset(9, 23);
+    this.setDisplaySize(16 * CS, 16 * CS); // 32×32 模板 1:1 显示（像素完美）
+    this.k = this.scaleX; // 果冻感缩放的基准（1:1 下即 1）
+    this.body.setSize(22, 8).setOffset(5, 21);
     this.setCollideWorldBounds(true);
 
     this.hp = 2;
@@ -36,7 +36,7 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
 
     // 脚下软阴影
     this.shadow = scene.add.image(x, y + 1, 'shadow')
-      .setScale(1.5).setAlpha(0.5).setDepth(this.y - 0.5);
+      .setDisplaySize(24, 12).setAlpha(0.5).setDepth(this.y - 0.5);
   }
 
   update() {

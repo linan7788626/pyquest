@@ -14,8 +14,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.setOrigin(0.5, 0.9);
-    this.setDisplaySize(16 * CS, 16 * CS); // 角色 2 倍显示（core/scale.js）
-    this.body.setSize(16, 10).setOffset(8, 23);
+    this.setDisplaySize(16 * CS, 16 * CS); // 32×32 模板 1:1 显示（像素完美）
+    this.body.setSize(14, 9).setOffset(9, 21);
     this.setCollideWorldBounds(true);
 
     this.speed = 150;
@@ -28,7 +28,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // 脚下软阴影
     this.shadow = scene.add.image(x, y + 1, 'shadow')
-      .setScale(1.5).setAlpha(0.55).setDepth(this.y - 0.5);
+      .setDisplaySize(24, 12).setAlpha(0.55).setDepth(this.y - 0.5);
   }
 
   update(keys) {

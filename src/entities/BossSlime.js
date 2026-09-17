@@ -12,11 +12,11 @@ export class BossSlime extends Slime {
   constructor(scene, x, y) {
     super(scene, x, y);
     this.setTexture('boss');
-    this.setDisplaySize(24 * CS, 24 * CS); // 2 倍：48px 巨型史莱姆
+    this.setDisplaySize(24 * CS, 24 * CS); // 48×48 模板 1:1 显示（像素完美）
     this.k = this.scaleX;
     this.anims.stop(); // 停止继承的史莱姆动画，防止覆盖 BOSS 贴图
     this.setOrigin(0.5, 0.92);
-    this.body.setSize(24, 16).setOffset(12, 37);
+    this.body.setSize(34, 12).setOffset(7, 31);
 
     this.hp = 10;
     this.isBoss = true;
@@ -25,7 +25,7 @@ export class BossSlime extends Slime {
     this.wanderSpeed = 22;
 
     if (G.bossShielded) this.setTint(0x9fb8ff);
-    this.shadow.setScale(2.6);
+    this.shadow.setDisplaySize(42, 21);
   }
 
   update() {

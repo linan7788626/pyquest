@@ -221,23 +221,23 @@ export class WorldScene extends Phaser.Scene {
       case 'tree': {
         const t = this.add.image(p.x, p.y, 'tree').setDisplaySize(40, 40);
         this.solids.add(t);
-        t.body.setSize(24, 16).setOffset(8, 15);
+        t.body.setSize(10, 10).setOffset(15, 28); // 树干（模板 40×40，干在 x17-23/y26-38）
         t.setDepth(p.y + 4);
-        this.add.image(p.x, p.y + 5, 'shadow').setScale(2.8).setAlpha(0.5).setDepth(p.y + 3);
+        this.add.image(p.x, p.y + 5, 'shadow').setDisplaySize(44, 22).setAlpha(0.5).setDepth(p.y + 3);
         break;
       }
       case 'house': {
         const h = this.add.image(p.x, p.y, 'house').setOrigin(0.5, 1).setDisplaySize(128, 112);
         this.solids.add(h);
-        h.body.setSize(128, 52).setOffset(0, 60);
+        h.body.setSize(128, 52).setOffset(0, 56); // 墙体（模板 128×112）
         h.setDepth(p.y);
-        this.add.image(p.x, p.y - 3, 'shadow').setScale(8.8, 3.4).setAlpha(0.45).setDepth(p.y - 1);        break;
+        this.add.image(p.x, p.y - 3, 'shadow').setDisplaySize(140, 27).setAlpha(0.45).setDepth(p.y - 1);        break;
       }
       case 'npc': {
         const big = p.id === 'tablet' ? [40, 46] : [32, 32];
         const e = this.add.image(p.x, p.y, p.tex || 'elder').setOrigin(0.5, 0.9).setDisplaySize(big[0], big[1]);
         e.setDepth(p.y);
-        this.add.image(p.x, p.y + 1, 'shadow').setScale(1.5).setAlpha(0.5).setDepth(p.y - 1);
+        this.add.image(p.x, p.y + 1, 'shadow').setDisplaySize(24, 12).setAlpha(0.5).setDepth(p.y - 1);
         this.tweens.add({ targets: e, y: p.y - 1.5, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
         this.npc = { x: p.x, y: p.y, id: p.id, sprite: e };
         break;
@@ -245,7 +245,7 @@ export class WorldScene extends Phaser.Scene {
       case 'rune': {
         const s = this.add.image(p.x, p.y, 'rune').setOrigin(0.5, 0.92).setDisplaySize(40, 42);
         s.setDepth(p.y);
-        this.add.image(p.x, p.y + 1, 'shadow').setScale(2.8).setAlpha(0.5).setDepth(p.y - 1);
+        this.add.image(p.x, p.y + 1, 'shadow').setDisplaySize(44, 22).setAlpha(0.5).setDepth(p.y - 1);
         const it = {
           kind: 'rune', x: p.x, y: p.y, qid: p.qid,
           bossRune: !!p.bossRune, healRune: !!p.healRune, sprite: s, alive: true,
@@ -291,8 +291,8 @@ export class WorldScene extends Phaser.Scene {
         const c = this.add.image(p.x, p.y, 'crystal').setOrigin(0.5, 0.95).setDisplaySize(32, 36);
         c.setDepth(p.y);
         this.solids.add(c);
-        c.body.setSize(22, 12).setOffset(5, 20);
-        this.add.image(p.x, p.y + 1, 'shadow').setScale(2.6).setAlpha(0.45).setDepth(p.y - 1);
+        c.body.setSize(20, 8).setOffset(6, 26); // 底座（模板 32×36）
+        this.add.image(p.x, p.y + 1, 'shadow').setDisplaySize(40, 20).setAlpha(0.45).setDepth(p.y - 1);
         // 晶体微光
         const glow = this.add.image(p.x, p.y - 12, 'particle')
           .setScale(5.5).setAlpha(0.1).setTint(0x57d9d0).setDepth(p.y - 0.6);

@@ -54,9 +54,9 @@ try {
     'water_0', 'water_1', 'water_2', 'particle',
     'shadow', 'cloudshadow', 'foam_n', 'foam_s', 'foam_e', 'foam_w'];
   for (const k of need) if (!textures[k]) fail(`缺少贴图 ${k}`);
-  // 水面动画帧应为 64×64（16 逻辑 px × 4 超采样）
+  // 水面动画帧应为 16×16（像素版 1:1）
   for (const k of ['water_0', 'water_1', 'water_2']) {
-    if (textures[k] && (textures[k].w !== 64 || textures[k].h !== 64)) fail(`${k} 应为 64x64，实际 ${textures[k].w}x${textures[k].h}`);
+    if (textures[k] && (textures[k].w !== 16 || textures[k].h !== 16)) fail(`${k} 应为 16x16，实际 ${textures[k].w}x${textures[k].h}`);
   }
 } catch (e) { fail(`贴图生成抛出异常: ${e.message}`); }
 
@@ -67,9 +67,9 @@ try {
   const g3 = makeGroundTexture(sceneStub, buildForest());
   const g4 = makeGroundTexture(sceneStub, buildCave());
   if (!textures[g1] || !textures[g2] || !textures[g3] || !textures[g4]) fail('地面画布生成失败');
-  if (textures[g1] && textures[g1].w !== buildVillage().w * 32) fail(`地面画布宽度异常: ${textures[g1].w}`);
-  if (textures[g3] && textures[g3].w !== buildForest().w * 32) fail(`森林地面画布宽度异常: ${textures[g3].w}`);
-  if (textures[g4] && textures[g4].w !== buildCave().w * 32) fail(`洞窟地面画布宽度异常: ${textures[g4].w}`);
+  if (textures[g1] && textures[g1].w !== buildVillage().w * 16) fail(`地面画布宽度异常: ${textures[g1].w}`);
+  if (textures[g3] && textures[g3].w !== buildForest().w * 16) fail(`森林地面画布宽度异常: ${textures[g3].w}`);
+  if (textures[g4] && textures[g4].w !== buildCave().w * 16) fail(`洞窟地面画布宽度异常: ${textures[g4].w}`);
   ok(`地面画布 ${g1}(${textures[g1].w}x${textures[g1].h}) / ${g2}(${textures[g2].w}x${textures[g2].h}) / ${g3}(${textures[g3].w}x${textures[g3].h}) / ${g4}(${textures[g4].w}x${textures[g4].h})`);
 } catch (e) { fail(`地面画布异常: ${e.message}`); }
 

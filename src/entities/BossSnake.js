@@ -18,11 +18,11 @@ export class BossSnake extends Slime {
   constructor(scene, x, y) {
     super(scene, x, y);
     this.setTexture('snake_head');
-    this.setDisplaySize(18 * CS, 18 * CS); // 2 倍：36px 蛇头
+    this.setDisplaySize(18 * CS, 18 * CS); // 36×36 模板 1:1 显示（像素完美）
     this.k = this.scaleX;
     this.anims.stop(); // 停止继承的史莱姆动画，防止覆盖贴图
     this.setOrigin(0.5, 0.82);
-    this.body.setSize(16, 10).setOffset(10, 25);
+    this.body.setSize(20, 14).setOffset(8, 16);
 
     this.hp = 12;
     this.isBoss = true;
@@ -31,7 +31,7 @@ export class BossSnake extends Slime {
     this.wanderSpeed = 22;
     this.lost = 0; // 已断掉的体节数（决定提速）
 
-    // 体节（无物理体的跟随图片）
+    // 体节（无物理体的跟随图片，28×28 模板 1:1）
     this.segs = [];
     for (let i = 0; i < 6; i++) {
       const s = scene.add.image(x, y - i * 4, 'snake_body').setDisplaySize(14 * CS, 14 * CS);
@@ -40,7 +40,7 @@ export class BossSnake extends Slime {
     this.trail = [];
 
     if (G.boss2Shielded) this.setTint(0x7f9dff);
-    this.shadow.setScale(2.4);
+    this.shadow.setDisplaySize(36, 18);
 
     this.nextDartAt = scene.time.now + 3000;
     this.teleUntil = 0;
