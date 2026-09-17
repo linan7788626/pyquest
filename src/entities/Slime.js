@@ -6,6 +6,7 @@
 import Phaser from 'phaser';
 import { sfx } from '../audio/sfx.js';
 
+const SCALE = 2;     // 角色图标放大一倍
 const FOOT_Y = 134; // Pawn 脚底略高
 
 export class Slime extends Phaser.Physics.Arcade.Sprite {
@@ -16,6 +17,7 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
 
     const big = variant === 'crimson';
     this.setOrigin(0.5, FOOT_Y / 192);
+    this.setScale(SCALE);
     this.body.setSize(big ? 60 : 48, big ? 28 : 24).setOffset(big ? 66 : 72, big ? 132 : 134);
     this.setCollideWorldBounds(true);
 
@@ -38,8 +40,8 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
     this.setDepth(this.y);
 
     // 脚下软阴影
-    this.shadow = scene.add.image(x, y + 2, 'ts_shadow')
-      .setDisplaySize(big ? 72 : 56, (big ? 72 : 56) / 2).setAlpha(0.5).setDepth(this.y - 0.5);
+    this.shadow = scene.add.image(x, y + 4, 'ts_shadow')
+      .setDisplaySize(big ? 144 : 112, (big ? 144 : 112) / 2).setAlpha(0.5).setDepth(this.y - 0.5);
   }
 
   update() {
@@ -65,7 +67,7 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
     this.setFlipX(this.body.velocity.x < 0);
     this.anims.play(moving ? this.animRun : this.animIdle, true);
     this.setDepth(this.y);
-    this.shadow.setPosition(this.x, this.y + 2).setDepth(this.y - 0.5);
+    this.shadow.setPosition(this.x, this.y + 4).setDepth(this.y - 0.5);
   }
 
   hurt(dmg, fromX, fromY) {

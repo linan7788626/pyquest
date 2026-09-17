@@ -6,7 +6,7 @@
 import Phaser from 'phaser';
 import { generateAllTextures, createAnimations } from '../textures/pixelArt.js';
 import { loadTSAssets, createTSAnimations } from '../assets/ts.js';
-import { loadCC0Assets, createCC0Animations, buildHouseTexture } from '../assets/cc0.js';
+import { loadCC0Assets, createCC0Animations } from '../assets/cc0.js';
 import { initTitle } from '../ui/modal.js';
 import { G, resetState } from '../core/state.js';
 import { clearSave, loadGame } from '../core/save.js';
@@ -24,7 +24,6 @@ export default class BootScene extends Phaser.Scene {
     createAnimations(this);
     createTSAnimations(this);
     createCC0Animations(this);
-    buildHouseTexture(this);
 
     initTitle({
       onNew: () => {

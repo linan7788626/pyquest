@@ -10,10 +10,10 @@ import { G } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
 import { Slime } from './Slime.js';
 
-const SEG_GAP = 46;      // 体节间距（头部轨迹采样间隔）
-const MAX_TRAIL = 1200;  // 头部轨迹记录长度
-const HEAD_SCALE = 1.25;
-const SEG_SCALE = 0.62;
+const SEG_GAP = 92;      // 体节间距（头部轨迹采样间隔；角色 ×2 后等比）
+const MAX_TRAIL = 2400;  // 头部轨迹记录长度
+const HEAD_SCALE = 2.5; // 基础 ×2 后保持 1.25 比例
+const SEG_SCALE = 1.24;
 
 export class BossSnake extends Slime {
   constructor(scene, x, y) {
@@ -37,7 +37,7 @@ export class BossSnake extends Slime {
     // 体节（无物理体的跟随精灵）
     this.segs = [];
     for (let i = 0; i < 6; i++) {
-      const s = scene.add.sprite(x, y - (i + 1) * 40, 'pawn_black_idle')
+      const s = scene.add.sprite(x, y - (i + 1) * 80, 'pawn_black_idle')
         .setScale(SEG_SCALE).setOrigin(0.5, 134 / 192);
       s.play('ts_pawn_black_idle');
       this.segs.push(s);
@@ -45,7 +45,7 @@ export class BossSnake extends Slime {
     this.trail = [];
 
     if (G.boss2Shielded) this.setTint(0x7f9dff);
-    this.shadow.setDisplaySize(90, 45);
+    this.shadow.setDisplaySize(180, 90);
 
     this.nextDartAt = scene.time.now + 3000;
     this.teleUntil = 0;
@@ -105,7 +105,7 @@ export class BossSnake extends Slime {
     this.shadow.setPosition(this.x, this.y + 2).setDepth(this.y - 0.5);
 
     // 记录轨迹 + 让体节跟随
-    this.trail.unshift({ x: this.x, y: this.y - 8 });
+    this.trail.unshift({ x: this.x, y: this.y - 16 });
     if (this.trail.length > MAX_TRAIL) this.trail.pop();
     this.segs.forEach((s, i) => {
       const t = this.trail[Math.min((i + 1) * SEG_GAP, this.trail.length - 1)];
@@ -113,7 +113,7 @@ export class BossSnake extends Slime {
       s.setFlipX(this.body.velocity.x < 0);
       s.setDepth(s.y);
       // 体节接触伤害（头部走 slimeGroup 的 overlap）
-      if (p && !p.dying && Phaser.Math.Distance.Between(s.x, s.y, p.x, p.y) < 52) {
+      if (p && !p.dying && Phaser.Math.Distance.Between(s.x, s.y, p.x, p.y) < 104) {
         p.takeDamage(1, s.x, s.y);
       }
     });

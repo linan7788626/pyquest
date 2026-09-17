@@ -7,7 +7,7 @@ import { G } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
 import { Slime } from './Slime.js';
 
-const BOSS_SCALE = 1.6;
+const BOSS_SCALE = 3.2; // 基础角色 ×2 后再 ×1.6
 
 export class BossSlime extends Slime {
   constructor(scene, x, y) {
@@ -28,11 +28,11 @@ export class BossSlime extends Slime {
     this.wanderSpeed = 80;
 
     if (G.bossShielded) this.setTint(0x9fb8ff);
-    this.shadow.setDisplaySize(110, 55);
+    this.shadow.setDisplaySize(220, 110);
 
     // 头顶金色王徽（代码碎片贴图，缓慢浮动）
-    this.crown = scene.add.image(x, y - 150, 'shard')
-      .setDisplaySize(44, 44).setDepth(this.y + 1);
+    this.crown = scene.add.image(x, y - 300, 'shard')
+      .setDisplaySize(88, 88).setDepth(this.y + 1);
   }
 
   update() {
@@ -55,7 +55,7 @@ export class BossSlime extends Slime {
     this.anims.play(moving ? this.animRun : this.animIdle, true);
     this.setDepth(this.y);
     this.shadow.setPosition(this.x, this.y + 2).setDepth(this.y - 0.5);
-    this.crown.setPosition(this.x, this.y - 146 + Math.sin(now / 400) * 7).setDepth(this.y + 1);
+    this.crown.setPosition(this.x, this.y - 292 + Math.sin(now / 400) * 14).setDepth(this.y + 1);
   }
 
   hurt(dmg, fromX, fromY) {

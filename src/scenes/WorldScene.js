@@ -141,8 +141,9 @@ export class WorldScene extends Phaser.Scene {
           return !inside || !isWater(def.grid[ny][nx]);
         });
         if (nearLand) {
+          // 岸边泡沫（64×64 对齐 tile；半透明混合避免硬边方块感）
           this.add.sprite(x * 64 + 32, y * 64 + 32, 'foam')
-            .setDisplaySize(88, 88).setDepth(-6).play('ts_foam');
+            .setDisplaySize(64, 64).setAlpha(0.85).setDepth(-6).play('ts_foam');
         }
       }
     }
@@ -203,42 +204,42 @@ export class WorldScene extends Phaser.Scene {
   spawnProp(p) {
     switch (p.type) {
       case 'tree': {
-        // TS 树（0.5x 缩小：256 帧宽 → 128/96 显示，保持像素感）+ 风吹摆动
+        // TS 树（0.5x 缩小：256 帧宽 → 128/96 显示，保持像素感）
+        // 注意：TS 树动画帧间整体平移 ~65px（大幅摇曳），地图密集摆放会显得
+        // 「树在乱跑」→ 使用静态首帧
         const variants = [
           ['tree1', 128, 128], ['tree2', 128, 128], ['tree3', 128, 96], ['tree4', 128, 96],
         ];
         const [tex, w, h] = variants[Phaser.Math.Between(0, 3)];
-        const t = this.add.sprite(p.x, p.y + h * 0.32, tex).setOrigin(0.5, 0.92).setDisplaySize(w, h);
-        t.play(`ts_${tex}`);
+        const t = this.add.image(p.x, p.y + h * 0.32, tex, 0).setOrigin(0.5, 0.92).setDisplaySize(w, h);
         this.solids.add(t);
         t.body.setSize(52, 30).setOffset((w - 52) / 2, h - 36);
         t.setDepth(p.y + 4);
         break;
       }
       case 'house': {
-        // TS 蓝顶民居（128×192 原尺寸）
-        const tex = ['house1', 'house2', 'house3'][Phaser.Math.Between(0, 2)];
-        const h = this.add.image(p.x, p.y + 40, tex).setOrigin(0.5, 1);
+        // TS 蓝军大城堡（320×256 原尺寸）
+        const h = this.add.image(p.x, p.y + 60, 'castle').setOrigin(0.5, 1);
         this.solids.add(h);
-        h.body.setSize(128, 96).setOffset(0, 96);
+        h.body.setSize(280, 120).setOffset(20, 136);
         h.setDepth(p.y);
         break;
       }
       case 'npc': {
         if (p.id === 'tablet') {
-          // 函数石碑（程序化贴图）+ 符文光晕
-          const e = this.add.image(p.x, p.y, 'tablet').setOrigin(0.5, 0.92).setDisplaySize(120, 138);
+          // 引导石碑 → TS 小房子（house1，128×192 原尺寸）+ 符文光晕
+          const e = this.add.image(p.x, p.y + 16, 'house1').setOrigin(0.5, 0.95);
           e.setDepth(p.y);
-          const aura = this.add.image(p.x, p.y - 24, 'particle')
-            .setTint(0x3ddad7).setAlpha(0.18).setScale(20).setDepth(p.y - 0.5);
-          this.tweens.add({ targets: aura, alpha: 0.3, scale: 26, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
+          const aura = this.add.image(p.x, p.y - 40, 'particle')
+            .setTint(0x3ddad7).setAlpha(0.14).setScale(24).setDepth(p.y - 0.5);
+          this.tweens.add({ targets: aura, alpha: 0.24, scale: 30, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
           this.npc = { x: p.x, y: p.y, id: p.id, sprite: e };
         } else {
-          // 长老：TS 蓝军僧侣（1:1 原尺寸，idle 动画）
-          const e = this.add.sprite(p.x, p.y + 36, 'monk_idle').setOrigin(0.5, 136 / 192);
+          // 长老：TS 蓝军僧侣（放大一倍：192×192 → 384×384，origin 保持脚底）
+          const e = this.add.sprite(p.x, p.y + 72, 'monk_idle').setOrigin(0.5, 136 / 192).setScale(2);
           e.play('ts_monk_idle');
           e.setDepth(p.y);
-          this.add.image(p.x, p.y + 38, 'ts_shadow').setDisplaySize(64, 32).setAlpha(0.5).setDepth(p.y - 1);
+          this.add.image(p.x, p.y + 76, 'ts_shadow').setDisplaySize(120, 60).setAlpha(0.5).setDepth(p.y - 1);
           this.npc = { x: p.x, y: p.y, id: p.id, sprite: e };
         }
         break;
@@ -291,11 +292,9 @@ export class WorldScene extends Phaser.Scene {
         break;
       }
       case 'bush': {
-        // TS 灌木（风吹摆动）
+        // TS 灌木（静态首帧；动画帧间有整体平移，同树）
         const tex = `bush${Phaser.Math.Between(1, 4)}`;
-        const b = this.add.sprite(p.x, p.y + 40, tex).setOrigin(0.5, 0.92).setDisplaySize(64, 64);
-        b.play(`ts_${tex}`);
-        b.setDepth(p.y - 0.5);
+        this.add.image(p.x, p.y + 40, tex, 0).setOrigin(0.5, 0.92).setDisplaySize(64, 64).setDepth(p.y - 0.5);
         break;
       }
       case 'crystal': {

@@ -32,12 +32,27 @@ function drawOutdoor(ctx, def, tilesets) {
       const v = def.grid[y][x];
       const dx = x * TILE, dy = y * TILE;
       if (isWater(v)) {
-        // 官方做法：水底色打底 + 少量波纹变体（透明处露底色）
+        // 统一纯底色 + 程序化波纹（TS 水波 tile 有 6-15% 透明区，
+        // 与纯底色混铺会产生深浅色块 → 不再使用）
         ctx.fillStyle = WATER_BG;
         ctx.fillRect(dx, dy, TILE, TILE);
-        if (rand() < 0.3) {
-          const [tx, ty] = WATER_TILES[Math.floor(rand() * WATER_TILES.length)];
-          ctx.drawImage(tilesets.water, tx * TILE, ty * TILE, TILE, TILE, dx, dy, TILE, TILE);
+        const r = lcg(x * 7919 + y * 104729 + 17);
+        if (r() < 0.55) {
+          // 浅色短波纹
+          ctx.fillStyle = 'rgba(140,195,196,0.85)';
+          const wx = dx + 6 + r() * 36, wy = dy + 8 + r() * 44;
+          ctx.fillRect(wx, wy, 14 + r() * 10, 3);
+          ctx.fillRect(wx + 4, wy + 8 + r() * 6, 8 + r() * 8, 2);
+        }
+        if (r() < 0.3) {
+          // 深色水斑
+          ctx.fillStyle = 'rgba(60,120,130,0.35)';
+          ctx.fillRect(dx + 10 + r() * 30, dy + 12 + r() * 32, 16 + r() * 12, 6);
+        }
+        if (r() < 0.35) {
+          // 波光点
+          ctx.fillStyle = 'rgba(234,252,255,0.8)';
+          ctx.fillRect(dx + 8 + r() * 44, dy + 8 + r() * 44, 3, 2);
         }
       } else if (isPath(v)) {
         // 沙黄土路：圆角连接（外角内收）

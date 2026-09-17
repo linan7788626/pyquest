@@ -7,6 +7,7 @@ import { G, updateHud } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
 import { wipeTransition } from '../ui/wipe.js';
 
+const SCALE = 2;      // 角色图标放大一倍（192×192 帧 → 384×384 显示）
 const FOOT_Y = 136; // 角色脚底在帧内的 y 坐标
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
@@ -16,6 +17,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.setOrigin(0.5, FOOT_Y / 192);
+    this.setScale(SCALE);
     this.body.setSize(60, 26).setOffset(66, 132);
     this.setCollideWorldBounds(true);
 
@@ -30,8 +32,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.play('ts_warrior_idle');
 
     // 脚下软阴影（TS 官方椭圆阴影）
-    this.shadow = scene.add.image(x, y + 2, 'ts_shadow')
-      .setDisplaySize(76, 38).setAlpha(0.55).setDepth(this.y - 0.5);
+    this.shadow = scene.add.image(x, y + 4, 'ts_shadow')
+      .setDisplaySize(152, 76).setAlpha(0.55).setDepth(this.y - 0.5);
   }
 
   update(keys) {
@@ -57,13 +59,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (now < this.attackAnimUntil) this.anims.play('ts_warrior_attack', true);
     else this.anims.play(moving ? 'ts_warrior_run' : 'ts_warrior_idle', true);
     this.setDepth(this.y);
-    this.shadow.setPosition(this.x, this.y + 2).setDepth(this.y - 0.5);
+    this.shadow.setPosition(this.x, this.y + 4).setDepth(this.y - 0.5);
 
     // 跑步扬尘（TS 尘土动画）
     if (moving && now > this.nextDust) {
       this.nextDust = now + 240;
       const d = this.scene.add.sprite(this.x + Phaser.Math.Between(-10, 10), this.y + 4, 'dust')
-        .setDisplaySize(56, 56).setAlpha(0.8).setDepth(this.y - 0.4);
+        .setDisplaySize(100, 100).setAlpha(0.8).setDepth(this.y - 0.4);
       d.play('ts_dust');
       d.once('animationcomplete', () => d.destroy());
     }
@@ -77,12 +79,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.attackAnimUntil = now + 280;
     sfx.swing();
 
-    const offsets = { down: [0, 52], up: [0, -56], left: [-58, 0], right: [58, 0] };
+    const offsets = { down: [0, 104], up: [0, -112], left: [-116, 0], right: [116, 0] };
     const [ox, oy] = offsets[this.facing];
 
     // 挥剑弧光
-    const slash = scene.add.sprite(this.x + ox, this.y + oy - 20, 'slash_0')
-      .setDisplaySize(112, 112)
+    const slash = scene.add.sprite(this.x + ox, this.y + oy - 40, 'slash_0')
+      .setDisplaySize(210, 210)
       .setDepth(this.depth + 10);
     if (this.facing === 'left') slash.setFlipX(true);
     if (this.facing === 'up') slash.setRotation(-Math.PI / 2);
@@ -92,8 +94,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // 攻击判定：矩形相交检测（确定性，避免物理刚体同步问题）
     const wide = this.facing === 'left' || this.facing === 'right';
-    const w = wide ? 128 : 88;
-    const h = wide ? 88 : 128;
+    const w = wide ? 250 : 170;
+    const h = wide ? 170 : 250;
     const rect = new Phaser.Geom.Rectangle(this.x + ox - w / 2, this.y + oy - h / 2, w, h);
     this.scene.applyAttack(rect);
   }
