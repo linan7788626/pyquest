@@ -10,7 +10,7 @@ scripts/shots/
 # Tiny Swords 素材包（第三方，许可证禁止再分发；仅本地开发使用）
 # CC0 素材（assets/cc0/）允许入库分发，不在此列
 assets/TinySwordsFreePack/
-assets/__MACOSX/
+__MACOSX/
 
 # 临时分析脚本
 scripts/tmp-*.mjs
