@@ -7,7 +7,12 @@
 美术采用 **CC0 公共领域像素素材**（0x72 DungeonTileset II + Kenney Tiny Town，可自由商用与再分发）
 + 少量同风格程序化贴图（符文石/碎片/传送门等游戏专属元素）。
 
-![技术栈](https://img.shields.io/badge/Phaser%203-90.x-green) ![构建](https://img.shields.io/badge/Vite-7.x-purple) ![素材](https://img.shields.io/badge/Art-CC0%20公共领域-blue)
+> [!NOTE]
+> **本项目完全由 GLM-5.3 Vibe Coding 而成** —— 从玩法设计、架构搭建、场景/实体实现、
+> 题库编写到美术整合与 E2E 测试脚本，全部代码均通过与 [GLM-5.3](https://chat.z.ai)
+> 的对话式协作（Vibe Coding）生成，未手写一行代码。
+
+![技术栈](https://img.shields.io/badge/Phaser%203-90.x-green) ![构建](https://img.shields.io/badge/Vite-7.x-purple) ![素材](https://img.shields.io/badge/Art-CC0%20公共领域-blue) ![开发方式](https://img.shields.io/badge/GLM--5.3-Vibe%20Coding-ff6f00) ![许可证](https://img.shields.io/badge/License-MIT-blue)
 
 ## 🎮 运行
 
@@ -167,3 +172,9 @@ node scripts/e2e-ch2.mjs     # 第二章 E2E（森林/洞窟/巨蟒/通关/读�
 - [ ] Pyodide 沙盒：用真实 Python 代码操控角色解谜
 - [ ] 更多 BOSS：字符串魔女、字典巨龙
 - [ ] 难度曲线：爱心上限扩展、商店与金币
+
+## 📄 许可证
+
+- **本项目代码**：[MIT License](LICENSE)
+- **`assets/cc0/` 素材**：CC0 公共领域（0x72 / Kenney），可自由商用与再分发
+- **Tiny Swords 素材**：仅本地开发使用，许可证禁止再分发（未入库，需自行下载）
