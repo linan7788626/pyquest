@@ -73,7 +73,7 @@ await page.waitForTimeout(400);
 await shot('04-quiz-correct');
 await page.click('#quiz-confirm'); // 领取奖励
 await page.waitForTimeout(400);
-const shards = await page.evaluate(() => window.__PYQUEST__.G.shards);
+const shards = await page.evaluate(() => window.__PYQUEST__.G.progress[1].shards);
 check(shards === 1, `答对获得碎片（实际 ${shards}）`);
 const answered = await page.evaluate(() => window.__PYQUEST__.G.answered.has('v1'));
 check(answered, '符文已标记为已领悟');
@@ -110,12 +110,12 @@ for (let i = 0; i < 6; i++) {
 check(await page.locator('#dialogue.show').count() === 0, '对话可关闭');
 
 // ---- 集齐碎片开门 → 传送地牢 ----
-await page.evaluate(() => { window.__PYQUEST__.G.shards = 5; });
+await page.evaluate(() => { window.__PYQUEST__.G.progress[1].shards = 5; });
 await tele(1600, 640);
 await page.waitForTimeout(200);
 await page.keyboard.press('KeyE');
 await page.waitForTimeout(600);
-const gateOpen = await page.evaluate(() => window.__PYQUEST__.G.gateOpen);
+const gateOpen = await page.evaluate(() => window.__PYQUEST__.G.progress[1].gateOpen);
 check(gateOpen, '5 枚碎片打开石门');
 
 await tele(1600, 112); // 走进门后传送区
@@ -125,7 +125,7 @@ await page.waitForFunction(() => {
   return !!(s && s.player);
 }, { timeout: 6000 });
 await page.waitForTimeout(600);
-check(await activeKey() === 'Dungeon', '传送到循环地牢');
+check(await activeKey() === 'Dungeon', '传送到数据地牢');
 await shot('07-dungeon');
 
 // 地牢里重新冻结（新场景新玩家实例），并清掉干扰测试的小史莱姆
@@ -148,7 +148,7 @@ await page.click('#quiz-confirm');
 await page.waitForTimeout(300);
 await page.click('#quiz-confirm');
 await page.waitForTimeout(400);
-const shielded = await page.evaluate(() => window.__PYQUEST__.G.bossShielded);
+const shielded = await page.evaluate(() => window.__PYQUEST__.G.progress[1].bossShielded);
 check(shielded === false, '答对循环谜题，BOSS 护盾破碎');
 await shot('08-boss-shield-broken');
 
@@ -175,17 +175,17 @@ await page.evaluate(() => {
   if (s.boss) { s.boss.hp = 1; s.boss.hurt(1, 1792, 992); } // 最后一击
 });
 await page.waitForTimeout(2400);
-const defeated = await page.evaluate(() => window.__PYQUEST__.G.bossDefeated);
+const defeated = await page.evaluate(() => window.__PYQUEST__.G.progress[1].bossDefeated);
 check(defeated, '击败 BOSS');
-const ch1Done = await page.evaluate(() => window.__PYQUEST__.G.ch1Done);
+const ch1Done = await page.evaluate(() => window.__PYQUEST__.G.progress[1].done);
 check(ch1Done, '第一章通关标记已写入');
 check(await page.locator('#victory').evaluate((el) => !el.classList.contains('hidden')), '胜利画面出现');
 check((await page.locator('#btn-next').textContent()).includes('第二章'), '胜利画面提供「进入第二章」按钮');
 await shot('09-victory');
 
 // ---- 存档已自动写入 localStorage ----
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('pyquest:save:v1') || 'null'));
-check(!!saved && saved.ch1Done === true, '通关进度已自动存档');
+const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('pyquest:save:v2') || 'null'));
+check(!!saved && saved.progress[1].done === true, '通关进度已自动存档（v2 多章结构）');
 
 // ---- 进入第二章 ----
 await page.click('#btn-next');
@@ -196,7 +196,7 @@ await page.waitForFunction(() => {
 await page.waitForTimeout(600);
 check(await activeKey() === 'Forest', '进入第二章 · 函数之森');
 await page.evaluate(() => { window.__PYQUEST__.scene('Forest').player.invulUntil = 1e12; });
-const ch2Shards0 = await page.evaluate(() => window.__PYQUEST__.G.ch2Shards);
+const ch2Shards0 = await page.evaluate(() => window.__PYQUEST__.G.progress[2].shards);
 check(ch2Shards0 === 0, '第二章碎片计数从 0 开始');
 await shot('10-forest');
 

@@ -8,7 +8,8 @@ import { generateAllTextures, createAnimations } from '../textures/pixelArt.js';
 import { loadTSAssets, createTSAnimations } from '../assets/ts.js';
 import { loadCC0Assets, createCC0Animations } from '../assets/cc0.js';
 import { initTitle } from '../ui/modal.js';
-import { G, resetState } from '../core/state.js';
+import { G, resetState, furthestChapter } from '../core/state.js';
+import { getChapter } from '../data/chapters.js';
 import { clearSave, loadGame } from '../core/save.js';
 
 export default class BootScene extends Phaser.Scene {
@@ -33,10 +34,10 @@ export default class BootScene extends Phaser.Scene {
       },
       onContinue: () => {
         if (!loadGame()) { clearSave(); resetState(); }
-        // 按存档进度决定落点：第一章回村，第二章进森林
-        const key = G.ch1Done && !G.ch2Done ? 'Forest' : 'Village';
-        const spawn = key === 'Forest' ? 'fromVillage' : 'start';
-        this.scene.start(key, { spawn });
+        // 按存档进度决定落点：最新可推进章节的野外
+        const ch = getChapter(furthestChapter());
+        const spawn = ch.id === 1 ? 'start' : 'fromPrev';
+        this.scene.start(ch.fieldKey, { spawn });
       },
     });
   }

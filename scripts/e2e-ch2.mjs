@@ -76,13 +76,12 @@ check(await activeKey() === 'Village', '新游戏从村庄开始');
 
 await page.evaluate(() => {
   const G = window.__PYQUEST__.G;
-  G.shards = 5;
-  G.gateOpen = true;
-  G.bossShielded = false;
-  G.bossDefeated = true;
-  G.ch1Done = true;
+  const p1 = G.progress[1];
+  p1.shards = 5; p1.gateOpen = true; p1.bossShielded = false;
+  p1.bossDefeated = true; p1.done = true;
+  G.current = 2;
   ['v1', 'v2', 'v3', 'v4', 'v5', 'd1', 'd2', 'd3', 'd4', 'd5', 'boss'].forEach((id) => G.answered.add(id));
-  window.__PYQUEST__.active().scene.start('Forest', { spawn: 'fromVillage' });
+  window.__PYQUEST__.active().scene.start('Forest', { spawn: 'fromPrev' });
 });
 await waitForScene('Forest');
 await page.waitForTimeout(700);
@@ -102,11 +101,11 @@ await answerCorrect('f4（函数题池随机题）');
 await openRune(2880, 2112, '符文 f5');  // pc(22), pc(16)
 await answerCorrect('f5（函数题池随机题）');
 const g1 = await G();
-check(g1.ch2Shards === 5, `集齐 5 枚函数碎片（实际 ${g1.ch2Shards}）`);
+check(g1.progress[2].shards === 5, `集齐 5 枚函数碎片（实际 ${g1.progress[2].shards}）`);
 
 // ---- 洞窟封印：碎片不足时锁定，集齐后按 E 解开 ----
 // 先验证锁定态（临时扣掉碎片）
-await page.evaluate(() => { window.__PYQUEST__.G.ch2Shards = 0; });
+await page.evaluate(() => { window.__PYQUEST__.G.progress[2].shards = 0; });
 await tele(3584, 688);
 await page.waitForTimeout(300);
 await page.keyboard.press('KeyE');
@@ -117,12 +116,12 @@ for (let i = 0; i < 6; i++) {
   await page.keyboard.press('KeyE');
   await page.waitForTimeout(260);
 }
-await page.evaluate(() => { window.__PYQUEST__.G.ch2Shards = 5; });
+await page.evaluate(() => { window.__PYQUEST__.G.progress[2].shards = 5; });
 await tele(3584, 688);
 await page.waitForTimeout(300);
 await page.keyboard.press('KeyE');
 await page.waitForTimeout(500);
-const gateOpen2 = await page.evaluate(() => window.__PYQUEST__.G.ch2GateOpen);
+const gateOpen2 = await page.evaluate(() => window.__PYQUEST__.G.progress[2].gateOpen);
 check(gateOpen2, '集齐碎片后封印解开');
 
 // ---- 穿过洞窟之门 → 列表洞窟 ----
@@ -144,13 +143,13 @@ await page.evaluate(() => {
 
 const snakeSegs = await page.evaluate(() => window.__PYQUEST__.scene('Cave').boss?.segs?.length ?? -1);
 check(snakeSegs === 6, `巨蟒有 6 节身体（实际 ${snakeSegs}）`);
-const snakeShielded = await page.evaluate(() => window.__PYQUEST__.G.boss2Shielded);
+const snakeShielded = await page.evaluate(() => window.__PYQUEST__.G.progress[2].bossShielded);
 check(snakeShielded, '巨蟒初始处于符文护盾状态');
 
 // ---- 列表符文（祝福：回心不产碎片，题目从列表题池随机抽取）×3 + BOSS 符文 ----
 await openRune(832, 1600, '符文 l1');   // pc(6), pc(12)
 await answerCorrect('l1（列表题池随机题）');
-const healCheck = await page.evaluate(() => window.__PYQUEST__.G.ch2Shards);
+const healCheck = await page.evaluate(() => window.__PYQUEST__.G.progress[2].shards);
 check(healCheck === 5, `祝福符文不产碎片（碎片仍 ${healCheck}）`);
 await openRune(3264, 1600, '符文 l2');   // pc(25), pc(12)
 await answerCorrect('l2（列表题池随机题）');
@@ -159,7 +158,7 @@ await answerCorrect('l3（列表题池随机题）');
 
 await openRune(2048, 1408, 'BOSS 符文 boss2'); // pc(15.5), pc(10.5)
 await answerCorrect('boss2（列表综合随机题）');
-const shieldBroken = await page.evaluate(() => window.__PYQUEST__.G.boss2Shielded === false);
+const shieldBroken = await page.evaluate(() => window.__PYQUEST__.G.progress[2].bossShielded === false);
 check(shieldBroken, '答对列表谜题，巨蟒护盾破碎');
 
 // ---- 攻击巨蟒头部 → 断尾 → 击败 ----
@@ -205,31 +204,32 @@ await page.evaluate(() => {
 });
 await page.waitForTimeout(2600);
 const gEnd = await G();
-check(gEnd.ch2Done, '巨蟒被封印，第二章通关');
+check(gEnd.progress[2].done, '巨蟒被封印，第二章通关');
 check(await page.locator('#victory').evaluate((el) => !el.classList.contains('hidden')), '全部通关画面出现');
-check((await page.locator('#victory-title').textContent()).includes('通 关'), '显示全部通关标题');
+check((await page.locator('#victory-title').textContent()).includes('第二章'), '显示第二章通关标题');
 await shot('23-victory2');
 
-// ---- 存档已写入 → 刷新后「继续冒险」恢复 ----
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('pyquest:save:v1') || 'null'));
-check(!!saved && saved.ch2Done === true && saved.ch2GateOpen === true, '第二章进度已自动存档');
+// ---- 存档已写入 → 下一章衔接（第三章 科学计算高原） ----
+const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('pyquest:save:v2') || 'null'));
+check(!!saved && saved.progress[2].done === true && saved.progress[2].gateOpen === true, '第二章进度已自动存档（v2）');
 
-await page.click('#btn-next'); // 返回村庄
-await waitForScene('Village');
-await page.waitForTimeout(500);
-check(await activeKey() === 'Village', '通关后返回村庄');
+await page.click('#btn-next'); // 进入第三章 · 科学计算高原
+await waitForScene('SciField');
+await page.waitForTimeout(700);
+check(await activeKey() === 'SciField', '通关后进入第三章 · 科学计算高原');
+await shot('23-scifield-intro');
 
 await page.reload({ waitUntil: 'networkidle' });
 await page.waitForTimeout(1400);
 const btnText = (await page.locator('#btn-start').textContent()).trim();
-check(btnText.includes('继续冒险'), `标题画面显示「${btnText}」`);
+check(btnText.includes('第3章'), `标题画面显示「${btnText}」`);
 const btnNewVisible = await page.locator('#btn-new').evaluate((el) => el.style.display !== 'none');
 check(btnNewVisible, '「新的冒险」按钮出现');
 await page.click('#btn-start'); // 继续冒险 → 读档
 await page.waitForTimeout(1200);
 const gResume = await G();
-check(gResume.ch2Done === true && gResume.ch1Done === true, '读档后进度完整（ch1Done + ch2Done）');
-check(await activeKey() === 'Village', '读档后回到村庄');
+check(gResume.progress[1].done === true && gResume.progress[2].done === true, '读档后进度完整（第一、二章通关）');
+check(await activeKey() === 'SciField', '读档后落到第三章野外');
 await shot('24-resume');
 
 // ---- 汇总 ----

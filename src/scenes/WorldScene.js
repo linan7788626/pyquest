@@ -4,7 +4,7 @@
 //       交互系统（符文石/NPC/石门）、传送门、HUD 与 UI
 // ============================================================
 import Phaser from 'phaser';
-import { G, updateHud, healHearts, addShards, markRuneSolved } from '../core/state.js';
+import { G, updateHud, healHearts, addShards, markRuneSolved, cp, meetsRequires } from '../core/state.js';
 import { Player } from '../entities/Player.js';
 import { Slime } from '../entities/Slime.js';
 import { BossSlime } from '../entities/BossSlime.js';
@@ -12,6 +12,7 @@ import { BossSnake } from '../entities/BossSnake.js';
 import { HUD } from '../ui/HUD.js';
 import { DialogueBox } from '../ui/DialogueBox.js';
 import { QuizOverlay } from '../ui/QuizOverlay.js';
+import { WorldMap } from '../ui/WorldMap.js';
 import { pickQuestion } from '../data/quizData.js';
 import { saveGame } from '../core/save.js';
 import { sfx } from '../audio/sfx.js';
@@ -28,6 +29,8 @@ export class WorldScene extends Phaser.Scene {
 
     const def = this.mapDef;
     this.def = def;
+    const P = cp(this.ch.id); // 本章进度
+    G.current = this.ch.id;   // 跟踪玩家所在章节（HUD / 碎片计数用）
 
     // ---------- 地面（TS tileset 拼接画布，1:1 像素完美） + 碰撞体 ----------
     const groundKey = makeGroundTexture(this, def);
@@ -94,10 +97,12 @@ export class WorldScene extends Phaser.Scene {
     this.hud.show();
     this.dialogue = new DialogueBox(this);
     this.quiz = new QuizOverlay(this);
+    this.worldmap = new WorldMap(this);
     // 场景关闭时移除 DOM 监听，防止场景重启后监听器泄漏
     this.events.once('shutdown', () => {
       this.dialogue && this.dialogue.destroy();
       this.quiz && this.quiz.destroy();
+      this.worldmap && this.worldmap.destroy();
     });
 
     // ---------- 传送门 ----------
@@ -270,10 +275,10 @@ export class WorldScene extends Phaser.Scene {
       }
       case 'gate': {
         // 程序化石门（TS 尺度 ×3 = 192）
-        const g = this.add.image(p.x, p.y, G.gateOpen ? 'gate_open' : 'gate_closed').setDisplaySize(384, 384);
+        const g = this.add.image(p.x, p.y, cp(this.ch.id).gateOpen ? 'gate_open' : 'gate_closed').setDisplaySize(384, 384);
         g.setDepth(p.y + 16);
         this.gate = { x: p.x, y: p.y, sprite: g };
-        if (!G.gateOpen) {
+        if (!cp(this.ch.id).gateOpen) {
           this.solids.add(g);
           g.body.setSize(360, 340).setOffset(12, 20);
         }
@@ -324,7 +329,7 @@ export class WorldScene extends Phaser.Scene {
       }
       case 'doorlink': {
         // 带封印状态的传送门：locked 时有实体阻挡 + 可按 E 检查（子类可覆写 onDoorLocked 解锁）
-        const locked = !!(p.requires && !G[p.requires]);
+        const locked = !meetsRequires(p.requires);
         const d = this.add.image(p.x, p.y + 48, 'portal_door').setOrigin(0.5, 1).setDisplaySize(300, 300);
         d.setDepth(p.y + 4);
         const it = { kind: 'doorlink', x: p.x, y: p.y, locked, prop: p, sprite: d, alive: true };
@@ -367,7 +372,7 @@ export class WorldScene extends Phaser.Scene {
         return;
       }
     }
-    if (this.gate && !G.gateOpen && dist(this.gate.x, this.gate.y + 140) < 340) {
+    if (this.gate && !cp(this.ch.id).gateOpen && dist(this.gate.x, this.gate.y + 140) < 340) {
       this.tryOpenGate();
     }
   }
@@ -390,9 +395,8 @@ export class WorldScene extends Phaser.Scene {
           this.floatText(it.x, it.y - 300, '+1 ❤ 符文祝福', '#ff8aa0');
           this.spawnShardFx(it.x, it.y - 88, 0xff8aa0);
         } else {
-          addShards(1);
-          const label = G.ch1Done ? '函数碎片' : '代码碎片';
-          this.floatText(it.x, it.y - 300, `+1 ${label}`, '#ffd257');
+          addShards(1, this.ch.id);
+          this.floatText(it.x, it.y - 300, `+1 ${this.ch.shardLabel}`, '#ffd257');
           this.spawnShardFx(it.x, it.y - 88);
         }
       },
@@ -413,8 +417,9 @@ export class WorldScene extends Phaser.Scene {
   }
 
   tryOpenGate() {
-    if (G.shards >= G.shardsNeeded) {
-      G.gateOpen = true;
+    const P = cp(this.ch.id);
+    if (P.shards >= P.shardsNeeded) {
+      P.gateOpen = true;
       sfx.openGate();
       this.gate.sprite.setTexture('gate_open');
       if (this.gate.sprite.body) this.gate.sprite.body.enable = false;
@@ -425,8 +430,8 @@ export class WorldScene extends Phaser.Scene {
       this.dialogue.say({
         name: '石门',
         lines: [
-          `石门上刻着一行小字：「以 ${G.shardsNeeded} 枚代码碎片作为钥匙」。`,
-          `（当前碎片 ${G.shards} / ${G.shardsNeeded}，去找村庄里的符文石答题吧）`,
+          `石门上刻着一行小字：「以 ${P.shardsNeeded} 枚${this.ch.shardLabel}作为钥匙」。`,
+          `（当前碎片 ${P.shards} / ${P.shardsNeeded}，去找野外的符文石答题吧）`,
         ],
       });
     }
@@ -435,7 +440,7 @@ export class WorldScene extends Phaser.Scene {
   usePortal(p) {
     if (this.transitioning || this.player.dying) return;
     // 封印中的传送门：提示但不传送
-    if (p.requires && !G[p.requires]) {
+    if (!meetsRequires(p.requires)) {
       const now = this.time.now;
       if (now < (p._lockCd || 0)) return;
       p._lockCd = now + 1500;
@@ -513,7 +518,7 @@ export class WorldScene extends Phaser.Scene {
         }
       }
     }
-    if (!hint && this.gate && !G.gateOpen && dist(this.gate.x, this.gate.y + 140) < 340) {
+    if (!hint && this.gate && !cp(this.ch.id).gateOpen && dist(this.gate.x, this.gate.y + 140) < 340) {
       hint = '按 <kbd>E</kbd> 检查石门';
     }
     this.hud.hint(hint);

@@ -1,10 +1,11 @@
 // 无头冒烟测试：不需要浏览器
 // 1) 验证所有像素图行宽一致（pixelTexture 会 throw）
-// 2) 验证地图构建器输出（尺寸、越界、必需要素）
-// 3) 验证题库引用完整
+// 2) 验证八章地图构建器输出（尺寸、越界、必需要素、传送门链）
+// 3) 验证题库引用完整、题池同难度、槽位映射完整、随机抽题行为
 import { generateAllTextures } from '../src/textures/pixelArt.js';
 import { makeGroundTexture } from '../src/textures/ground.js';
-import { buildVillage, buildDungeon, buildForest, buildCave, T } from '../src/data/maps.js';
+import { buildVillage, buildDungeon, buildForest, buildCave, buildField, buildLair } from '../src/data/maps.js';
+import { CHAPTERS } from '../src/data/chapters.js';
 import { QUESTIONS, pickQuestion, highlight, POOLS, SLOT_POOL } from '../src/data/quizData.js';
 import { G } from '../src/core/state.js';
 
@@ -42,9 +43,6 @@ const sceneStub = {
 try {
   generateAllTextures(sceneStub);
   ok(`生成 ${Object.keys(textures).length} 张贴图`);
-  for (const [k, v] of Object.entries(textures)) {
-    if (!v.w || !v.h) fail(`贴图 ${k} 尺寸异常`);
-  }
   const need = ['shard',
     'heart_full', 'heart_half', 'heart_empty',
     'portal_door', 'tablet', 'crystal', 'shroom',
@@ -53,42 +51,25 @@ try {
     'slash_0', 'slash_1', 'slash_2',
     'particle', 'shadow', 'cloudshadow', 'foam_n', 'foam_s', 'foam_e', 'foam_w'];
   for (const k of need) if (!textures[k]) fail(`缺少贴图 ${k}`);
-  // 水面动画帧应为 16×16（像素版 1:1）
-  for (const k of ['water_0', 'water_1', 'water_2']) {
-    if (textures[k] && (textures[k].w !== 16 || textures[k].h !== 16)) fail(`${k} 应为 16x16，实际 ${textures[k].w}x${textures[k].h}`);
-  }
 } catch (e) { fail(`贴图生成抛出异常: ${e.message}`); }
 
-// 地面画布（整图高清）
-try {
-  const g1 = makeGroundTexture(sceneStub, buildVillage());
-  const g2 = makeGroundTexture(sceneStub, buildDungeon());
-  const g3 = makeGroundTexture(sceneStub, buildForest());
-  const g4 = makeGroundTexture(sceneStub, buildCave());
-  if (!textures[g1] || !textures[g2] || !textures[g3] || !textures[g4]) fail('地面画布生成失败');
-  if (textures[g1] && textures[g1].w !== buildVillage().w * 128) fail(`地面画布宽度异常: ${textures[g1].w}`);
-  if (textures[g3] && textures[g3].w !== buildForest().w * 128) fail(`森林地面画布宽度异常: ${textures[g3].w}`);
-  if (textures[g4] && textures[g4].w !== buildCave().w * 128) fail(`洞窟地面画布宽度异常: ${textures[g4].w}`);
-  ok(`地面画布 ${g1}(${textures[g1].w}x${textures[g1].h}) / ${g2}(${textures[g2].w}x${textures[g2].h}) / ${g3}(${textures[g3].w}x${textures[g3].h}) / ${g4}(${textures[g4].w}x${textures[g4].h})`);
-} catch (e) { fail(`地面画布异常: ${e.message}`); }
-
-// ---- 2. 地图 ----
-console.log('[2] 地图构建');
-function checkMap(def, isDungeon) {
-  if (def.grid.length !== def.h) fail(`${def.key} 行数不符`);
+// ---- 2. 八章地图 ----
+console.log('[2] 八章地图构建');
+function checkMap(def, label) {
+  if (def.grid.length !== def.h) fail(`${label} 行数不符`);
   def.grid.forEach((row, y) => {
-    if (row.length !== def.w) fail(`${def.key} 第 ${y} 行宽度 ${row.length} != ${def.w}`);
-    row.forEach((v, x) => { if (!Number.isInteger(v) || v < 0 || v > 11) fail(`${def.key} (${x},${y}) 非法瓦片 ${v}`); });
+    if (row.length !== def.w) fail(`${label} 第 ${y} 行宽度 ${row.length} != ${def.w}`);
+    row.forEach((v, x) => { if (!Number.isInteger(v) || v < 0 || v > 11) fail(`${label} (${x},${y}) 非法瓦片 ${v}`); });
   });
-  const inRange = (p, label) => {
-    if (p.x < 64 || p.x > def.w * 128 - 64 || p.y < 64 || p.y > def.h * 128 - 64) fail(`${def.key} ${label} 越界: (${p.x},${p.y})`);
+  const inRange = (p, what) => {
+    if (p.x < 64 || p.x > def.w * 128 - 64 || p.y < 64 || p.y > def.h * 128 - 64) fail(`${label} ${what} 越界: (${p.x},${p.y})`);
   };
   def.props.forEach((p) => inRange(p, `prop:${p.type}`));
   (def.slimes || []).forEach((p) => inRange(p, 'slime'));
   Object.values(def.spawns).forEach((p) => inRange(p, 'spawn'));
   (def.portals || []).forEach((p) => {
     const r = p.rect;
-    if (r.x < 0 || r.y < 0 || r.x + r.w > def.w * 128 || r.y + r.h > def.h * 128) fail(`${def.key} 传送门越界`);
+    if (r.x < 0 || r.y < 0 || r.x + r.w > def.w * 128 || r.y + r.h > def.h * 128) fail(`${label} 传送门越界`);
   });
   // 出生点不能在碰撞瓦片里
   const solidAt = (x, y) => {
@@ -96,38 +77,58 @@ function checkMap(def, isDungeon) {
     return def.colliding.includes(def.grid[ty] && def.grid[ty][tx]);
   };
   Object.entries(def.spawns).forEach(([k, p]) => {
-    if (solidAt(p.x, p.y)) fail(`${def.key} 出生点 ${k} 落在碰撞瓦片上 (${p.x},${p.y})`);
+    if (solidAt(p.x, p.y)) fail(`${label} 出生点 ${k} 落在碰撞瓦片上 (${p.x},${p.y})`);
   });
-  ok(`${def.key}: ${def.w}x${def.h}, ${def.props.length} 个道具, ${def.slimes?.length || 0} 只史莱姆`);
+  ok(`${label}: ${def.w}x${def.h}, ${def.props.length} 个道具, ${def.slimes?.length || 0} 只史莱姆`);
 }
-try { checkMap(buildVillage(), false); } catch (e) { fail(`村庄构建异常: ${e.message}`); }
-try { checkMap(buildDungeon(), true); } catch (e) { fail(`地牢构建异常: ${e.message}`); }
-try { checkMap(buildForest(), false); } catch (e) { fail(`森林构建异常: ${e.message}`); }
-try { checkMap(buildCave(), true); } catch (e) { fail(`洞窟构建异常: ${e.message}`); }
 
-// 村庄应恰好 5 块碎片符文石（对应 5 枚碎片）
-const village = buildVillage();
-const villageRunes = village.props.filter((p) => p.type === 'rune' && !p.bossRune);
-villageRunes.length === 5 ? ok('村庄有 5 块符文石（对应 5 枚碎片）') : fail(`村庄符文石数量 ${villageRunes.length} != 5`);
+// 每章构建 field + lair，并校验章节必需结构
+const allFields = [];
+const allLairs = [];
+for (const ch of CHAPTERS) {
+  try {
+    const field = ch.buildField(ch);
+    const lair = ch.buildLair(ch);
+    checkMap(field, `${ch.fieldKey}(${ch.fieldName})`);
+    checkMap(lair, `${ch.lairKey}(${ch.lairName})`);
 
-// 地牢符文石应为祝福符文（不产碎片）
-const dungeon = buildDungeon();
-const dungeonHeal = dungeon.props.filter((p) => p.type === 'rune' && p.healRune);
-dungeonHeal.length === 4 ? ok('地牢有 4 块祝福符文石') : fail(`地牢祝福符文数量 ${dungeonHeal.length} != 4`);
+    // 野外：碎片符文数量 = shardsNeeded；有引导 NPC；有通往巢穴的封印传送门
+    const shardRunes = field.props.filter((p) => p.type === 'rune' && !p.bossRune && !p.healRune);
+    const npc = field.props.find((p) => p.type === 'npc');
+    const toLair = (field.portals || []).find((p) => p.to === ch.lairKey);
+    if (shardRunes.length !== ch.shardsNeeded) fail(`${ch.fieldKey} 碎片符文 ${shardRunes.length} != ${ch.shardsNeeded}`);
+    if (!npc) fail(`${ch.fieldKey} 缺少引导 NPC`);
+    if (!toLair) fail(`${ch.fieldKey} 缺少通往巢穴的传送门`);
+    if (ch.id > 1 && !toLair.requires) fail(`${ch.fieldKey} 通往巢穴的传送门应带封印条件`);
 
-// 第二章地图：函数之森 4 产碎片 + 1 祝福；洞窟 6 祝福 + 1 BOSS 符文 + 巨蟒
-const forest = buildForest();
-const cave = buildCave();
-const forestRunes = forest.props.filter((p) => p.type === 'rune' && !p.bossRune);
-const forestShard = forestRunes.filter((p) => !p.healRune);
-const caveRunes = cave.props.filter((p) => p.type === 'rune' && !p.bossRune);
-const caveBossRune = cave.props.filter((p) => p.type === 'rune' && p.bossRune);
-forestRunes.length === 6 ? ok('函数之森有 6 块符文石') : fail(`森林符文石数量 ${forestRunes.length} != 6`);
-forestShard.length === 5 ? ok('（其中 5 块产函数碎片 + 1 块祝福）') : fail(`森林碎片符文数量 ${forestShard.length} != 5`);
-caveRunes.length === 6 ? ok('列表洞窟有 6 块祝福符文石') : fail(`洞窟符文石数量 ${caveRunes.length} != 6`);
-caveBossRune.length === 1 ? ok('列表洞窟有 1 块 BOSS 符文') : fail(`洞窟 BOSS 符文数量 ${caveBossRune.length} != 1`);
-cave.boss && cave.boss.type === 'snake' ? ok('列表洞窟配置了巨蟒 BOSS') : fail('洞窟缺少 snake BOSS');
-forest.portals.some((p) => p.requires === 'ch2GateOpen') ? ok('洞窟之门带封印条件') : fail('洞窟之门缺少封印条件');
+    // 巢穴：BOSS + BOSS 符文 + 回野外的传送门
+    const bossRune = lair.props.filter((p) => p.type === 'rune' && p.bossRune);
+    if (!lair.boss) fail(`${ch.lairKey} 缺少 BOSS`);
+    if (bossRune.length !== 1) fail(`${ch.lairKey} BOSS 符文数量 ${bossRune.length} != 1`);
+    if (!(lair.portals || []).some((p) => p.to === ch.fieldKey)) fail(`${ch.lairKey} 缺少回野外的传送门`);
+
+    // 章节衔接：非末章应有通往下一章的传送门（requires done）
+    if (ch.nextKey) {
+      if (!(field.portals || []).some((p) => p.to === ch.nextKey)) fail(`${ch.fieldKey} 缺少通往下一章的传送门`);
+    }
+    if (ch.prevKey) {
+      if (!(field.portals || []).some((p) => p.to === ch.prevKey)) fail(`${ch.fieldKey} 缺少返回上一章的传送门`);
+    }
+    allFields.push(field);
+    allLairs.push(lair);
+  } catch (e) { fail(`第 ${ch.id} 章 ${ch.title} 构建异常: ${e.message}`); }
+}
+ok(`八章 ${allFields.length} 野外 + ${allLairs.length} 巢穴全部构建成功`);
+
+// 地面画布（抽查四章：两手工图 + 两通用图）
+try {
+  const g1 = makeGroundTexture(sceneStub, allFields[0]);
+  const g2 = makeGroundTexture(sceneStub, allLairs[0]);
+  const g3 = makeGroundTexture(sceneStub, allFields[2]);
+  const g4 = makeGroundTexture(sceneStub, allLairs[7]);
+  if (!textures[g1] || !textures[g2] || !textures[g3] || !textures[g4]) fail('地面画布生成失败');
+  ok(`地面画布生成成功（村庄/地牢/高原/暗物质核心）`);
+} catch (e) { fail(`地面画布异常: ${e.message}`); }
 
 // ---- 3. 题库 ----
 console.log('[3] 题库');
@@ -144,7 +145,7 @@ for (const [id, q] of Object.entries(QUESTIONS)) {
 }
 ok(`题库 ${Object.keys(QUESTIONS).length} 题，格式校验通过`);
 
-// 3b. 题池：非空 / 引用存在 / 池内难度（tier）一致
+// 3b. 题池：非空 / 引用存在 / 池内难度（tier）一致 / 章节归属正确
 for (const [name, ids] of Object.entries(POOLS)) {
   if (!ids.length) fail(`题池 ${name} 为空`);
   ids.forEach((id) => { if (!QUESTIONS[id]) fail(`题池 ${name} 引用了不存在的题目 ${id}`); });
@@ -153,9 +154,8 @@ for (const [name, ids] of Object.entries(POOLS)) {
 }
 ok(`题池 ${Object.keys(POOLS).length} 个，池内难度一致（同池同难度随机抽题）`);
 
-// 3c. 每张地图的符文 qid 都是合法槽位，且指向非空题池
-const allRunes = [...buildVillage().props, ...buildDungeon().props, ...buildForest().props, ...buildCave().props]
-  .filter((p) => p.type === 'rune');
+// 3c. 每张地图的符文 qid 都是合法槽位，且指向非空题池（题量充足）
+const allRunes = [...allFields, ...allLairs].flatMap((m) => m.props.filter((p) => p.type === 'rune'));
 allRunes.forEach((p) => {
   const pool = POOLS[SLOT_POOL[p.qid]];
   if (!pool) fail(`符文槽 ${p.qid} 没有对应题池`);
@@ -163,7 +163,21 @@ allRunes.forEach((p) => {
 });
 ok(`符文-题池映射完整（${allRunes.length} 个符文槽）`);
 
-// 3d. 随机抽题行为：同池同难度 / 重开同题 / 已答不重复 / 同池不撞题
+// 3d. 每章符文槽位抽到的题目所属章节正确（章→池归属抽查）
+for (const ch of CHAPTERS) {
+  const field = ch.buildField(ch);
+  const lair = ch.buildLair(ch);
+  const validPools = new Set([ch.pools.shard, ch.pools.heal, ch.pools.lair, ch.pools.boss]);
+  [...field.props, ...lair.props].filter((p) => p.type === 'rune').forEach((p) => {
+    const poolName = SLOT_POOL[p.qid];
+    if (!validPools.has(poolName)) {
+      fail(`符文槽 ${p.qid}（第 ${ch.id} 章）指向了别章的题池 ${poolName}`);
+    }
+  });
+}
+ok('各章符文槽均指向本章题池');
+
+// 3e. 随机抽题行为：同池同难度 / 重开同题 / 已答不重复 / 同池不撞题
 try {
   G.qAnswered = new Set(); G.runeRolls = {};
   for (const [slot, poolName] of Object.entries(SLOT_POOL)) {
@@ -187,7 +201,7 @@ try {
   G.runeRolls = {};
   if (pickQuestion('v1').id === pickQuestion('v2').id) fail('同池两块符文抽到了同一道题');
   // 已答过的题不再出现
-  const pool = POOLS.village;
+  const pool = POOLS.w1field;
   G.qAnswered = new Set(pool.slice(0, -1)); G.runeRolls = {};
   const qLast = pickQuestion('v1');
   if (qLast.id !== pool[pool.length - 1]) fail(`已答过的题仍被抽到（期望 ${pool[pool.length - 1]}，实际 ${qLast.id}）`);

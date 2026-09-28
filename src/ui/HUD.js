@@ -1,7 +1,8 @@
 // ============================================================
 // HUD：生命值（爱心）、代码碎片计数、当前目标提示
 // ============================================================
-import { G, chapterShards } from '../core/state.js';
+import { G, chapterShards, cp, getChapter } from '../core/state.js';
+import { CHAPTERS } from '../data/chapters.js';
 
 const SVG_HEART = (fill, shine) => `
   <svg viewBox="0 0 9 8" shape-rendering="crispEdges">
@@ -54,14 +55,16 @@ export class HUD {
       this.shardEl.classList.add('gain');
     }
 
+    // 目标提示：由当前章节进度推导
+    const ch = getChapter(G.current);
+    const p = cp(ch.id);
+    const next = CHAPTERS.find((c) => c.id === ch.id + 1);
+    const allDone = CHAPTERS.every((c) => cp(c.id).done);
     let objective;
-    if (G.ch2Done) objective = '🎉 全部通关！回村和长老聊聊吧';
-    else if (G.ch1Done) {
-      if (!G.ch2GateOpen) objective = '收集函数碎片，解开洞窟封印';
-      else objective = '进入列表洞窟，封印巨蟒毕森！';
-    } else if (!G.gateOpen) objective = '收集代码碎片，打开北门';
-    else if (!G.bossDefeated) objective = '进入地牢，击败循环史莱姆王';
-    else objective = '冒险成功！';
+    if (allDone) objective = '🎉 全部通关！自由探索吧';
+    else if (p.done) objective = next ? `本章通关！前往${next.fieldName}` : '本章通关！';
+    else if (!p.gateOpen) objective = `收集${ch.shardLabel}，解开巢穴封印`;
+    else objective = `进入${ch.lairName}，击败${ch.bossName}！`;
     this.objectiveEl.textContent = objective;
   }
 

@@ -1,17 +1,24 @@
 // ============================================================
 // PyQuest · Python 冒险记 —— 游戏入口
-// 逻辑分辨率 480×320（16px 瓦片），相机 2 倍缩放渲染到 960×640
+// P4A@UCAS 八周课程 = 八章关卡（data/chapters.js 注册表驱动）
 // ============================================================
 import Phaser from 'phaser';
 import BootScene from './scenes/BootScene.js';
-import VillageScene from './scenes/VillageScene.js';
-import DungeonScene from './scenes/DungeonScene.js';
-import ForestScene from './scenes/ForestScene.js';
-import CaveScene from './scenes/CaveScene.js';
+import { makeFieldScene, makeLairScene } from './scenes/ChapterScene.js';
+import { CHAPTERS } from './data/chapters.js';
 import { initAutosave } from './core/save.js';
 
 const GAME_W = 1920;
 const GAME_H = 1280;
+
+// 每章注册 野外(field) + 巢穴(lair) 两个场景
+const scenes = [BootScene];
+const sceneKeys = [];
+for (const ch of CHAPTERS) {
+  scenes.push(makeFieldScene(ch));
+  scenes.push(makeLairScene(ch));
+  sceneKeys.push(ch.fieldKey, ch.lairKey);
+}
 
 const config = {
   type: Phaser.AUTO,
@@ -31,7 +38,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, VillageScene, DungeonScene, ForestScene, CaveScene],
+  scene: scenes,
 };
 
 // eslint-disable-next-line no-new
@@ -46,7 +53,7 @@ window.__PYQUEST__ = {
   game,
   G,
   scene: (key) => game.scene.getScene(key),
-  active: () => ['Village', 'Dungeon', 'Forest', 'Cave']
+  active: () => sceneKeys
     .map((k) => game.scene.getScene(k))
     .find((s) => s && (s.scene.isActive() || s.scene.isPaused())),
 };

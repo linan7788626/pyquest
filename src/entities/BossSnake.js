@@ -44,7 +44,7 @@ export class BossSnake extends Slime {
     }
     this.trail = [];
 
-    if (G.boss2Shielded) this.setTint(0x7f9dff);
+    if (G.progress[scene.ch.id].bossShielded) this.setTint(0x7f9dff);
     this.shadow.setDisplaySize(180, 90);
 
     this.nextDartAt = scene.time.now + 3000;
@@ -60,7 +60,7 @@ export class BossSnake extends Slime {
     const p = this.scene.player;
     const dist = p ? Phaser.Math.Distance.Between(this.x, this.y, p.x, p.y) : 9999;
 
-    if (G.boss2Shielded) {
+    if (G.progress[this.scene.ch.id].bossShielded) {
       // 护盾期：缓慢游荡（象征符文封印）
       if (now > this.wanderUntil) {
         this.wanderUntil = now + Phaser.Math.Between(1200, 2200);
@@ -121,7 +121,7 @@ export class BossSnake extends Slime {
 
   hurt(dmg, fromX, fromY) {
     if (this.dead) return;
-    if (G.boss2Shielded) {
+    if (G.progress[this.scene.ch.id].bossShielded) {
       const now = this.scene.time.now;
       if (now < this.hurtCdUntil) return;
       this.hurtCdUntil = now + 400;
