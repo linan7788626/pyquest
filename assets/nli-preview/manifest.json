@@ -241,6 +241,75 @@
     ],
     "selection_evidence": ".superpowers/sdd/2026-10-29-ground-i18n-walk/lane-a/pose-analysis.json"
   },
+  "terrain_cliffs": {
+    "files": {
+      "cliff_s_band.png": {
+        "sha256": "4645c9b36cf6e3ae24dfab783bbba72e1c41f2a33d9949441bfe78fea2289bb8",
+        "size": [
+          550,
+          510
+        ],
+        "source": "Island_Cliff_Composition.png slice [350, 405, 900, 915]",
+        "transform": "raw native crop; no resample, no recolor"
+      },
+      "cliff_ew_strip.png": {
+        "sha256": "76773d58a034e6b3d95c4c18a3e62f5393ee8d7d4478c460a06c78ef3fac898e",
+        "size": [
+          54,
+          515
+        ],
+        "source": "Island_Cliff_Composition.png slice [274, 400, 328, 915]",
+        "transform": "raw native crop; no resample, no recolor"
+      },
+      "cliff_n_lip.png": {
+        "sha256": "d242a91d5df91c34579d41b8182bf59df82d5a60d0f896a8f79b00bd972bd608",
+        "size": [
+          450,
+          40
+        ],
+        "source": "Island_Cliff_Composition.png slice [400, 228, 850, 268]",
+        "transform": "raw native crop; no resample, no recolor"
+      },
+      "terrain_grass.png": {
+        "sha256": "f097b2dae1f4f13f669100e839fb43dfa35b0d087719b976b43dbf653186f670",
+        "size": [
+          1024,
+          1024
+        ],
+        "source": "Terrain_R1_C1.png domain [200, 200, 1050, 1050]",
+        "transform": "from spike, display-layer transform: LANCZOS resize 512 + 2x2 mirror mosaic + grade(color=0.66, brightness=0.97, blend=(125, 146, 88), blend_a=0.16)"
+      },
+      "terrain_path.png": {
+        "sha256": "f6705458c892f4b1ebf0fa32980422206cd6756b8273e99f5445d1d5c4ee6208",
+        "size": [
+          1024,
+          1024
+        ],
+        "source": "Terrain_R1_C2.png domain [200, 200, 1050, 1050]",
+        "transform": "from spike, display-layer transform: LANCZOS resize 512 + 2x2 mirror mosaic + grade(color=0.82, brightness=0.97, blend=(186, 163, 116), blend_a=0.1)"
+      },
+      "terrain_water.png": {
+        "sha256": "a23f12ff684bae986b29fff41c9f395dcd2c92138b912253612f47221e3e8829",
+        "size": [
+          1024,
+          1024
+        ],
+        "source": "Terrain_R2_C2.png domain [220, 220, 1030, 1030]",
+        "transform": "from spike, display-layer transform: LANCZOS resize 512 + 2x2 mirror mosaic + grade(color=0.92, blend=(8, 60, 110), blend_a=0.34)"
+      },
+      "terrain_flower.png": {
+        "sha256": "4d75efc1040b5ec939d677a201938e15a95440cf44905b6b7855bddce1a286cc",
+        "size": [
+          768,
+          768
+        ],
+        "source": "Terrain_R1_C4.png domain [300, 300, 950, 950]",
+        "transform": "from spike, display-layer transform: LANCZOS resize 384 + 2x2 mirror mosaic; native color kept (spike measured no flower recolor)"
+      }
+    },
+    "display_transform": "recolor toward olive/deep-blue, display-layer only, source pixels untouched",
+    "not_gate_keys": "supplementary assets in run/ground/, NOT part of the 62 quality-gate keys"
+  },
   "entries": [
     {
       "key": "bush1",

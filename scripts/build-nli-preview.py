@@ -31,6 +31,14 @@ Offline derivation from the read-only package
     byte-compatible. Per-frame provenance, the "stitched from static poses,
     not calibrated" declaration and the cycle timing live in the manifest
     top-level "run_sheet" block.
+  - terrain_cliffs (2026-10-30 native terrain phase 1, Village pilot): seven
+    supplementary run/ground/ assets — three raw Island_Cliff_Composition
+    slices (whole front cliff / E-W side-wall strip / north grass lip) and
+    four Terrain_Samples materials recolored at the display layer with the
+    throwaway spike's measured constants (.scratch/nli-terrain-spike/
+    build_spike.py, "from spike, display-layer transform"; source pixels
+    untouched). Recorded in the manifest top-level "terrain_cliffs" block;
+    like run_sheet these are NOT part of the 62 quality-gate keys.
 
 Sampling method (Gate R + fix1): premultiply alpha into RGB, zero-pad where
 the inverse-affine window leaves the source canvas, ONE LANCZOS resample of
@@ -66,7 +74,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from PIL import Image, ImageChops, ImageMath, ImageOps
+from PIL import Image, ImageChops, ImageEnhance, ImageMath, ImageOps
 
 SRC_PREFIX = "Assets/NLI_SoftFantasy_ARPG/Sprites/"
 SOURCE_VERSION = "0.2.1-npc-elder"
@@ -255,6 +263,53 @@ RUN_SHEET = {
 # N=5 (cycle <= 500ms). Cadence stays a draft pending user feel.
 RUN_SHEET_PER_FRAME_MS = 96
 
+# 2026-10-30 native terrain phase 1 (Village pilot): supplementary cliff
+# slices + display-layer recolored native ground materials under run/ground/.
+# Like RUN_SHEET these are NOT KEYS members — the 62-key quality gate stays
+# frozen; later tasks consume them by the exact relative path
+# run/ground/<name>.png and the manifest top-level "terrain_cliffs" block
+# records provenance. Every slice coordinate and recolor constant below is
+# copied verbatim from the measured throwaway prototype
+# .scratch/nli-terrain-spike/build_spike.py ("from spike, display-layer
+# transform"); the read-only source pack pixels are never modified.
+CLIFF_COMPOSITION = "Environment/Terrain_Compositions/Island_Cliff_Composition"
+
+# from spike: Island_Cliff_Composition internal structure (measured) is
+# top surface y~226..430 / front cliff y~430..880 / bedrock+foam y~880..1100.
+CLIFF_SLICES = {
+    # whole front cliff: grass lip + rock face + bedrock + foam
+    "cliff_s_band": (CLIFF_COMPOSITION, (350, 405, 900, 915)),
+    # E/W side-wall narrow strip (one strip; runtime mirrors it per side)
+    "cliff_ew_strip": (CLIFF_COMPOSITION, (274, 400, 328, 915)),
+    # north-facing grass lip (upper edge of the cliff top surface)
+    "cliff_n_lip": (CLIFF_COMPOSITION, (400, 228, 850, 268)),
+}
+
+# from spike, display-layer transform: native material domain -> LANCZOS
+# resize -> 2x2 mirror mosaic (seamless fill texture) -> grade with the
+# prototype's measured constants (verbatim):
+#   grass: color=0.66 brightness=0.97 blend=(125,146,88) blend_a=0.16
+#   path:  color=0.82 brightness=0.97 blend=(186,163,116) blend_a=0.10
+#   water: color=0.92 blend=(8,60,110) blend_a=0.34
+# flower: the spike measured NO recolor for the flower mosaic — it ships its
+# native color (grade=None).
+TERRAIN_GROUND = {
+    "terrain_grass": (TERR + "Terrain_R1_C1", (200, 200, 1050, 1050), 512,
+                      {"color": 0.66, "brightness": 0.97,
+                       "blend": (125, 146, 88), "blend_a": 0.16}),
+    "terrain_path": (TERR + "Terrain_R1_C2", (200, 200, 1050, 1050), 512,
+                     {"color": 0.82, "brightness": 0.97,
+                      "blend": (186, 163, 116), "blend_a": 0.10}),
+    "terrain_water": (TERR + "Terrain_R2_C2", (220, 220, 1030, 1030), 512,
+                      {"color": 0.92, "blend": (8, 60, 110), "blend_a": 0.34}),
+    "terrain_flower": (TERR + "Terrain_R1_C4", (300, 300, 950, 950), 384, None),
+}
+
+# Preflight destination list for the 7 supplementary assets (manifest
+# "files" order is instead build order: cliff slices first, then materials).
+TERRAIN_CLIFF_FILES = [f"run/ground/{name}.png"
+                       for name in list(TERRAIN_GROUND) + list(CLIFF_SLICES)]
+
 
 # ---------------------------------------------------------------- sampling ----
 
@@ -346,6 +401,35 @@ def terrain_output(pm, domain, base, blend):
         return p
     secondary = torus_roll(ImageOps.mirror(p.transpose(Image.Transpose.TRANSPOSE)), 91, -173)
     return Image.blend(p, secondary, 0.35)
+
+
+def grade_display(im, params):
+    """Display-layer recolor, from spike (build_spike.py measured constants).
+
+    Source-pack pixels are untouched; only this exported display copy is
+    graded: saturation/brightness via ImageEnhance, then a partial blend
+    toward the olive/deep-blue target color (toward the game's existing
+    olive/deep-blue palette, per the 2026-10-29 native terrain design).
+    """
+    im = ImageEnhance.Color(im).enhance(params.get("color", 1.0))
+    im = ImageEnhance.Brightness(im).enhance(params.get("brightness", 1.0))
+    blend = params.get("blend")
+    if blend is not None:
+        solid = Image.new("RGBA", im.size, tuple(blend) + (255,))
+        im = Image.blend(im, solid, params.get("blend_a", 0.0))
+    return im
+
+
+def grade_desc(params):
+    """Manifest provenance string for a display-layer grade parameter set."""
+    if params is None:
+        return None
+    parts = []
+    for key in ("color", "brightness", "blend", "blend_a"):
+        if key in params:
+            value = params[key]
+            parts.append(f"{key}={tuple(value) if isinstance(value, (tuple, list)) else value}")
+    return ", ".join(parts)
 
 
 # --------------------------------------------------------------- transforms ---
@@ -474,10 +558,11 @@ def check_ts_shadow_pin(before):
 
 def preflight_destinations(output):
     """B1: check the COMPLETE destination set up front (62 PNGs + manifest +
-    README + the run/ spritesheet) so a symlink discovered late can never
-    leave a partial export."""
-    names = [f"{key}.png" for key in KEYS] + ["manifest.json", "README.md",
-                                              RUN_SHEET["file"]]
+    README + the run/ spritesheet + the 7 run/ground/ terrain_cliffs
+    assets) so a symlink discovered late can never leave a partial export."""
+    names = ([f"{key}.png" for key in KEYS] + ["manifest.json", "README.md",
+                                               RUN_SHEET["file"]]
+             + TERRAIN_CLIFF_FILES)
     for name in names:
         dest = Path(output) / name
         if dest.is_symlink():
@@ -653,6 +738,61 @@ def build(source_root, output, before, trees):
         "selection_evidence": ".superpowers/sdd/2026-10-29-ground-i18n-walk/lane-a/pose-analysis.json",
     }
 
+    # ---- 2026-10-30 native terrain phase 1: cliff slices + recolored ----
+    # ---- native ground materials (supplementary run/ground/ assets) ----
+    ground_dir = output / "run" / "ground"
+    ground_dir.mkdir(parents=True, exist_ok=True)
+    ground_files = {}
+
+    def emit_ground(name, image):
+        path = ground_dir / f"{name}.png"
+        image.save(path, format="PNG")
+        return path
+
+    for name, (rel, box) in CLIFF_SLICES.items():
+        # raw native slice: exact source crop, no resample, no recolor
+        # (display-layer transform does not apply to the cliff slices)
+        image = sources.straight(rel).crop(box)
+        path = emit_ground(name, image)
+        ground_files[f"{name}.png"] = {
+            "sha256": digest(path),
+            "size": list(image.size),
+            "source": f"{Path(rel).name}.png slice {list(box)}",
+            "transform": "raw native crop; no resample, no recolor",
+        }
+
+    for name, (rel, domain, base_px, grade_params) in TERRAIN_GROUND.items():
+        # from spike, display-layer transform: domain crop -> LANCZOS resize
+        # -> 2x2 mirror mosaic (seamless fill texture) -> measured grade
+        tile = sources.straight(rel).crop(domain).resize((base_px, base_px), RESAMPLE)
+        mosaic = Image.new("RGBA", (base_px * 2, base_px * 2))
+        mosaic.paste(tile, (0, 0))
+        mosaic.paste(ImageOps.mirror(tile), (base_px, 0))
+        mosaic.paste(ImageOps.flip(tile), (0, base_px))
+        mosaic.paste(ImageOps.mirror(ImageOps.flip(tile)), (base_px, base_px))
+        if grade_params is not None:
+            mosaic = grade_display(mosaic, grade_params)
+        path = emit_ground(name, mosaic)
+        desc = grade_desc(grade_params)
+        ground_files[f"{name}.png"] = {
+            "sha256": digest(path),
+            "size": list(mosaic.size),
+            "source": f"{Path(rel).name}.png domain {list(domain)}",
+            "transform": ("from spike, display-layer transform: LANCZOS resize "
+                          f"{base_px} + 2x2 mirror mosaic + grade({desc})") if desc
+            else ("from spike, display-layer transform: LANCZOS resize "
+                  f"{base_px} + 2x2 mirror mosaic; native color kept "
+                  "(spike measured no flower recolor)"),
+        }
+
+    terrain_cliffs_meta = {
+        "files": ground_files,
+        "display_transform": ("recolor toward olive/deep-blue, display-layer only, "
+                              "source pixels untouched"),
+        "not_gate_keys": ("supplementary assets in run/ground/, NOT part of the "
+                          "62 quality-gate keys"),
+    }
+
     manifest = {
         "preview": "NLI 素材预览 · v0.2 全量替换 · 静态姿态 + 拼接跑动条",
         "source_package": "NLI_SoftFantasy_ARPG_v0.2 (read-only)",
@@ -781,6 +921,7 @@ def build(source_root, output, before, trees):
             "not final validation",
         ],
         "run_sheet": run_sheet_meta,
+        "terrain_cliffs": terrain_cliffs_meta,
         "entries": entries,
     }
     (output / "manifest.json").write_text(
