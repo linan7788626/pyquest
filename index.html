@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PyQuest · Python 冒险记</title>
+  <title>PyQuest · NLI 素材预览</title>
+  <link rel="icon" type="image/png" href="/nli-preview/ui_shard.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -56,7 +57,8 @@
       /* 保持 3:2，缩放由 JS 控制；无 JS 回退时 DOM UI 以 1:1 呈现 960×640 设计稿 */
     }
     #stage > #game { position: absolute; inset: 0; }
-    #stage > canvas { position: absolute; inset: 0; image-rendering: pixelated; }
+    #stage > canvas { position: absolute; inset: 0; }
+    #stage canvas { image-rendering: auto; }
 
     /* ---------- DOM UI 层（覆盖在画布上）· #12 移动端断裂修复 ----------
        两层分工：
@@ -1009,7 +1011,7 @@
         <div id="title" class="full-modal">
           <div class="stars"></div>
           <h1>PyQuest</h1>
-          <div class="subtitle">Python for Astronomy · 八周冒险</div>
+          <div class="subtitle">NLI 素材预览 · 静态姿态</div>
           <div class="keys">
             <kbd>方向键</kbd> / <kbd>WASD</kbd> 移动 &nbsp;·&nbsp; <kbd>J</kbd> / <kbd>空格</kbd> 挥剑 &nbsp;·&nbsp; <kbd>E</kbd> 交互 / 对话 &nbsp;·&nbsp; <kbd>Tab</kbd> 世界地图<br />
             八章关卡对应八周课程：基础 → 函数 → NumPy → 天文包 → 加速 → 数值方法 → 信号 → 暗物质晕！

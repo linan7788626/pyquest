@@ -6,17 +6,15 @@ import { phaseOf, PHASE } from '../core/phase.js';
 import { CHAPTERS, getChapter } from '../data/chapters.js';
 import { ICON } from './icons.js';
 
-const SVG_HEART = (fill, shine) => `
-  <svg viewBox="0 0 9 8" shape-rendering="crispEdges">
-    <path d="M1 0h2v1h1v1h1V1h1V0h2v1h1v3h-1v1h-1v1h-1v1h-1v1h-1V7H3V6H2V5H1V4H0V1h1z"
-      fill="${fill}" stroke="none"/>
-    <path d="M2 1h1v1H2z" fill="${shine}"/>
+// 保持 SVG 外壳、尺寸与 #hearts svg 测试契约；内嵌 NLI 平滑 PNG。
+const SVG_HEART = (state) => `
+  <svg viewBox="0 0 64 64" aria-hidden="true">
+    <image href="/nli-preview/ui_heart_${state}.png" width="64" height="64"/>
   </svg>`;
 
 export const SVG_SHARD = `
-  <svg viewBox="0 0 10 12" shape-rendering="crispEdges">
-    <path d="M4 0h2v1h1v1h1v2h1v2h-1v2h-1v1h-1v1h-1v1H4v-1H3v-1H2V8H1V6H0V4h1V2h1V1h1z" fill="#ffd257"/>
-    <path d="M4 2h1v2h1v2H5v2H4V6H3V4h1z" fill="#fff3c4"/>
+  <svg viewBox="0 0 64 64" aria-hidden="true">
+    <image href="/nli-preview/ui_shard.png" width="64" height="64"/>
   </svg>`;
 
 function heartState(i) {
@@ -67,9 +65,7 @@ export class HUD {
     let html = '';
     for (let i = 0; i < G.maxHearts; i++) {
       const state = heartState(i);
-      html += state === 'full'
-        ? SVG_HEART('#ef5a68', 'rgba(255,255,255,.7)')
-        : SVG_HEART('#564e66', 'rgba(255,255,255,.14)');
+      html += SVG_HEART(state);
     }
     const hurt = this._lastHearts != null && G.hearts < this._lastHearts;
     this._lastHearts = G.hearts;

@@ -25,10 +25,10 @@ const config = {
   parent: 'game',
   width: GAME_W,
   height: GAME_H,
-  // 像素完美渲染：16px 贴图 × 相机 4x 整数放大，锐利无插值
-  pixelArt: true,
-  antialias: false,
-  roundPixels: true,
+  // NLI 风格卡：平滑软绘，使用线性采样；场景镜头/缩放与玩法保持原值。
+  pixelArt: false,
+  antialias: true,
+  roundPixels: false,
   backgroundColor: '#2c2438',
   physics: {
     default: 'arcade',

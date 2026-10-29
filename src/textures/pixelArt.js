@@ -1,10 +1,7 @@
 // ============================================================
-// 程序化贴图（游戏专属元素）
-// 角色/地形/建筑使用 Tiny Swords 素材（src/assets/ts.js），
-// 这里只生成带有游戏身份、无现成素材的元素：
-// 代码碎片 / 爱心 / 传送门 / 水晶 / 蘑菇 /
-// 挥剑特效 / 粒子 / 石门 / 火炬
-// 风格与 Kenney Tiny Town 对齐：平涂色块 + #3f2631 深紫描边
+// NLI 预览优先使用 Boot 已加载的同尺寸 PNG。
+// 下方旧绘图仅供无浏览器、无Phaser Scene的smoke桩；产品缺图不回退。
+// 仍在正常运行时生成的只有技术用途的 8×8 光点 particle。
 // ============================================================
 
 export const S = 1;
@@ -58,6 +55,7 @@ function outline(ctx, w, h, color = P.line) {
 }
 
 function makePx(scene, key, w, h, draw) {
+  if (scene.textures.exists(key)) return;
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
@@ -232,6 +230,12 @@ function drawTorch(ctx) {
 // 入口：生成全部程序化贴图
 // ============================================================
 export function generateAllTextures(scene) {
+  // 不按“缺了几个key”判断模式，避免真实加载失败时混入旧图。
+  const smokeStub = typeof window === 'undefined' && !scene.sys && !scene.game;
+  if (!smokeStub) {
+    makeParticle(scene);
+    return;
+  }
   makePx(scene, 'shard', 20, 24, drawShard);
   makePx(scene, 'heart_full', 15, 13, (ctx) => drawHeart(ctx, 'full'));
   makePx(scene, 'portal_door', 48, 48, drawPortal);

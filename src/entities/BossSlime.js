@@ -7,7 +7,7 @@ import { G } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
 import { Slime } from './Slime.js';
 
-const BOSS_SCALE = 3.2; // 基础角色 ×2 后再 ×1.6
+const BOSS_SCALE = 1.28; // 480px 帧（密度2.5）；世界尺寸仍 614.4×614.4
 
 export class BossSlime extends Slime {
   constructor(scene, x, y) {
@@ -15,7 +15,7 @@ export class BossSlime extends Slime {
     this.setTexture('warrior_purple_idle');
     this.setScale(BOSS_SCALE);
     this.setOrigin(0.5, 136 / 192);
-    this.body.setSize(60, 26).setOffset(66, 132);
+    this.body.setSize(150, 65).setOffset(165, 330); // local×2.5，世界 body 192×83.2 不变
     this.anims.stop();
     this.play('ts_warrior_purple_idle');
     this.animIdle = 'ts_warrior_purple_idle';

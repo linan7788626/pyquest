@@ -1,0 +1,920 @@
+{
+ "purpose": "v0.2 hit-geometry pre-change baseline from immutable v02-before snapshot: enemy/head/segment getBounds, static-body world coords, heart pickup physics after enlargement+tween, four-direction attack reach boundary via real tryAttack outcomes",
+ "capturedAt": "2026-10-28T16:33:47.410Z",
+ "serverPort": 5199,
+ "hitHashCheck": {
+  "before": {
+   "compared": 94,
+   "mismatched": 0,
+   "missing": 0
+  },
+  "after": {
+   "compared": 94,
+   "mismatched": 0,
+   "missing": 0
+  }
+ },
+ "scenes": {
+  "Village": {
+   "boss": null,
+   "slimes": [
+    {
+     "tex": "pawn_red",
+     "pos": [
+      1704,
+      768
+     ],
+     "bounds": {
+      "x": 1512,
+      "y": 500,
+      "w": 384,
+      "h": 384
+     },
+     "body": {
+      "w": 96,
+      "h": 48,
+      "ox": 72,
+      "oy": 134
+     },
+     "scale": 2
+    }
+   ],
+   "solids": [
+    {
+     "key": "castle",
+     "pos": [
+      1024,
+      1444
+     ],
+     "bounds": {
+      "x": 832,
+      "y": 804,
+      "w": 384,
+      "h": 640
+     },
+     "body": {
+      "w": 160,
+      "h": 180,
+      "ox": 16,
+      "oy": 140
+     }
+    },
+    {
+     "key": "gate_closed",
+     "pos": [
+      1664,
+      281.6
+     ],
+     "bounds": {
+      "x": 1472,
+      "y": 89.6,
+      "w": 384,
+      "h": 384
+     },
+     "body": {
+      "w": 360,
+      "h": 340,
+      "ox": 12,
+      "oy": 20
+     }
+    }
+   ],
+   "trees": {
+    "tree4": {
+     "dispW": 256,
+     "dispH": 192,
+     "bodyW": 104,
+     "bodyH": 60,
+     "ox": 76,
+     "oy": 120
+    },
+    "tree2": {
+     "dispW": 256,
+     "dispH": 256,
+     "bodyW": 104,
+     "bodyH": 60,
+     "ox": 76,
+     "oy": 184
+    },
+    "tree1": {
+     "dispW": 256,
+     "dispH": 256,
+     "bodyW": 104,
+     "bodyH": 60,
+     "ox": 76,
+     "oy": 184
+    },
+    "tree3": {
+     "dispW": 256,
+     "dispH": 192,
+     "bodyW": 104,
+     "bodyH": 60,
+     "ox": 76,
+     "oy": 120
+    }
+   },
+   "treeTotal": 137,
+   "attack": [
+    {
+     "facing": "down",
+     "boundary": 212.5,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "up",
+     "boundary": 204.6875,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "left",
+     "boundary": 200.78125,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "right",
+     "boundary": 200.78125,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    }
+   ],
+   "entityTypes": [
+    "pawn_red",
+    "warrior"
+   ]
+  },
+  "Dungeon": {
+   "boss": {
+    "cls": "BossSlime",
+    "tex": "warrior_purple",
+    "bounds": {
+     "x": 1484.8,
+     "y": 1484.8,
+     "w": 614.4,
+     "h": 614.4
+    },
+    "body": {
+     "w": 192,
+     "h": 83.2,
+     "ox": 165,
+     "oy": 330
+    },
+    "origin": [
+     0.5,
+     0.708333
+    ],
+    "scale": [
+     1.28,
+     1.28
+    ],
+    "segs": [],
+    "crown": {
+     "bounds": {
+      "x": 1748,
+      "y": 1576,
+      "w": 88,
+      "h": 88
+     },
+     "dispW": 88,
+     "dispH": 88
+    }
+   },
+   "slimes": [
+    {
+     "tex": "pawn_red",
+     "pos": [
+      1192,
+      640
+     ],
+     "bounds": {
+      "x": 1000,
+      "y": 372,
+      "w": 384,
+      "h": 384
+     },
+     "body": {
+      "w": 96,
+      "h": 48,
+      "ox": 72,
+      "oy": 134
+     },
+     "scale": 2
+    }
+   ],
+   "solids": [],
+   "trees": {},
+   "treeTotal": 0,
+   "attack": [
+    {
+     "facing": "down",
+     "boundary": 212.5,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "up",
+     "boundary": 204.6875,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "left",
+     "boundary": 200.78125,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "right",
+     "boundary": 200.78125,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    }
+   ],
+   "entityTypes": [
+    "BossSlime",
+    "pawn_red",
+    "warrior",
+    "warrior_purple"
+   ]
+  },
+  "Cave": {
+   "boss": {
+    "cls": "BossSnake",
+    "tex": "warrior_black",
+    "bounds": {
+     "x": 1808,
+     "y": 2156,
+     "w": 480,
+     "h": 480
+    },
+    "body": {
+     "w": 150,
+     "h": 65,
+     "ox": 66,
+     "oy": 132
+    },
+    "origin": [
+     0.5,
+     0.708333
+    ],
+    "scale": [
+     2.5,
+     2.5
+    ],
+    "segs": [
+     {
+      "tex": "pawn_black",
+      "bounds": {
+       "x": 1928.96,
+       "y": 2169.84,
+       "w": 238.08,
+       "h": 238.08
+      },
+      "origin": [
+       0.5,
+       0.697917
+      ],
+      "scale": [
+       1.24,
+       1.24
+      ]
+     },
+     {
+      "tex": "pawn_black",
+      "bounds": {
+       "x": 1928.96,
+       "y": 2009.84,
+       "w": 238.08,
+       "h": 238.08
+      },
+      "origin": [
+       0.5,
+       0.697917
+      ],
+      "scale": [
+       1.24,
+       1.24
+      ]
+     },
+     {
+      "tex": "pawn_black",
+      "bounds": {
+       "x": 1928.96,
+       "y": 1849.84,
+       "w": 238.08,
+       "h": 238.08
+      },
+      "origin": [
+       0.5,
+       0.697917
+      ],
+      "scale": [
+       1.24,
+       1.24
+      ]
+     },
+     {
+      "tex": "pawn_black",
+      "bounds": {
+       "x": 1928.96,
+       "y": 1689.84,
+       "w": 238.08,
+       "h": 238.08
+      },
+      "origin": [
+       0.5,
+       0.697917
+      ],
+      "scale": [
+       1.24,
+       1.24
+      ]
+     },
+     {
+      "tex": "pawn_black",
+      "bounds": {
+       "x": 1928.96,
+       "y": 1529.84,
+       "w": 238.08,
+       "h": 238.08
+      },
+      "origin": [
+       0.5,
+       0.697917
+      ],
+      "scale": [
+       1.24,
+       1.24
+      ]
+     },
+     {
+      "tex": "pawn_black",
+      "bounds": {
+       "x": 1928.96,
+       "y": 1369.84,
+       "w": 238.08,
+       "h": 238.08
+      },
+      "origin": [
+       0.5,
+       0.697917
+      ],
+      "scale": [
+       1.24,
+       1.24
+      ]
+     }
+    ],
+    "crown": null
+   },
+   "slimes": [
+    {
+     "tex": "pawn_red",
+     "pos": [
+      1448,
+      832
+     ],
+     "bounds": {
+      "x": 1256,
+      "y": 564,
+      "w": 384,
+      "h": 384
+     },
+     "body": {
+      "w": 96,
+      "h": 48,
+      "ox": 72,
+      "oy": 134
+     },
+     "scale": 2
+    }
+   ],
+   "solids": [
+    {
+     "key": "crystal",
+     "pos": [
+      832,
+      1984
+     ],
+     "bounds": {
+      "x": 744,
+      "y": 1795.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      1344,
+      448
+     ],
+     "bounds": {
+      "x": 1256,
+      "y": 259.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      1600,
+      1344
+     ],
+     "bounds": {
+      "x": 1512,
+      "y": 1155.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      1728,
+      704
+     ],
+     "bounds": {
+      "x": 1640,
+      "y": 515.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      2496,
+      1856
+     ],
+     "bounds": {
+      "x": 2408,
+      "y": 1667.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      2752,
+      576
+     ],
+     "bounds": {
+      "x": 2664,
+      "y": 387.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      3264,
+      1344
+     ],
+     "bounds": {
+      "x": 3176,
+      "y": 1155.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    }
+   ],
+   "trees": {},
+   "treeTotal": 0,
+   "attack": [
+    {
+     "facing": "down",
+     "boundary": 212.5,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "up",
+     "boundary": 204.6875,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "left",
+     "boundary": 200.78125,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "right",
+     "boundary": 200.78125,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    }
+   ],
+   "entityTypes": [
+    "BossSnake",
+    "pawn_black",
+    "pawn_red",
+    "warrior",
+    "warrior_black"
+   ]
+  },
+  "SciLair": {
+   "boss": {
+    "cls": "BossSlime",
+    "tex": "warrior_purple",
+    "bounds": {
+     "x": 1612.8,
+     "y": 1868.8,
+     "w": 614.4,
+     "h": 614.4
+    },
+    "body": {
+     "w": 192,
+     "h": 83.2,
+     "ox": 165,
+     "oy": 330
+    },
+    "origin": [
+     0.5,
+     0.708333
+    ],
+    "scale": [
+     1.28,
+     1.28
+    ],
+    "segs": [],
+    "crown": {
+     "bounds": {
+      "x": 1876,
+      "y": 1960,
+      "w": 88,
+      "h": 88
+     },
+     "dispW": 88,
+     "dispH": 88
+    }
+   },
+   "slimes": [
+    {
+     "tex": "pawn_red",
+     "pos": [
+      1320,
+      768
+     ],
+     "bounds": {
+      "x": 1128,
+      "y": 500,
+      "w": 384,
+      "h": 384
+     },
+     "body": {
+      "w": 96,
+      "h": 48,
+      "ox": 72,
+      "oy": 134
+     },
+     "scale": 2
+    }
+   ],
+   "solids": [
+    {
+     "key": "crystal",
+     "pos": [
+      704,
+      1856
+     ],
+     "bounds": {
+      "x": 616,
+      "y": 1667.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      1856,
+      1728
+     ],
+     "bounds": {
+      "x": 1768,
+      "y": 1539.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      1984,
+      1984
+     ],
+     "bounds": {
+      "x": 1896,
+      "y": 1795.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      1984,
+      2112
+     ],
+     "bounds": {
+      "x": 1896,
+      "y": 1923.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      2112,
+      2112
+     ],
+     "bounds": {
+      "x": 2024,
+      "y": 1923.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      2496,
+      1472
+     ],
+     "bounds": {
+      "x": 2408,
+      "y": 1283.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    },
+    {
+     "key": "crystal",
+     "pos": [
+      3008,
+      2112
+     ],
+     "bounds": {
+      "x": 2920,
+      "y": 1923.9,
+      "w": 176,
+      "h": 198
+     },
+     "body": {
+      "w": 120,
+      "h": 68,
+      "ox": 28,
+      "oy": 116
+     }
+    }
+   ],
+   "trees": {},
+   "treeTotal": 0,
+   "attack": [
+    {
+     "facing": "down",
+     "boundary": 212.5,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "up",
+     "boundary": 204.6875,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "left",
+     "boundary": 200.78125,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    },
+    {
+     "facing": "right",
+     "boundary": 200.78125,
+     "insideHit": true,
+     "outsideHit": false,
+     "enemyBounds": {
+      "w": 384,
+      "h": 384
+     }
+    }
+   ],
+   "entityTypes": [
+    "BossSlime",
+    "pawn_red",
+    "warrior",
+    "warrior_purple"
+   ]
+  }
+ },
+ "treeVariants": {
+  "tree4": {
+   "dispW": 256,
+   "dispH": 192,
+   "bodyW": 104,
+   "bodyH": 60,
+   "ox": 76,
+   "oy": 120
+  },
+  "tree2": {
+   "dispW": 256,
+   "dispH": 256,
+   "bodyW": 104,
+   "bodyH": 60,
+   "ox": 76,
+   "oy": 184
+  },
+  "tree1": {
+   "dispW": 256,
+   "dispH": 256,
+   "bodyW": 104,
+   "bodyH": 60,
+   "ox": 76,
+   "oy": 184
+  },
+  "tree3": {
+   "dispW": 256,
+   "dispH": 192,
+   "bodyW": 104,
+   "bodyH": 60,
+   "ox": 76,
+   "oy": 120
+  }
+ },
+ "heart": {
+  "spawnAt": [
+   2304,
+   1536
+  ],
+  "initial": {
+   "bodyW": 15,
+   "bodyH": 13,
+   "dispW": 116,
+   "dispH": 100,
+   "x": 2304,
+   "y": 1536,
+   "bodyX": 2296.5,
+   "bodyY": 1529.5,
+   "depth": 1500
+  },
+  "floatingObserved": true,
+  "afterFloat": {
+   "bodyW": 15,
+   "bodyH": 13,
+   "dispW": 116,
+   "dispH": 100,
+   "x": 2304,
+   "bodyX": 2296.5,
+   "bodyY": 1529.5,
+   "depth": 1500
+  }
+ }
+}

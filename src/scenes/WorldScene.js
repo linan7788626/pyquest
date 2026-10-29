@@ -19,6 +19,7 @@ import { sfx } from '../audio/sfx.js';
 import { wipeTransition } from '../ui/wipe.js';
 import { T } from '../data/maps.js';
 import { makeGroundTexture } from '../textures/ground.js';
+import { initNliDisplay, fixedFxDepth, addVillageCastle, createDoorlinkImage, registerDoorOcclusion, framePoint, torchFlamePoint } from '../display/nliDisplay.js';
 
 // ---------- 交互判定半径（玩法冻结：数值即原字面量，勿改） ----------
 /** 符文石可交互/提示半径（px，世界坐标距离） */
@@ -69,6 +70,7 @@ export class WorldScene extends Phaser.Scene {
 
     const def = this.mapDef;
     this.def = def;
+    initNliDisplay(this);
     const P = cp(this.ch.id); // 本章进度
     G.current = this.ch.id;   // 跟踪玩家所在章节（HUD / 碎片计数用）
 
@@ -197,7 +199,7 @@ export class WorldScene extends Phaser.Scene {
           Phaser.Math.Between(400, def.w * 128 - 400),
           Phaser.Math.Between(400, def.h * 128 - 400),
           keys[i % keys.length],
-        ).setAlpha(0.32).setDepth(1500).setDisplaySize(1120, 496);
+        ).setAlpha(0.32).setDepth(fixedFxDepth(this, 1500)).setDisplaySize(1120, 496);
         this.tweens.add({
           targets: c,
           x: c.x + Phaser.Math.Between(-1000, 1000),
@@ -216,8 +218,8 @@ export class WorldScene extends Phaser.Scene {
       // 地牢：火把飞灰
       if (!this.torches.length) return;
       const t = Phaser.Utils.Array.GetRandom(this.torches);
-      const p = this.add.image(t.x + Phaser.Math.Between(-16, 16), t.y - 88, 'particle')
-        .setTint(0xffb84d).setAlpha(0.85).setScale(7.2).setDepth(1200);
+      const p = this.add.image(t.flameX + Phaser.Math.Between(-16, 16), t.flameY, 'particle')
+        .setTint(0xffb84d).setAlpha(0.85).setScale(7.2).setDepth(fixedFxDepth(this, 1200));
       this.tweens.add({ targets: p, y: p.y - 128, x: p.x + Phaser.Math.Between(-32, 32), alpha: 0, duration: 950, onComplete: () => p.destroy() });
       return;
     }
@@ -230,7 +232,7 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     const p = this.add.image(view.x + Phaser.Math.Between(80, view.width - 80), view.y + Phaser.Math.Between(80, view.height - 80), 'particle')
-      .setTint(0xfff0a8).setAlpha(0.8).setScale(7.2).setDepth(1200);
+      .setTint(0xfff0a8).setAlpha(0.8).setScale(7.2).setDepth(fixedFxDepth(this, 1200));
     this.tweens.add({ targets: p, x: p.x + 56, y: p.y - 72, alpha: 0, duration: 2500, onComplete: () => p.destroy() });
   }
 
@@ -256,6 +258,7 @@ export class WorldScene extends Phaser.Scene {
         this.solids.add(h);
         h.body.setSize(160, 180).setOffset(16, 140); // 纹素坐标（底部主体，×scale 生效）
         h.setDepth(p.y);
+        addVillageCastle(this, p, h);
         break;
       }
       case 'npc': {
@@ -314,13 +317,14 @@ export class WorldScene extends Phaser.Scene {
         break;
       }
       case 'torch': {
-        // 程序化火炬柱 + TS 火焰动画
+        // 新图含完整火焰；fire保留透明单帧，光点注册到真实焰心。
         const t = this.add.image(p.x, p.y + 80, 'torch_0').setOrigin(0.5, 0.9).setDisplaySize(112, 224);
         t.setDepth(p.y - 6);
-        this.torches.push({ x: p.x, y: p.y });
+        const flame = torchFlamePoint(this, t);
+        this.torches.push({ x: p.x, y: p.y, flameX: flame.x, flameY: flame.y });
         const fire = this.add.sprite(p.x, p.y - 60, 'fire').setDisplaySize(144, 144).setDepth(p.y - 5);
         fire.play('ts_fire');
-        const glow = this.add.image(p.x, p.y - 60, 'particle')
+        const glow = this.add.image(flame.x, flame.y, 'particle')
           .setScale(40).setAlpha(0.16).setTint(0xffb84d).setDepth(p.y - 7);
         this.tweens.add({ targets: glow, alpha: 0.26, scale: 48, duration: 520, yoyo: true, repeat: -1 });
         break;
@@ -336,7 +340,8 @@ export class WorldScene extends Phaser.Scene {
         c.setDepth(p.y);
         this.solids.add(c);
         c.body.setSize(120, 68).setOffset(28, 116); // 底座（显示 176×198）
-        this.add.image(p.x, p.y + 4, 'ts_shadow').setDisplaySize(160, 80).setAlpha(0.45).setDepth(p.y - 1);
+        const foot = framePoint(c, 20, 37);
+        this.add.image(foot.x, foot.y + 4, 'ts_shadow').setDisplaySize(160, 80).setAlpha(0.45).setDepth(p.y - 1);
         // 晶体微光
         const glow = this.add.image(p.x, p.y - 68, 'particle')
           .setScale(30).setAlpha(0.1).setTint(0x57d9d0).setDepth(p.y - 0.6);
@@ -351,6 +356,7 @@ export class WorldScene extends Phaser.Scene {
       case 'door': {
         const d = this.add.image(p.x, p.y + 48, 'portal_door').setOrigin(0.5, 1).setDisplaySize(300, 300);
         d.setDepth(p.y - 1);
+        registerDoorOcclusion(this, d);
         const aura = this.add.image(p.x, p.y - 72, 'particle')
           .setTint(0x3ddad7).setAlpha(0.16).setScale(36).setDepth(p.y - 2);
         this.tweens.add({ targets: aura, alpha: 0.28, scale: 42, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
@@ -359,8 +365,7 @@ export class WorldScene extends Phaser.Scene {
       case 'doorlink': {
         // 带封印状态的传送门：locked 时有实体阻挡 + 可按 E 检查（子类可覆写 onDoorLocked 解锁）
         const locked = !meetsRequires(p.requires);
-        const d = this.add.image(p.x, p.y + 48, 'portal_door').setOrigin(0.5, 1).setDisplaySize(300, 300);
-        d.setDepth(p.y + 4);
+        const d = createDoorlinkImage(this, p);
         const it = { kind: 'doorlink', x: p.x, y: p.y, locked, prop: p, sprite: d, alive: true };
         if (locked) {
           d.setTint(0x8a8496);
@@ -434,7 +439,7 @@ export class WorldScene extends Phaser.Scene {
 
   spawnShardFx(x, y, tint = 0xffd257) {
     for (let i = 0; i < 14; i++) {
-      const p = this.add.image(x, y, 'particle').setTint(tint).setDepth(1900).setScale(10);
+      const p = this.add.image(x, y, 'particle').setTint(tint).setDepth(fixedFxDepth(this, 1900)).setScale(10);
       this.tweens.add({
         targets: p,
         x: x + Phaser.Math.Between(-280, 280),
@@ -491,13 +496,15 @@ export class WorldScene extends Phaser.Scene {
       fontFamily: '"ZCOOL KuaiLe","PingFang SC",sans-serif',
       fontSize: '68px', color,
       stroke: '#4a3b32', strokeThickness: 16,
-    }).setOrigin(0.5).setDepth(2000);
+    }).setOrigin(0.5).setDepth(fixedFxDepth(this, 2000));
     this.tweens.add({ targets: t, y: y - 220, alpha: 0, duration: 1100, onComplete: () => t.destroy() });
   }
 
   spawnHeartDrop(x, y) {
-    const h = this.physics.add.staticImage(x, y, 'heart_full')
-      .setDisplaySize(116, 100).setDepth(1500);
+    // 先以旧15×13尺寸建立静态拾取体，再独立放大显示；禁止refreshBody随浮动刷新。
+    const h = this.add.image(x, y, 'heart_full').setDisplaySize(15, 13);
+    this.physics.add.existing(h, true);
+    h.setDisplaySize(116, 100).setDepth(fixedFxDepth(this, 1500));
     this.tweens.add({ targets: h, y: h.y - 32, duration: 520, yoyo: true, repeat: -1 });
     this.physics.add.overlap(this.player, h, () => {
       if (G.hearts >= G.maxHearts) {

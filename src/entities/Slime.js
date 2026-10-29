@@ -5,6 +5,7 @@
 // ============================================================
 import Phaser from 'phaser';
 import { sfx } from '../audio/sfx.js';
+import { fixedFxDepth } from '../display/nliDisplay.js';
 
 const SCALE = 2;     // 角色图标放大一倍
 const FOOT_Y = 134; // Pawn 脚底略高
@@ -92,7 +93,7 @@ export class Slime extends Phaser.Physics.Arcade.Sprite {
   burst(colors, count = 10) {
     for (let i = 0; i < count; i++) {
       const p = this.scene.add.image(this.x, this.y - 20, 'particle')
-        .setTint(colors[i % colors.length]).setScale(2.5).setDepth(1800);
+        .setTint(colors[i % colors.length]).setScale(2.5).setDepth(fixedFxDepth(this.scene, 1800));
       const a = Math.random() * Math.PI * 2;
       const sp = 120 + Math.random() * 200;
       this.scene.tweens.add({

@@ -9,6 +9,7 @@ import Phaser from 'phaser';
 import { G } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
 import { Slime } from './Slime.js';
+import { fixedFxDepth } from '../display/nliDisplay.js';
 
 const SEG_GAP = 184;      // 体节间距（头部轨迹采样间隔；角色 ×2 后等比）
 const MAX_TRAIL = 4800;  // 头部轨迹记录长度
@@ -145,7 +146,7 @@ export class BossSnake extends Slime {
     sfx.enemyDie();
     for (let i = 0; i < 8; i++) {
       const p = this.scene.add.image(s.x, s.y, 'particle')
-        .setTint([0x6fce5e, 0xb5e48c, 0xffffff][i % 3]).setScale(4).setDepth(1800);
+        .setTint([0x6fce5e, 0xb5e48c, 0xffffff][i % 3]).setScale(4).setDepth(fixedFxDepth(this.scene, 1800));
       const a = Math.random() * Math.PI * 2;
       const sp = 120 + Math.random() * 190;
       this.scene.tweens.add({
@@ -169,7 +170,7 @@ export class BossSnake extends Slime {
         if (!s.active) return;
         for (let j = 0; j < 6; j++) {
           const p = scene.add.image(s.x, s.y, 'particle')
-            .setTint([0x6fce5e, 0xffffff, 0xffd257][j % 3]).setScale(4).setDepth(1800);
+            .setTint([0x6fce5e, 0xffffff, 0xffd257][j % 3]).setScale(4).setDepth(fixedFxDepth(scene, 1800));
           const a = Math.random() * Math.PI * 2;
           scene.tweens.add({
             targets: p, x: s.x + Math.cos(a) * 150, y: s.y + Math.sin(a) * 150 - 40,
