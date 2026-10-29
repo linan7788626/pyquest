@@ -5,8 +5,9 @@
 画风致敬《塞尔达传说：织梦岛》Switch 重制版 + 欧美 Q 版卡通：俯视角、大头小身比例、
 描边卡通渲染（帽子/羽毛/肩带/宝珠等层叠细节）、柔和粉彩配色、无像素马赛克的矢量渲染。
 **全部角色以 4 倍尺寸显示**，环境物件按 2.5 倍跟随缩放。
-美术以 [Tiny Swords](https://pixelfrog-assets.itch.io/tiny-swords)（Pixel Frog · Free Pack，本地素材包）
-+ 少量程序化贴图（代码碎片/爱心/传送门等游戏专属元素），第一章长老已接入 NLI 软绘风格静态图。
+美术为 NLI 软绘风格贴图（本地 `assets/nli-preview/` 归一化导出；第一章长老为 `monk_idle` 静态贴图，
+无外观切换参数）+ 少量程序化贴图（代码碎片/爱心/传送门等游戏专属元素）。
+[Tiny Swords](https://pixelfrog-assets.itch.io/tiny-swords)（Pixel Frog · Free Pack）本地素材包仅保留创作与预览用途，不再参与运行时加载。
 
 > [!NOTE]
 > **本项目完全由 GLM-5.3 Vibe Coding 而成** —— 从玩法设计、架构搭建、场景/实体实现、
@@ -215,9 +216,9 @@ node scripts/e2e-ch8.mjs     # E2E：第八章（深空晕环/核心符文/NFW �
 
 ## 稳定性修复与 NLI 长老试点
 
-当前实现保护标题页已有存档，并修复快速折返传送、题面高亮、长题布局、结算保护与运动一致性。第一章长老默认使用 NLI 原生透明图；在游戏地址后添加 `?art=tiny` 可切回 Tiny Swords 长老。该试点只包含静态 NPC 展示。
+当前实现保护标题页已有存档，并修复快速折返传送、题面高亮、长题布局、结算保护与运动一致性。运行美术（含第一章长老）使用 NLI 软绘贴图：长者为 `monk_idle` 静态贴图（`assets/nli-preview/`），没有 `?art` 之类的外观切换参数。
 
-运行素材由 `src/assets/ts.js` 的共享清单选取，开发和构建自动生成 `.cache/pyquest-public/`。`assets/` 下的素材包、ZIP、Unity 包和生成记录仍供创作与预览使用，构建只包含运行资源。资源缺失会列出源文件路径并停止启动。
+当前构建按 `vite.config.js` 的 `publicDir: 'assets'` 把 `assets/` 整个目录复制进 `dist/`，包括 NLI 源素材包、ZIP、Unity 包与生成记录（实测约 1.9 GB）；运行时实际只加载 `assets/nli-preview/` 清单内的贴图。收窄 dist 内容并恢复体积预算需要先把 runtime-assets 管线适配到 NLI 的 `/nli-preview` 路径模型，由 issue 跟踪（`.scratch/project-hardening-2026-10-29/issues/13-runtime-pipeline-nli.md`）。
 
 ```bash
 npm test                 # 逻辑回归、地图与题库数据
@@ -225,8 +226,8 @@ npm run test:e2e          # 自动本机服务、隔离浏览器存储、新增�
 npm run check:release     # 全检查、Python题目校验、生产构建及两种部署路径
 ```
 
-浏览器测试需要先安装 Chromium（`npx playwright install chromium`），完整发布检查还需要可执行原题校验的 Python 科学计算环境。测试证据保存在 `test-results/`，章节日志和失败截图可用于定位。
+以上命令真实可用；注意 `check:release` 需要本地具备完整素材和可执行原题校验的 Python 科学计算环境。此外 `scripts/check-build.mjs` 当前并不全绿：构建体积/内容断言已暂时移除（待 issue 13 恢复），且子目录部署检查会失败——运行贴图按绝对路径 `/nli-preview/*` 加载，挂到 `/pyquest/` 等子目录时会 404，游戏停在素材加载失败画面。浏览器测试需要先安装 Chromium（`npx playwright install chromium`）。测试证据保存在 `test-results/`，章节日志和失败截图可用于定位。
 
 自动持续检查运行纯逻辑检查。完整游戏工作流通过手动触发，在带 `pyquest-assets` 标签的自托管 runner 运行；其 `PYQUEST_ASSET_ROOT` 必须包含真实的 `TinySwordsFreePack/` 和 `NLI_SoftFantasy_ARPG_v0.2/`。缺少素材时完整检查失败，不使用空白图片代替。
 
-部署时上传 `dist/`，支持站点根目录及 `/pyquest/` 等子目录。发布检查要求当前试点构建总文件体积不超过20MB，并确认资源能够真实解码。
+部署时上传 `dist/`。注意两点：运行贴图按绝对路径 `/nli-preview/*` 加载，目前只支持站点根目录部署（子目录挂载会 404，恢复方案见 issue 13）；当前 dist 约 1.9 GB、浏览器首次加载较慢，收窄到运行清单素材并恢复体积约束亦见 issue 13。

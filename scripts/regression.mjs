@@ -19,8 +19,8 @@ export async function regression(base) {
  page.once('dialog',d=>d.accept());await page.locator('#btn-restart').click();await page.waitForLoadState();await page.waitForFunction(()=>window.__PYQUEST__?.scene('Boot')?.sys.settings.status===5);
  assert.equal(await page.locator('#btn-start').textContent(),'开始冒险');checks.push('restart remains cleared after real reload');
  await page.locator('#btn-start').click();await page.waitForFunction(()=>window.__PYQUEST__?.active()?.player);
- assert.equal(await page.evaluate(()=>window.__PYQUEST__.active().npc.sprite.texture.key),'npc_elder');
- await page.screenshot({path:'test-results/nli-elder.png'});checks.push('NLI elder used in game');
+ assert.equal(await page.evaluate(()=>window.__PYQUEST__.active().npc.sprite.texture.key),'monk_idle');
+ await page.screenshot({path:'test-results/nli-elder.png'});checks.push('NLI elder (monk_idle) used in game');
  await page.evaluate(()=>{const p=window.__PYQUEST__,s=p.active();p.teleport(s.npc.x,s.npc.y+192);});
  await page.keyboard.press('KeyE');assert(await page.locator('#dialogue.show').count());
  for(let i=0;i<24 && await page.locator('#dialogue.show').count();i++) { await page.keyboard.press('KeyE');await page.waitForTimeout(50); }
@@ -59,7 +59,9 @@ export async function regression(base) {
  await page.evaluate(()=>{const s=window.__PYQUEST__.active();window._confirmCount=0;const original=s.quiz.confirm.bind(s.quiz);s.quiz.confirm=()=>{window._confirmCount++;return original();};});
  await page.evaluate(async()=>{const{QUESTIONS}=await import('/src/data/quizBank.js');const q=QUESTIONS.sp15;const s=window.__PYQUEST__.active();s.quiz.open(q);s.quiz.select(q.answer);});
  await page.locator('#quiz-confirm').click();assert.equal(await page.evaluate(()=>window._confirmCount),1);await page.locator('#quiz-confirm').click();checks.push('20 scene restarts keep click handlers singular');
- await page.goto(base+'?art=tiny');await page.waitForFunction(()=>window.__PYQUEST__?.scene('Boot')?.sys.settings.status===5);await page.locator('#btn-start').click();await page.waitForFunction(()=>window.__PYQUEST__?.active()?.player);await page.evaluate(()=>window.__PYQUEST__.active().scene.start('Village',{spawn:'start'}));await page.waitForFunction(()=>window.__PYQUEST__.active()?.scene.key==='Village');assert.equal(await page.evaluate(()=>window.__PYQUEST__.active().npc.sprite.texture.key),'monk_idle');checks.push('Tiny Swords fallback');
+ // `?art=tiny` 参数已随 NLI 全量替换被吸收：合并保留 NLI 资产模型后该参数无任何效果，
+ // 长老始终为 monk_idle（上方断言已覆盖），故删除原独立回退检查块。
+ checks.push('?art=tiny absorbed by NLI art: elder is always monk_idle');
  assert.deepEqual(errors,[]);await writeFile('test-results/regression.json',JSON.stringify({checks,errors},null,2));console.log(checks.join('\n'));
  } catch(e) {await page.screenshot({path:'test-results/failure.png'});throw e;} finally{await browser.close();}
 }

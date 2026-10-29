@@ -20,3 +20,13 @@ test('v1 is retained if migration cannot persist v2',()=>{
  const write=localStorage.setItem;localStorage.setItem=()=>{throw Error('full');};
  assert.equal(loadGame(),true);assert(data.has('pyquest:save:v1'));localStorage.setItem=write;clearSave();resetState();
 });
+test('unknown save version v:3 is rejected without touching state',()=>{
+ clearSave();G.current=4;data.set(key,JSON.stringify({v:3,hearts:6,current:2}));
+ assert.equal(loadGame(),false);assert.equal(G.current,4);assert.equal(JSON.parse(data.get(key)).v,3);
+});
+test('out-of-range current chapter is treated as a corrupt save',()=>{
+ clearSave();G.current=4;
+ data.set(key,JSON.stringify({v:2,current:9}));assert.equal(loadGame(),false);assert.equal(G.current,4);
+ data.set(key,JSON.stringify({v:2,current:0}));assert.equal(loadGame(),false);assert.equal(G.current,4);
+ data.set(key,JSON.stringify({v:2,current:8}));assert.equal(loadGame(),true);assert.equal(G.current,8);resetState();
+});

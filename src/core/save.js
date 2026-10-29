@@ -86,33 +86,51 @@ export function loadGame() {
     if (d.maxHearts != null && (d.maxHearts < 1 || d.maxHearts > 100)) return false;
     if (d.hearts != null && d.hearts > (d.maxHearts ?? 6)) return false;
     if (d.current != null && !Number.isInteger(d.current)) return false;
+    // current 必须落在 1..CHAPTERS.length，越界视同损坏存档（不 clamp、不留半应用状态）
+    if (d.current != null && (d.current < 1 || d.current > CHAPTERS.length)) return false;
     if (d.progress != null && (typeof d.progress !== 'object' || Array.isArray(d.progress))) return false;
     for (const saved of Object.values(d.progress || {})) {
       if (!saved || typeof saved !== 'object' || (saved.shards != null && (!Number.isInteger(saved.shards) || saved.shards < 0))) return false;
       for (const flag of ['gateOpen','bossShielded','bossDefeated','done']) if (saved[flag] != null && typeof saved[flag] !== 'boolean') return false;
     }
-    resetState();
     if (d.v === 1) { migrateV1(d); return true; }
-    if (!d || d.v !== 2) return false;
+    if (d.v !== 2) return false;
 
-    G.startTime = d.startTime || Date.now();
-    G.hearts = d.hearts ?? 6;
-    G.maxHearts = d.maxHearts ?? 6;
-    G.current = Math.min(Math.max(d.current || 1, 1), CHAPTERS.length);
-    G.answered = new Set(d.answered || []);
-    G.qAnswered = new Set(d.qAnswered || []);
-    G.runeRolls = d.runeRolls || {};
-    // 逐章恢复进度（缺省字段按初始值补齐）
+    // 先构造候选数据（提取+规范化全部完成，任何异常都在触碰 G 之前发生），
+    // 再 resetState() 并串行应用——中途抛错时 G 不会停留在"半重置混旧值"状态。
+    const candidate = {
+      startTime: d.startTime || Date.now(),
+      hearts: d.hearts ?? 6,
+      maxHearts: d.maxHearts ?? 6,
+      current: d.current ?? 1,
+      answered: new Set(d.answered || []),
+      qAnswered: new Set(d.qAnswered || []),
+      runeRolls: d.runeRolls || {},
+      progress: {},
+    };
+    // 逐章提取候选进度（缺省字段按初始值补齐）
     for (const ch of CHAPTERS) {
       const saved = d.progress && d.progress[ch.id];
-      const p = G.progress[ch.id];
       if (!saved) continue;
-      p.shards = saved.shards ?? 0;
-      p.shardsNeeded = ch.shardsNeeded;
-      p.gateOpen = !!saved.gateOpen;
-      p.bossShielded = saved.bossShielded !== false;
-      p.bossDefeated = !!saved.bossDefeated;
-      p.done = !!saved.done;
+      candidate.progress[ch.id] = {
+        shards: saved.shards ?? 0,
+        shardsNeeded: ch.shardsNeeded,
+        gateOpen: !!saved.gateOpen,
+        bossShielded: saved.bossShielded !== false,
+        bossDefeated: !!saved.bossDefeated,
+        done: !!saved.done,
+      };
+    }
+    resetState();
+    G.startTime = candidate.startTime;
+    G.hearts = candidate.hearts;
+    G.maxHearts = candidate.maxHearts;
+    G.current = Math.min(Math.max(candidate.current, 1), CHAPTERS.length);
+    G.answered = candidate.answered;
+    G.qAnswered = candidate.qAnswered;
+    G.runeRolls = candidate.runeRolls;
+    for (const [id, p] of Object.entries(candidate.progress)) {
+      Object.assign(G.progress[id], p);
     }
     writable = true;
     return true;
