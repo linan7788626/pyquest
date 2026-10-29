@@ -19,6 +19,8 @@ import { sfx } from '../audio/sfx.js';
 import { wipeTransition, transitionRunning } from '../ui/wipe.js';
 import { T } from '../data/maps.js';
 import { makeGroundTexture } from '../textures/ground.js';
+import { renderCliffOverlay } from '../textures/nliCliffs.js';
+import { NLI_GROUND_PROFILES } from '../textures/nliGroundProfiles.js';
 import { t, L, localizeDoorLabel, localizeLockLines, localizeLockHint } from '../core/i18n.js';
 import { initNliDisplay, fixedFxDepth, addVillageCastle, createDoorlinkImage, registerDoorOcclusion, framePoint, torchFlamePoint } from '../display/nliDisplay.js';
 
@@ -124,6 +126,16 @@ export class WorldScene extends Phaser.Scene {
         : new BossSlime(this, def.boss.x, def.boss.y);
       this.slimeGroup.add(this.boss);
       this.physics.add.collider(this.player, this.boss);
+    }
+
+    // ---------- 崖面 overlay（Task 4，仅 native profile；其余场景不挂载） ----------
+    // 必须在所有实体创建完成后挂载（见上方 create 流程）。depth = def.h*128+1 高于一切
+    // 实体（实体 depth ≤ y < def.h*128），低于 fixedFxDepth 的反馈/粒子层 —— 整层压顶
+    // 即正确遮挡语义：水格不可行走 ⇒ 崖前实体必在崖北侧，由压顶层遮挡；玩法/碰撞零改动。
+    this.cliffOverlay = null;
+    if (NLI_GROUND_PROFILES[def.key]?.native) {
+      const { key: cliffKey } = renderCliffOverlay(this, def);
+      this.cliffOverlay = this.add.image(0, 0, cliffKey).setOrigin(0, 0).setDepth(def.h * 128 + 1);
     }
 
     // ---------- 攻击判定 ----------
