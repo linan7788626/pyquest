@@ -9,12 +9,21 @@ import { CHAPTERS } from '../data/chapters.js';
 
 const KEY = 'pyquest:save:v2';
 const OLD_KEY = 'pyquest:save:v1';
+let writable = false;
+export function beginNewGame() {
+  clearSave(); resetState(); writable = true; saveGame();
+}
+function notifyFailure() {
+  document.dispatchEvent(new CustomEvent('pyquest:save-error'));
+}
+
 
 export function hasSave() {
   try { return !!localStorage.getItem(KEY) || !!localStorage.getItem(OLD_KEY); } catch { return false; }
 }
 
 export function saveGame() {
+  if (!writable) return false;
   try {
     const data = {
       v: 2,
@@ -29,7 +38,8 @@ export function saveGame() {
       progress: JSON.parse(JSON.stringify(G.progress)),
     };
     localStorage.setItem(KEY, JSON.stringify(data));
-  } catch { /* 隐私模式等环境下静默失败，不影响游戏 */ }
+    return true;
+  } catch { notifyFailure(); return false; }
 }
 
 /** 把 v1 存档迁移成 v2 结构（旧键删除） */
@@ -53,15 +63,34 @@ function migrateV1(d) {
   G.startTime = d.startTime || Date.now();
   G.hearts = d.hearts ?? 6;
   G.maxHearts = d.maxHearts ?? 6;
-  try { localStorage.removeItem(OLD_KEY); } catch { /* noop */ }
+  writable = true;
+  if (saveGame()) { try { localStorage.removeItem(OLD_KEY); } catch { /* noop */ } }
 }
 
 /** 读取存档并应用到 G。成功返回 true，无档/版本不符返回 false */
 export function loadGame() {
+  writable = false;
   try {
     const raw = localStorage.getItem(KEY) || localStorage.getItem(OLD_KEY);
     if (!raw) return false;
     const d = JSON.parse(raw);
+    if (!d || ![1, 2].includes(d.v)) return false;
+    if (d.answered != null && !Array.isArray(d.answered)) return false;
+    if (d.qAnswered != null && !Array.isArray(d.qAnswered)) return false;
+    if ([...(d.answered || []), ...(d.qAnswered || [])].some(id => typeof id !== 'string')) return false;
+    if (d.runeRolls != null && (typeof d.runeRolls !== 'object' || Array.isArray(d.runeRolls))) return false;
+    if (Object.values(d.runeRolls || {}).some(id => typeof id !== 'string')) return false;
+    for (const key of ['hearts','maxHearts','current','startTime','shards','ch2Shards']) {
+      if (d[key] != null && (!Number.isFinite(d[key]) || d[key] < 0)) return false;
+    }
+    if (d.maxHearts != null && (d.maxHearts < 1 || d.maxHearts > 100)) return false;
+    if (d.hearts != null && d.hearts > (d.maxHearts ?? 6)) return false;
+    if (d.current != null && !Number.isInteger(d.current)) return false;
+    if (d.progress != null && (typeof d.progress !== 'object' || Array.isArray(d.progress))) return false;
+    for (const saved of Object.values(d.progress || {})) {
+      if (!saved || typeof saved !== 'object' || (saved.shards != null && (!Number.isInteger(saved.shards) || saved.shards < 0))) return false;
+      for (const flag of ['gateOpen','bossShielded','bossDefeated','done']) if (saved[flag] != null && typeof saved[flag] !== 'boolean') return false;
+    }
     resetState();
     if (d.v === 1) { migrateV1(d); return true; }
     if (!d || d.v !== 2) return false;
@@ -85,6 +114,7 @@ export function loadGame() {
       p.bossDefeated = !!saved.bossDefeated;
       p.done = !!saved.done;
     }
+    writable = true;
     return true;
   } catch {
     return false;
@@ -92,6 +122,7 @@ export function loadGame() {
 }
 
 export function clearSave() {
+  writable = false;
   try { localStorage.removeItem(KEY); localStorage.removeItem(OLD_KEY); } catch { /* noop */ }
 }
 

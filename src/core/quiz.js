@@ -39,14 +39,19 @@ const KEYWORDS = /\b(for|while|in|if|elif|else|def|return|import|from|and|or|not
 const FUNCS = /\b(print|range|len|append|int|str|input|np|plt|array|arange|linspace|zeros|ones|mean|sum|rand|argmax|reshape|scatter|hist|xlabel|ylabel|savefig|fits|units|u|SkyCoord|quad|dblquad|curve_fit|solve_ivp|brentq|interp1d|fft|rfft|eig|cov|convolve|Pool|jit|ma|compressed|logical_not|isfinite|Bcast|gradient|inner|solve)\b/g;
 
 export function highlight(code) {
-  let html = code
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/("[^"]*"|'[^']*')/g, '<span class="str">$1</span>')
-    .replace(/(&quot;[^&]*&quot;)/g, '<span class="str">$1</span>')
-    .replace(KEYWORDS, '<span class="kw">$1</span>')
-    .replace(FUNCS, '<span class="fn">$1</span>')
-    .replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
-  // 替换填空占位符 ___（避免被上面规则干扰）
-  html = html.replace(/_{3,}/g, '<span class="blank" id="quiz-blank">____</span>');
-  return html;
+  const esc = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const tokens = /#[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|_{3,}|\b[A-Za-z_][A-Za-z_0-9]*\b|\b\d+(?:\.\d+)?\b/g;
+  let end = 0, html = '';
+  for (const match of code.matchAll(tokens)) {
+    html += esc(code.slice(end, match.index));
+    const token = match[0];
+    KEYWORDS.lastIndex = FUNCS.lastIndex = 0;
+    const cls = /^['"]/.test(token) ? 'str' : token.startsWith('#') ? 'comment'
+      : /^_{3,}$/.test(token) ? 'blank' : KEYWORDS.test(token) ? 'kw'
+      : FUNCS.test(token) ? 'fn' : /^\d/.test(token) ? 'num' : '';
+    html += cls === 'blank' ? '<span class="blank" id="quiz-blank">____</span>'
+      : cls ? `<span class="${cls}">${esc(token)}</span>` : esc(token);
+    end = match.index + token.length;
+  }
+  return html + esc(code.slice(end));
 }

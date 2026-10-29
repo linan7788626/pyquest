@@ -46,8 +46,10 @@ export class QuizOverlay {
     this.confirmBtn = document.getElementById('quiz-confirm');
     this.cancelBtn = document.getElementById('quiz-cancel');
 
-    this.confirmBtn.addEventListener('click', () => this.confirm());
-    this.cancelBtn.addEventListener('click', () => this.close(true));
+    this._confirmHandler = () => this.confirm();
+    this._cancelHandler = () => this.close(true);
+    this.confirmBtn.addEventListener('click', this._confirmHandler);
+    this.cancelBtn.addEventListener('click', this._cancelHandler);
 
     this._keyHandler = (e) => {
       if (!this.isOpen) return;
@@ -342,5 +344,13 @@ export class QuizOverlay {
   destroy() {
     document.removeEventListener('keydown', this._keyHandler);
     document.removeEventListener('pyquest:lang', this._onLang);
+    this.confirmBtn.removeEventListener('click', this._confirmHandler);
+    this.cancelBtn.removeEventListener('click', this._cancelHandler);
+    clearTimeout(this._flightT1); clearTimeout(this._flightT2);
+    this._flightToken++;
+    this._flightEls.forEach(el => el.remove());
+    this.panel.getAnimations().forEach(a => a.cancel());
+    this._closeVisuals();
+    this.isOpen = false;
   }
 }

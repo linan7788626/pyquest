@@ -26,3 +26,7 @@ scripts/tmp-*.mjs
 
 # 本地视觉样板及访问令牌（不进入游戏构建或版本控制）
 .superpowers/brainstorm/
+
+# Derived runtime assets and test reports
+.cache/
+test-results/

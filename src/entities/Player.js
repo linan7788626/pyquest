@@ -5,7 +5,7 @@
 import Phaser from 'phaser';
 import { G, updateHud } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
-import { wipeTransition } from '../ui/wipe.js';
+import { wipeTransition, transitionRunning } from '../ui/wipe.js';
 
 const SCALE = 2;      // 角色图标放大一倍（192×192 帧 → 384×384 显示）
 const FOOT_Y = 136; // 角色脚底在帧内的 y 坐标
@@ -38,7 +38,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   update(keys) {
-    if (this.dying) return;
+    if (this.dying || transitionRunning() || this.scene.settling) { this.setVelocity(0, 0); return; }
     const now = this.scene.time.now;
     // 击退期间跳过输入驱动，保留 takeDamage 设置的击退速度（无敌闪烁由 tween 驱动，不受影响）
     if (now < this.knockUntil) return;
@@ -49,6 +49,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     else if (keys.right.isDown || keys.d.isDown) vx = speed;
     if (keys.up.isDown || keys.w.isDown) vy = -speed;
     else if (keys.down.isDown || keys.s.isDown) vy = speed;
+    const length = Math.hypot(vx, vy);
+    if (length) { vx = vx / length * speed; vy = vy / length * speed; }
     this.setVelocity(vx, vy);
 
     const moving = vx !== 0 || vy !== 0;
@@ -77,7 +79,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   tryAttack() {
     const scene = this.scene;
     const now = scene.time.now;
-    if (this.dying || now < this.attackCdUntil) return;
+    if (this.dying || transitionRunning() || scene.settling || now < this.attackCdUntil) return;
     this.attackCdUntil = now + 340;
     this.attackAnimUntil = now + 280;
     sfx.swing();
@@ -106,7 +108,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   takeDamage(amount, sx, sy) {
     const scene = this.scene;
     const now = scene.time.now;
-    if (this.dying || now < this.invulUntil) return;
+    if (this.dying || transitionRunning() || scene.settling || now < this.invulUntil) return;
 
     G.hearts -= amount;
     updateHud();

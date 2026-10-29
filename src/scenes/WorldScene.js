@@ -16,7 +16,7 @@ import { WorldMap } from '../ui/WorldMap.js';
 import { pickQuestion } from '../data/quizData.js';
 import { saveGame } from '../core/save.js';
 import { sfx } from '../audio/sfx.js';
-import { wipeTransition } from '../ui/wipe.js';
+import { wipeTransition, transitionRunning } from '../ui/wipe.js';
 import { T } from '../data/maps.js';
 import { makeGroundTexture } from '../textures/ground.js';
 import { t, L, localizeDoorLabel, localizeLockLines, localizeLockHint } from '../core/i18n.js';
@@ -68,6 +68,7 @@ export class WorldScene extends Phaser.Scene {
   create() {
     // 场景重启（死亡重生/传送回来）会复用实例，必须重置瞬态标记
     this.transitioning = false;
+    this.settling = false;
 
     const def = this.mapDef;
     this.def = def;
@@ -388,7 +389,7 @@ export class WorldScene extends Phaser.Scene {
 
   // ---------- 交互 ----------
   tryInteract() {
-    if (this.quiz.isOpen || this.dialogue.isOpen || this.player.dying) return;
+    if (transitionRunning() || this.settling || this.quiz.isOpen || this.dialogue.isOpen || this.player.dying) return;
     const px = this.player.x, py = this.player.y;
     const dist = (x, y) => Phaser.Math.Distance.Between(px, py, x, y);
 
@@ -474,7 +475,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   usePortal(p) {
-    if (this.transitioning || this.player.dying) return;
+    if (transitionRunning() || this.settling || this.transitioning || this.player.dying) return;
     // 封印中的传送门：提示但不传送
     if (!meetsRequires(p.requires)) {
       const now = this.time.now;
@@ -487,9 +488,9 @@ export class WorldScene extends Phaser.Scene {
     this.transitioning = true;
     this.player.setVelocity(0, 0);
     // 传送期间免疫伤害，避免死亡与传送竞态
-    this.player.invulUntil = Number.MAX_SAFE_INTEGER;
+    // Damage is gated by the shared transition lock.
     // 塞尔达式圆形揭示转场
-    wipeTransition(() => this.scene.start(p.to, { spawn: p.spawn }));
+    wipeTransition(() => this.scene.start(p.to, { spawn: p.spawn }), { onFinish: () => { this.transitioning = false; } });
   }
 
   // ---------- 通用工具 ----------

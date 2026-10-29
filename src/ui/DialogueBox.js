@@ -58,7 +58,8 @@ export class DialogueBox {
     };
     document.addEventListener('pyquest:lang', this._onLang);
 
-    this.el.addEventListener('click', () => this.advance());
+    this._clickHandler = () => this.advance();
+    this.el.addEventListener('click', this._clickHandler);
     this._keyHandler = (e) => {
       if (!this.isOpen) return;
       if (e.key === 'e' || e.key === 'E' || e.key === ' ' || e.key === 'Enter') {
@@ -144,5 +145,9 @@ export class DialogueBox {
   destroy() {
     document.removeEventListener('keydown', this._keyHandler);
     document.removeEventListener('pyquest:lang', this._onLang);
+    this.el.removeEventListener('click', this._clickHandler);
+    clearInterval(this.timer);
+    this.el.classList.remove('show');
+    this.isOpen = false;
   }
 }

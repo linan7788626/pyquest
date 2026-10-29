@@ -8,7 +8,7 @@ import { G, updateHud, cp } from '../core/state.js';
 import { npcLinesFor } from '../core/phase.js';
 import { CHAPTERS, getChapter } from '../data/chapters.js';
 import { WorldScene } from './WorldScene.js';
-import { showVictory } from '../ui/modal.js';
+import { showVictory, hideVictory } from '../ui/modal.js';
 import { sfx } from '../audio/sfx.js';
 import { L, t, localizeDoorLabel, localizeLockLines } from '../core/i18n.js';
 
@@ -81,19 +81,23 @@ export class LairScene extends WorldScene {
   }
 
   onBossDefeated() {
+    this.settling = true;
+    this.player.setVelocity(0, 0);
+    this.scene.pause();
     const P = cp(this.ch.id);
     P.bossDefeated = true;
     P.done = true;
     updateHud();
     const next = getChapter(this.ch.id + 1);
     const hasNext = !!next && next.id > this.ch.id;
-    this.time.delayedCall(1100, () => showVictory(this.ch, {
+    const victoryTimer = setTimeout(() => showVictory(this.ch, {
       hasNext,
       onNext: () => this.scene.start(
         hasNext ? next.fieldKey : CHAPTERS[0].fieldKey,
         { spawn: hasNext ? 'fromPrev' : 'start' },
       ),
-    }));
+    }), 1100);
+    this.events.once('shutdown', () => { clearTimeout(victoryTimer); hideVictory(); });
   }
 }
 
