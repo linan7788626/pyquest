@@ -1,6 +1,6 @@
 // NLI产品地面：只组合已导出的平面Q材质；最终grid是唯一边界依据。
 import { T } from '../data/maps.js';
-import { MATERIAL_ALPHA, NLI_GROUND_PROFILES, NLI_GROUND_RECIPE, VILLAGE_GROUND_PADS } from './nliGroundProfiles.js';
+import { MATERIAL_ALPHA, NLI_GROUND_PROFILES, NLI_GROUND_RECIPE, NLI_TERRAIN_ASSETS, VILLAGE_GROUND_PADS } from './nliGroundProfiles.js';
 
 const TILE = 128;
 const KEYS = ['grass', 'forest', 'path', 'water', 'floor', 'wall', 'ground_flowers'];
@@ -42,6 +42,24 @@ function paint(ctx, pattern, base, alpha) {
   ctx.fillStyle = pattern;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.globalAlpha = 1;
+}
+
+// 原生分支（profile.native，Phase 1 仅 Village）：整片铺原生调色材质（alpha 1.0），
+// 不画底色、不画旧合成细节（路肩/水缘掩码/波线）。崖面由后续 cliff overlay 呈现。
+// path/water/FLOWER 区域复用 clipRegion 裁剪铺对应材质；网格 PATH 本就是通往门口的铺路，
+// 用 path 材质近似原生石铺路（无原生对应物，manifest 已如实声明该近似）。
+function drawNativeOutdoor(ctx, def, nativePatterns, profile) {
+  ctx.fillStyle = nativePatterns[profile.material];
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  for (const [predicate, key] of [
+    [(v) => v === T.PATH, 'path'], [isWater, 'water'], [(v) => v === T.FLOWER, 'flower'],
+  ]) {
+    ctx.save();
+    clipRegion(ctx, def, predicate);
+    ctx.fillStyle = nativePatterns[key];
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.restore();
+  }
 }
 
 // 以最近边距离取alpha，同一格拐角不重复叠加、不会突破指定最高alpha。
@@ -95,7 +113,8 @@ function waterLines(ctx, bits, x, y) {
   }
 }
 
-function drawOutdoor(ctx, def, patterns, profile, images) {
+function drawOutdoor(ctx, def, patterns, profile, images, nativePatterns) {
+  if (profile.native) { drawNativeOutdoor(ctx, def, nativePatterns, profile); return; }
   paint(ctx, patterns[profile.material], profile.base, MATERIAL_ALPHA[profile.material]);
   for (const [predicate, key, base] of [
     [(v) => v === T.PATH, 'path', profile.path], [isWater, 'water', profile.water],
@@ -174,10 +193,16 @@ function drawVillagePads(ctx, def, pattern) {
   ctx.restore();
 }
 
+// 供 regression 断言的缓存 key 构造（与 makeGroundTexture 内部一致）；revision 省略时
+// 取无 manifest 段的 'stub'（与 makeGroundTexture 的占位分支同语义），仅用于结构断言。
+export function groundCacheKey(def, revision = 'stub') {
+  return `ground_${def.key}_${NLI_GROUND_RECIPE}_${revision}`;
+}
+
 export function makeGroundTexture(scene, def) {
   const manifest = scene.cache?.json?.get('nli_manifest');
   const revision = manifest ? KEYS.map((key) => manifest.entries.find((e) => e.key === key).sha256.slice(0, 8)).join('-') : 'stub';
-  const key = `ground_${def.key}_${NLI_GROUND_RECIPE}_${revision}`;
+  const key = groundCacheKey(def, revision);
   if (scene.textures.exists(key)) return key;
   const canvas = canvasOf(def.w * TILE, def.h * TILE), ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = true;
@@ -185,6 +210,9 @@ export function makeGroundTexture(scene, def) {
   const images = Object.fromEntries(KEYS.map((k) => [k, sourceImage(scene, k)]));
   const indoor = def.grid.some((row) => row.includes(T.DFLOOR) || row.includes(T.DWALL));
   const profile = NLI_GROUND_PROFILES[def.key];
+  // 原生材质（Phase 1 仅 native 野外场景需要；纹理 key 即 NLI_TERRAIN_ASSETS 的路径值）。
+  const nativeKeys = profile?.native && !indoor ? ['grass', 'path', 'water', 'flower'] : [];
+  const nativeImages = Object.fromEntries(nativeKeys.map((k) => [k, sourceImage(scene, NLI_TERRAIN_ASSETS[k])]));
   const missing = KEYS.filter((k) => !images[k]);
   if (missing.length) {
     if (typeof window !== 'undefined' || scene.sys || scene.game) throw new Error(`NLI ground missing: ${missing.join(',')}`);
@@ -193,10 +221,14 @@ export function makeGroundTexture(scene, def) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   } else {
     if (!profile) throw new Error(`NLI ground profile missing: ${def.key}`);
+    const nativeMissing = nativeKeys.filter((k) => !nativeImages[k]);
+    if (nativeMissing.length) throw new Error(`NLI ground missing: ${nativeMissing.join(',')}`);
     const patterns = Object.fromEntries(KEYS.filter((k) => k !== 'ground_flowers').map((k) => [k, ctx.createPattern(images[k], 'repeat')]));
+    const nativePatterns = Object.fromEntries(nativeKeys.map((k) => [k, ctx.createPattern(nativeImages[k], 'repeat')]));
     if (indoor) drawIndoor(ctx, def, patterns, profile);
-    else drawOutdoor(ctx, def, patterns, profile, images);
-    if (def.key === 'Village') drawVillagePads(ctx, def, patterns.path);
+    else drawOutdoor(ctx, def, patterns, profile, images, nativePatterns);
+    // native 分支不画土垫：城堡/传送门周边由原生草 + 网格 PATH 铺路直接呈现。
+    if (def.key === 'Village' && !profile.native) drawVillagePads(ctx, def, patterns.path);
   }
   scene.textures.addCanvas(key, canvas);
   return key;

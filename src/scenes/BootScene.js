@@ -4,6 +4,7 @@
 import Phaser from 'phaser';
 import { generateAllTextures, createAnimations } from '../textures/pixelArt.js';
 import { loadTSAssets, createTSAnimations, NLI_REQUIRED_KEYS, NLI_SOURCE_VERSION } from '../assets/ts.js';
+import { loadTerrainAssets } from '../textures/nliGroundProfiles.js';
 import { initTitle } from '../ui/modal.js';
 import { furthestChapter } from '../core/state.js';
 import { getChapter } from '../data/chapters.js';
@@ -16,6 +17,7 @@ export default class BootScene extends Phaser.Scene {
     this.nliLoadErrors = [];
     this.load.on('loaderror', (file) => this.nliLoadErrors.push(file.key));
     loadTSAssets(this);
+    loadTerrainAssets(this);
   }
 
   create() {
