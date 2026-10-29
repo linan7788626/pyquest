@@ -2,6 +2,7 @@
 import { G, cp } from '../core/state.js';
 import { phaseOf, PHASE } from '../core/phase.js';
 import { CHAPTERS } from '../data/chapters.js';
+import { L, t } from '../core/i18n.js';
 import { sfx } from '../audio/sfx.js';
 import { wipeTransition } from './wipe.js';
 import { ICON } from './icons.js';
@@ -22,14 +23,14 @@ const ILLUSTRATIONS = [
   ['map_signal', 836, 166, 72, 72],
   ['map_halo', 770, 4, 72, 72],
 ];
-const ART = `
+const ART = () => `
   <rect width="1000" height="600" fill="#f3e7cc"/>
   <g opacity=".9">${ILLUSTRATIONS.map(([key, x, y, w, h]) =>
     `<image href="/nli-preview/${key}.png" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet" style="image-rendering:auto"/>`).join('')}</g>
   <g class="map-notes" fill="#7d5c2b" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif">
-    <text x="176" y="448" font-size="12" letter-spacing="1" opacity=".55">低语草原</text>
-    <text x="612" y="192" font-size="12" letter-spacing="1" opacity=".5">星陨原野</text>
-    <text x="466" y="566" font-size="11" letter-spacing="1" opacity=".45">风蚀台地</text>
+    <text x="176" y="448" font-size="12" letter-spacing="1" opacity=".55">${t('低语草原', 'Whispering Meadow')}</text>
+    <text x="612" y="192" font-size="12" letter-spacing="1" opacity=".5">${t('星陨原野', 'Starfall Fields')}</text>
+    <text x="466" y="566" font-size="11" letter-spacing="1" opacity=".45">${t('风蚀台地', 'Windworn Terrace')}</text>
   </g>`;
 
 export class WorldMap {
@@ -45,10 +46,29 @@ export class WorldMap {
       this.toggle();
     };
     document.addEventListener('keydown', this._keyHandler);
+    this._onLang = () => {
+      this._renderHead();
+      if (this.isOpen) this.render();
+    };
+    document.addEventListener('pyquest:lang', this._onLang);
     this._ro = new ResizeObserver(() => this._fit());
     this._ro.observe(this.pathEl);
-    document.querySelector('.map-title').innerHTML = `${ICON.map}冒险地图`;
-    document.querySelector('.map-tip').innerHTML = `${ICON.swirl}点击点亮的地标快速传送（通关前一章即解锁）`;
+    this._renderHead();
+  }
+
+  /** 地图头/脚静态文案（构造与语言切换共用） */
+  _renderHead() {
+    document.querySelector('.map-title').innerHTML = `${ICON.map}${t('冒险地图', 'Adventure Map')}`;
+    document.querySelector('.map-tip').innerHTML = `${ICON.swirl}${t('点击点亮的地标快速传送（通关前一章即解锁）', 'Click a lit landmark to fast-travel (unlocked by clearing the previous chapter)')}`;
+    this.subEl && (this.subEl.innerHTML = this._subText());
+  }
+
+  _subText() {
+    const doneCount = CHAPTERS.filter((c) => phaseOf(c.id) === PHASE.DONE).length;
+    return t(
+      `P4A 八周旅程<span class="dot-sep"></span>已通关 <b>${doneCount} / ${CHAPTERS.length}</b><span class="dot-sep"></span><kbd>Tab</kbd> 关闭`,
+      `P4A Eight-Week Journey<span class="dot-sep"></span>Cleared <b>${doneCount} / ${CHAPTERS.length}</b><span class="dot-sep"></span><kbd>Tab</kbd> to close`
+    );
   }
 
   toggle() {
@@ -127,8 +147,7 @@ export class WorldMap {
   }
 
   render() {
-    const doneCount = CHAPTERS.filter((c) => phaseOf(c.id) === PHASE.DONE).length;
-    this.subEl.innerHTML = `P4A 八周旅程<span class="dot-sep"></span>已通关 <b>${doneCount} / ${CHAPTERS.length}</b><span class="dot-sep"></span><kbd>Tab</kbd> 关闭`;
+    this.subEl.innerHTML = this._subText();
     const segs = CHAPTERS.slice(0, -1).map((ch, i) => {
       const target = CHAPTERS[i + 1];
       return { d: this._route(i), state: phaseOf(target.id) === PHASE.DONE ? 'done' : this.unlocked(target.id) ? 'open' : 'lock' };
@@ -137,11 +156,12 @@ export class WorldMap {
     const routes = segs.map((s) => `<path class="route route--${s.state}" d="${s.d}"/>`).join('');
     // 外链PNG必须置于内联SVG；data:image/svg作为img时浏览器会禁取子图。
     this.pathEl.innerHTML = `
-      <svg class="map-art" viewBox="0 0 ${MAP_W} ${MAP_H}" aria-hidden="true" style="pointer-events:none">${ART}</svg>
+      <svg class="map-art" viewBox="0 0 ${MAP_W} ${MAP_H}" aria-hidden="true" style="pointer-events:none">${ART()}</svg>
       <svg class="route-layer" viewBox="0 0 1000 600" aria-hidden="true">${casings}${routes}</svg>
       <div class="map-nodes"></div>`;
     const layer = this.pathEl.querySelector('.map-nodes');
-    CHAPTERS.forEach((ch) => {
+    CHAPTERS.forEach((chRaw) => {
+      const ch = L(chRaw);
       const p = cp(ch.id);
       const unlocked = this.unlocked(ch.id);
       const here = G.current === ch.id;
@@ -152,11 +172,12 @@ export class WorldMap {
       if (here) classes.push('here');
       const badge = !unlocked ? ICON.lock : (here ? ICON.pin : (done ? '✓' : ''));
       const status = !unlocked
-        ? { cls: 'locked', text: '未解锁' }
+        ? { cls: 'locked', text: t('未解锁', 'Locked') }
         : done
-          ? { cls: 'done', text: `已通关 · ${p.shards}/${p.shardsNeeded}` }
-          : { cls: '', text: `待挑战 · ${p.shards}/${p.shardsNeeded}` };
-      const shortName = ch.title.replace(/^第[一二三四五六七八九十]+章\s*·\s*/, '');
+          ? { cls: 'done', text: t(`已通关 · ${p.shards}/${p.shardsNeeded}`, `Cleared · ${p.shards}/${p.shardsNeeded}`) }
+          : { cls: '', text: t(`待挑战 · ${p.shards}/${p.shardsNeeded}`, `To challenge · ${p.shards}/${p.shardsNeeded}`) };
+      // shortName：去掉中文章前缀（第X章 ·）或英文前缀（Chapter X ·）
+      const shortName = ch.title.replace(/^(第[一二三四五六七八九十]+章|Chapter\s*\d+)\s*·\s*/, '');
       const [x, y] = NODE_POS[ch.id];
       const btn = document.createElement('button');
       btn.className = classes.join(' ');
@@ -164,14 +185,14 @@ export class WorldMap {
       btn.style.setProperty('--x', x);
       btn.style.setProperty('--y', y);
       btn.title = `${ch.title} · ${ch.fieldName} → ${ch.lairName}`;
-      btn.setAttribute('aria-label', `${ch.title}，${!unlocked ? '未解锁' : done ? '已通关' : '可传送'}`);
+      btn.setAttribute('aria-label', `${ch.title}，${!unlocked ? t('未解锁', 'Locked') : done ? t('已通关', 'Cleared') : t('可传送', 'Fast-travel available')}`);
       btn.innerHTML = `
         <span class="mn-pin">
           <span class="mn-disc">${ch.id}</span>
           <span class="mn-badge">${badge}</span>
         </span>
         <span class="mn-plate">
-          <span class="mn-week"><span>第 ${ch.week} 周</span>${here ? '<span class="mn-here-tag">当前</span>' : ''}</span>
+          <span class="mn-week"><span>${t(`第 ${ch.week} 周`, `Week ${ch.week}`)}</span>${here ? `<span class="mn-here-tag">${t('当前', 'Here')}</span>` : ''}</span>
           <span class="mn-name">${shortName}</span>
           <span class="mn-status ${status.cls}">${status.text}</span>
         </span>`;
@@ -195,6 +216,7 @@ export class WorldMap {
 
   destroy() {
     document.removeEventListener('keydown', this._keyHandler);
+    document.removeEventListener('pyquest:lang', this._onLang);
     this._ro.disconnect();
   }
 }

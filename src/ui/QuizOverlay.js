@@ -5,6 +5,7 @@ import { highlight } from '../data/quizData.js';
 import { damageHearts, chapterShards } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
 import { SVG_SHARD } from './HUD.js';
+import { localizeQuestion, hintEn, isEn, t } from '../core/i18n.js';
 
 // 「碎片入袋」兑付时刻时间轴（ms；t=0 = 点击「领取奖励」）。
 // 逻辑（关面板 / 恢复场景 / 发放奖励）在 t=0 原样执行，仅视觉延后兑付，
@@ -54,11 +55,14 @@ export class QuizOverlay {
       else if (e.key === 'Enter') this.confirm();
     };
     document.addEventListener('keydown', this._keyHandler);
+    this._onLang = () => this._applyLang();
+    document.addEventListener('pyquest:lang', this._onLang);
   }
 
   open(q, { onCorrect, onCancel } = {}) {
     this.isOpen = true;
-    this.q = q;
+    this.qRaw = q;                 // 原始 zh 题目（判定字段权威源）
+    this.q = localizeQuestion(q);  // 显示层本地化（id/answer/code 不变）
     this.selected = -1;
     this.phase = 'answering';
     this.onCorrect = onCorrect || null;
@@ -77,24 +81,17 @@ export class QuizOverlay {
 
     this.scene.scene.pause();
 
-    this.chapterEl.textContent = q.chapter;
-    this.chapterEl.classList.toggle('boss', !!q.chapterBoss);
-    this.promptEl.textContent = q.prompt;
-    this.codeEl.innerHTML = highlight(q.code);
+    this.chapterEl.textContent = this.q.chapter;
+    this.chapterEl.classList.toggle('boss', !!this.q.chapterBoss);
+    this.promptEl.textContent = this.q.prompt;
+    this.codeEl.innerHTML = highlight(this.q.code);
     this.feedbackEl.textContent = '';
     this.feedbackEl.className = '';
     this.confirmBtn.disabled = true;
-    this.confirmBtn.textContent = '确认咒语';
+    this.confirmBtn.textContent = t('确认咒语', 'Confirm Spell');
     this.cancelBtn.style.display = 'inline-block';
 
-    this.optionsEl.innerHTML = '';
-    q.options.forEach((opt, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'opt';
-      btn.innerHTML = `<b style="color:#8a6335">${i + 1}. </b><code>${esc(opt)}</code>`;
-      btn.addEventListener('click', () => this.select(i));
-      this.optionsEl.appendChild(btn);
-    });
+    this._renderOptions();
 
     this.backdrop.classList.add('show');
   }
@@ -113,6 +110,50 @@ export class QuizOverlay {
     sfx.talk();
   }
 
+  /** 选项列表渲染（open 与语言切换共用） */
+  _renderOptions() {
+    this.optionsEl.innerHTML = '';
+    this.q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.innerHTML = `<b style="color:#8a6335">${i + 1}. </b><code>${esc(opt)}</code>`;
+      btn.addEventListener('click', () => this.select(i));
+      this.optionsEl.appendChild(btn);
+    });
+  }
+
+  /** 语言切换：重渲染题面文案（保留已选/已判定状态；代码块不翻译不重绘） */
+  _applyLang() {
+    if (!this.isOpen || !this.qRaw) return;
+    this.q = localizeQuestion(this.qRaw);
+    this.chapterEl.textContent = this.q.chapter;
+    this.promptEl.textContent = this.q.prompt;
+    this._renderOptions();
+    if (this.phase === 'answering') {
+      if (this.selected >= 0) this.optionsEl.children[this.selected]?.classList.add('selected');
+      this.confirmBtn.textContent = t('确认咒语', 'Confirm Spell');
+    } else {
+      if (this.selected >= 0) this.optionsEl.children[this.selected]?.classList.add('right');
+      this.confirmBtn.textContent = t('领取奖励', 'Claim Reward');
+      this._renderFeedback();
+    }
+  }
+
+  /** 反馈条文案（语言切换时按当前阶段重建） */
+  _renderFeedback() {
+    if (this.phase === 'correct') {
+      this.feedbackEl.innerHTML =
+        `<div class="fb-line">${t('✨ 咒语生效了！', '✨ The spell works!')}</div>` +
+        (this.q.explain
+          ? `<div class="fb-hint"><span class="fb-hint-label">${t('解析', 'Why')}</span>${esc(this.q.explain)}</div>`
+          : '');
+    } else if (this.feedbackEl.className === 'bad') {
+      this.feedbackEl.innerHTML =
+        `<div class="fb-line">${t('咒语失败了…… 生命 -1', 'The spell failed… -1 HP')}</div>` +
+        `<div class="fb-hint"><span class="fb-hint-label">${t('提示', 'Hint')}</span>${esc(this._hint())}</div>`;
+    }
+  }
+
   confirm() {
     if (!this.isOpen) return;
     if (this.phase === 'correct') { this._collect(); return; }
@@ -126,12 +167,8 @@ export class QuizOverlay {
       btn.classList.add('right');
       this.feedbackEl.className = 'ok';
       // 反馈分层（#8）：首行结果，次行「解析」内嵌条（教学内容，绿系）
-      this.feedbackEl.innerHTML =
-        '<div class="fb-line">✨ 咒语生效了！</div>' +
-        (this.q.explain
-          ? `<div class="fb-hint"><span class="fb-hint-label">解析</span>${esc(this.q.explain)}</div>`
-          : '');
-      this.confirmBtn.textContent = '领取奖励';
+      this._renderFeedback();
+      this.confirmBtn.textContent = t('领取奖励', 'Claim Reward');
       this.cancelBtn.style.display = 'none';
       sfx.correct();
     } else {
@@ -141,9 +178,7 @@ export class QuizOverlay {
       this.confirmBtn.disabled = true;
       this.feedbackEl.className = 'bad';
       // 反馈分层（#8）：首行 失败+惩罚（红），次行「提示」内嵌条（教学内容，棕系）
-      this.feedbackEl.innerHTML =
-        '<div class="fb-line">咒语失败了…… 生命 -1</div>' +
-        `<div class="fb-hint"><span class="fb-hint-label">提示</span>${esc(this._hint())}</div>`;
+      this._renderFeedback();
       this.panel.classList.remove('shake');
       void this.panel.offsetWidth; // 重启动画
       this.panel.classList.add('shake');
@@ -153,6 +188,11 @@ export class QuizOverlay {
   }
 
   _hint() {
+    if (isEn()) {
+      // 英文提示表键为 zh 章节标签（权威源），从原始题目读取
+      const rawLabel = this.qRaw ? this.qRaw.chapter : this.q.chapter;
+      return hintEn(rawLabel) || t('仔细读题，逐行理解代码', 'Read the question carefully and trace the code line by line');
+    }
     const tips = {
       '第一章 · 变量': '变量就像口袋：名字 = 值，文字要加引号',
       '第一章 · 数据类型': '整数 int、小数 float、文字 str、真假 bool',
@@ -301,5 +341,6 @@ export class QuizOverlay {
 
   destroy() {
     document.removeEventListener('keydown', this._keyHandler);
+    document.removeEventListener('pyquest:lang', this._onLang);
   }
 }

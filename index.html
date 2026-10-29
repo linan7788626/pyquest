@@ -128,6 +128,48 @@
       pointer-events: none;
     }
 
+    /* ---- 语言切换胶囊（i18n）：中文 | EN 双选小胶囊 ----
+       HUD 内位于碎片胶囊左侧同行；HUD 区域整体穿透点击，
+       仅 .lp-opt 恢复 pointer-events:auto。选中项浅金底 + 深色字，
+       仅背景/字色做约 120ms 过渡（reduced-motion 时取消） */
+    .lang-pill {
+      display: inline-flex; align-items: stretch;
+      background: rgba(24, 16, 38, .55);
+      border: 2px solid #6b4f2e; border-radius: 10px;
+      padding: 2px; gap: 2px;
+      pointer-events: none;               /* 胶囊框架穿透，只有按钮可点 */
+    }
+    .lp-opt {
+      font-family: inherit; font-size: var(--fs-caption); letter-spacing: 1px;
+      line-height: 1.5; color: #d8d2ea; cursor: pointer;
+      border: none; border-radius: 7px;
+      background: transparent; padding: 3px 10px;
+      pointer-events: auto;               /* 恢复交互，其余 HUD 仍穿透 */
+      transition: background .12s, color .12s;
+    }
+    .lp-opt:hover { color: #fff; }
+    .lp-opt[aria-pressed="true"] {
+      background: rgba(255, 210, 87, .85); /* 浅金底 = 选中标记 */
+      color: #3a2c10; font-weight: 700;
+    }
+    .lp-opt:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+    /* 语言切换反馈条：独立 aria-live，短暂浮现约 1.6s，
+       顶部居中避开底部提示条/对话框，不可交互 */
+    #lang-toast {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      background: rgba(42, 32, 24, .85);
+      border: 2px solid #6b4f2e; border-radius: 10px;
+      color: var(--gold); font-family: var(--font-kai); font-size: var(--fs-body);
+      letter-spacing: 1px; padding: 4px 14px; white-space: nowrap;
+      opacity: 0; pointer-events: none; z-index: 8;
+      transition: opacity .15s;
+    }
+    #lang-toast.show { opacity: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      .lp-opt, #lang-toast { transition: none; }
+    }
+
     /* 提示条 */
     #hint {
       position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
@@ -676,6 +718,11 @@
     /* HUD / 对话：字号放大，锚定关系不变 */
     .portrait .hearts svg { width: 42px; height: 42px; }
     .portrait .hud-right { font-size: 26px; border-width: 3px; border-radius: 16px; padding: 8px 16px; }
+    /* 竖屏：语言胶囊独立排到碎片计数上方（i18n-control.md），
+       计数/目标字号不缩小；胶囊按钮放大字号补足触达 */
+    .portrait .hud-right { flex-direction: column; align-items: stretch; gap: 6px; }
+    .portrait .lp-opt { font-size: 18px; padding: 6px 16px; }
+    .portrait #lang-toast { font-size: 26px; top: calc(14px + var(--cam-pad)); }
     .portrait .hud-right svg { width: 24px; height: 30px; }
     .portrait #objective { font-size: 26px; padding: 4px 14px; }
     .portrait #objective .pq-icon { width: 24px; height: 24px; }
@@ -818,6 +865,13 @@
       padding-left: 10px; /* 抵消末字符的 letter-spacing，保持视觉居中 */
     }
     #title .subtitle { font-size: var(--fs-display); color: #cfd6ff; letter-spacing: 3px; }
+    /* 标题页语言胶囊：同一右上锚位，独立于「开始冒险」主按钮，
+       维持星空/羊皮纸/金棕边框原貌（i18n-control.md） */
+    #title .lang-pill {
+      position: absolute; top: 18px; right: 18px;
+      background: rgba(24, 16, 38, .45);
+    }
+    #title .lp-opt { font-size: var(--fs-body); padding: 4px 14px; }
     #title .keys {
       margin-top: 10px; font-size: var(--fs-body); color: #b9c0e8; line-height: 2;
       background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15);
@@ -965,12 +1019,17 @@
           <div class="hearts" id="hearts"></div>
           <div class="hud-stack">
             <div class="hud-right">
+              <div class="lang-pill" role="group" aria-label="语言 / Language">
+                <button class="lp-opt" type="button" data-lang-opt="zh" aria-pressed="true">中文</button>
+                <button class="lp-opt" type="button" data-lang-opt="en" aria-pressed="false">EN</button>
+              </div>
               <span id="shard-count"></span>
             </div>
             <div id="objective"></div>
           </div>
         </div>
         <div id="hint" class="hidden"></div>
+        <div id="lang-toast" aria-live="polite"></div>
 
         <div id="dialogue">
           <div id="dlg-name"></div>
@@ -986,7 +1045,7 @@
             <div id="quiz-options"></div>
             <div id="quiz-feedback"></div>
             <div id="quiz-actions">
-              <button class="btn" id="quiz-cancel">先不回答</button>
+              <button class="btn" id="quiz-cancel" data-i18n="quiz-cancel">先不回答</button>
               <button class="btn primary" id="quiz-confirm" disabled>确认</button>
             </div>
           </div>
@@ -1000,9 +1059,9 @@
             </div>
             <div id="map-path"></div>
             <div class="map-foot">
-              <span class="lg lg-done">已通关</span>
-              <span class="lg lg-open">可进入</span>
-              <span class="lg lg-lock">未解锁</span>
+              <span class="lg lg-done" data-i18n="lg-done">已通关</span>
+              <span class="lg lg-open" data-i18n="lg-open">可进入</span>
+              <span class="lg lg-lock" data-i18n="lg-lock">未解锁</span>
               <span class="map-tip">点击点亮的地标快速传送（通关前一章即解锁）</span>
             </div>
           </div>
@@ -1010,9 +1069,13 @@
 
         <div id="title" class="full-modal">
           <div class="stars"></div>
+          <div class="lang-pill" role="group" aria-label="语言 / Language">
+            <button class="lp-opt" type="button" data-lang-opt="zh" aria-pressed="true">中文</button>
+            <button class="lp-opt" type="button" data-lang-opt="en" aria-pressed="false">EN</button>
+          </div>
           <h1>PyQuest</h1>
-          <div class="subtitle">NLI 素材预览 · 静态姿态</div>
-          <div class="keys">
+          <div class="subtitle" data-i18n="subtitle">NLI 素材预览 · 静态姿态</div>
+          <div class="keys" data-i18n="keys">
             <kbd>方向键</kbd> / <kbd>WASD</kbd> 移动 &nbsp;·&nbsp; <kbd>J</kbd> / <kbd>空格</kbd> 挥剑 &nbsp;·&nbsp; <kbd>E</kbd> 交互 / 对话 &nbsp;·&nbsp; <kbd>Tab</kbd> 世界地图<br />
             八章关卡对应八周课程：基础 → 函数 → NumPy → 天文包 → 加速 → 数值方法 → 信号 → 暗物质晕！
           </div>
@@ -1031,7 +1094,7 @@
             <div class="seal-stats" id="victory-stats"></div>
             <div class="seal-actions">
               <button class="btn primary" id="btn-next">▶ 进入第二章</button>
-              <button class="btn ghost" id="btn-restart">放弃冒险，重头再来</button>
+              <button class="btn ghost" id="btn-restart" data-i18n="btn-restart">放弃冒险，重头再来</button>
             </div>
           </div>
         </div>

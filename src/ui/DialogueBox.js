@@ -3,6 +3,7 @@
 // 台词支持【E】/【J】/【空格】键帽标记，渲染成与提示条同款的 <kbd>
 // ============================================================
 import { sfx } from '../audio/sfx.js';
+import { t } from '../core/i18n.js';
 import { ICON } from './icons.js';
 
 // 文本先转义再拼 kbd 标记，防注入
@@ -49,7 +50,13 @@ export class DialogueBox {
     this.timer = null;
 
     // 「继续」提示：像素下箭头 + 键帽（▼ emoji → 像素图标；写死内容，重复调用幂等）
-    this.nextEl.innerHTML = `${ICON.chevron}按 <kbd>E</kbd> / 点击 继续`;
+    this._renderNextHint();
+    // 语言切换：更新继续提示；对话进行中则整行立即重绘（保留行进度）
+    this._onLang = () => {
+      this._renderNextHint();
+      if (this.isOpen && !this.typing) this._showLineFull();
+    };
+    document.addEventListener('pyquest:lang', this._onLang);
 
     this.el.addEventListener('click', () => this.advance());
     this._keyHandler = (e) => {
@@ -60,6 +67,15 @@ export class DialogueBox {
       }
     };
     document.addEventListener('keydown', this._keyHandler);
+  }
+
+  _renderNextHint() {
+    this.nextEl.innerHTML = `${ICON.chevron}${t('按 <kbd>E</kbd> / 点击 继续', 'Press <kbd>E</kbd> / click to continue')}`;
+  }
+
+  /** 立即完整显示当前行（跳过打字机；语言切换复用） */
+  _showLineFull() {
+    if (this._steps) this.textEl.innerHTML = renderTokens(this._steps.flat());
   }
 
   /** say({ name, lines: [] }, onDone) */
@@ -127,5 +143,6 @@ export class DialogueBox {
 
   destroy() {
     document.removeEventListener('keydown', this._keyHandler);
+    document.removeEventListener('pyquest:lang', this._onLang);
   }
 }

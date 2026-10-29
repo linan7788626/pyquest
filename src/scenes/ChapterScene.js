@@ -10,6 +10,7 @@ import { CHAPTERS, getChapter } from '../data/chapters.js';
 import { WorldScene } from './WorldScene.js';
 import { showVictory } from '../ui/modal.js';
 import { sfx } from '../audio/sfx.js';
+import { L, t, localizeDoorLabel, localizeLockLines } from '../core/i18n.js';
 
 export class FieldScene extends WorldScene {
   constructor(key, ch) { super(key); this.ch = ch; }
@@ -25,7 +26,7 @@ export class FieldScene extends WorldScene {
 
   /** 引导 NPC（长老/石碑）：跨章问候优先，台词按章内阶段查表（core/phase.js） */
   talkToElder() {
-    this.dialogue.say({ name: this.ch.npcName, lines: npcLinesFor(this.ch, G) });
+    this.dialogue.say({ name: L(this.ch).npcName, lines: npcLinesFor(L(this.ch), G) });
   }
 
   /** 封印之门被按 E 检查：集齐碎片则当场解锁 */
@@ -42,11 +43,11 @@ export class FieldScene extends WorldScene {
         .setTint(0x3ddad7).setAlpha(0.16).setScale(36).setDepth(it.y - 2);
       this.tweens.add({ targets: aura, alpha: 0.3, scale: 42, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
       this.cameras.main.shake(240, 0.004);
-      this.floatText(it.x, it.y + 180, '封印瓦解了！', '#3ddad7');
+      this.floatText(it.x, it.y + 180, t('封印瓦解了！', 'The seal breaks!'), '#3ddad7');
     } else {
       this.dialogue.say({
-        name: it.prop.label || '封印之门',
-        lines: it.prop.lockLines,
+        name: localizeDoorLabel(it.prop, this.ch) || t('封印之门', 'Sealed Gate'),
+        lines: localizeLockLines(it.prop, this.ch) || it.prop.lockLines,
       });
     }
   }
@@ -76,7 +77,7 @@ export class LairScene extends WorldScene {
     this.boss.clearTint();
     this.cameras.main.flash(300);
     this.cameras.main.shake(300, 0.006);
-    this.floatText(this.boss.x, this.boss.y - 32, '护盾破碎了！', '#ff9db3');
+    this.floatText(this.boss.x, this.boss.y - 32, t('护盾破碎了！', 'Shield shattered!'), '#ff9db3');
   }
 
   onBossDefeated() {

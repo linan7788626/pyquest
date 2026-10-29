@@ -4,7 +4,7 @@
 //   1. 玩家 body 60×26、offset (66,132)
 //   2. 横向攻击矩形 250×170，纵向 170×250（含方向偏移）
 //   3. WorldScene.applyAttack 命中敌人用 getBounds()，而非物理 body
-//   4. ts_warrior_idle/run/attack 各为单帧动画
+//   4. ts_warrior_run 为 5 帧拼接条（start=0,end=4）；idle/attack 保持单帧
 //   5. Village 构建器 grid/colliding/spawns/portals/qid 可序列化，
 //      与 scripts/fixtures/village-logic-before.json 基线比对
 //
@@ -284,7 +284,9 @@ export async function checkVisualInvariants({ updateFixture = false } = {}) {
     }
   }
 
-  // ---- 4. 单帧动画：运行真实 createTSAnimations，检查生成的帧范围 ----
+  // ---- 4. 动画契约：ts_warrior_run 五帧拼接条（start=0,end=4）；idle/attack 单帧 ----
+  // 2026-10-29 行走 lane：warrior_run sheet 换为 5 帧拼接条（run/warrior_run_sheet.png），
+  // 其余 TS_ANIMS 契约不变（详见 manifest.json 顶层 run_sheet 与 src/assets/ts.js 注释）。
   {
     const created = [];
     const animScene = {
@@ -295,26 +297,26 @@ export async function checkVisualInvariants({ updateFixture = false } = {}) {
       },
     };
     createTSAnimations(animScene);
-    // 精确断言：key → 对应 spritesheet，帧范围必须是 start=0, end=0（单帧且为首帧）
+    // 精确断言：key → 对应 spritesheet 与帧范围（run 为 0..4 五帧拼接，其余单帧且为首帧）
     const EXPECT_ANIM = {
-      ts_warrior_idle: 'warrior_idle',
-      ts_warrior_run: 'warrior_run',
-      ts_warrior_attack: 'warrior_attack',
+      ts_warrior_idle: { sheet: 'warrior_idle', end: 0 },
+      ts_warrior_run: { sheet: 'warrior_run', end: 4 },
+      ts_warrior_attack: { sheet: 'warrior_attack', end: 0 },
     };
     let animsOk = true;
-    for (const [key, sheet] of Object.entries(EXPECT_ANIM)) {
+    for (const [key, exp] of Object.entries(EXPECT_ANIM)) {
       const cfg = created.find((c) => c.key === key);
       if (!cfg) { fail(`缺少动画 ${key}`); animsOk = false; continue; }
-      if (cfg.frames.sheet !== sheet) {
-        fail(`${key} 应引用 sheet "${sheet}"，实际 "${cfg.frames.sheet}"`);
+      if (cfg.frames.sheet !== exp.sheet) {
+        fail(`${key} 应引用 sheet "${exp.sheet}"，实际 "${cfg.frames.sheet}"`);
         animsOk = false;
       }
-      if (cfg.frames.start !== 0 || cfg.frames.end !== 0) {
-        fail(`${key} 帧范围应为 start=0,end=0（单帧且为首帧），实际 start=${cfg.frames.start}, end=${cfg.frames.end}`);
+      if (cfg.frames.start !== 0 || cfg.frames.end !== exp.end) {
+        fail(`${key} 帧范围应为 start=0,end=${exp.end}${exp.end === 0 ? '（单帧且为首帧）' : '（五帧拼接条）'}，实际 start=${cfg.frames.start}, end=${cfg.frames.end}`);
         animsOk = false;
       }
     }
-    if (animsOk) ok('ts_warrior_idle/run/attack 各为单帧动画（sheet 正确，帧范围 start=0,end=0）');
+    if (animsOk) ok('ts_warrior_run 五帧拼接条（0..4）；idle/attack 保持单帧（sheet 正确）');
   }
 
   // ---- 5. Village 地图结构快照（grid/colliding/spawns/portals/qid）----

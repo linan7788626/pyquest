@@ -1,6 +1,10 @@
 // 显示配置，不参与地图构建或玩法随机流。Q材质已由资源流水线生成。
-export const NLI_GROUND_RECIPE = 'nli02-ground-v1';
-export const MATERIAL_ALPHA = Object.freeze({ grass: 0.32, forest: 0.26, path: 0.40, water: 0.18, floor: 0.34, wall: 0.30 });
+// 2026-10-29 地面可辨度（单一预定改动）：材质混合权重上调，让 v0.2 Q 材质真正可见
+// （旧值 .32/.26/.40/.18/.34/.30）。grass 0.62 为主改动（用户反馈“地面纹理未换”）；
+// forest/path/water 按比例跟进保持野外层级协调；floor/wall（室内）不动。
+// grid、水/路裁边、尺寸/depth、碰撞全部不变；recipe 升 v2 强制每场景地面缓存失效。
+export const NLI_GROUND_RECIPE = 'nli02-ground-v2';
+export const MATERIAL_ALPHA = Object.freeze({ grass: 0.62, forest: 0.50, path: 0.55, water: 0.35, floor: 0.34, wall: 0.30 });
 const outdoor = (material, base, path, water) => ({ material, base, path, water });
 const indoor = (base, wall) => ({ material: 'floor', base, wall });
 export const NLI_GROUND_PROFILES = Object.freeze({

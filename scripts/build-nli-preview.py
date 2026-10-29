@@ -22,6 +22,15 @@ Offline derivation from the read-only package
   - technical (spec §6): fire 64^2 and cloud1..5 576x256 fully transparent
     compatibility frames; ts_shadow 192^2 stays byte-frozen (copied from the
     immutable v02-before snapshot, never regenerated).
+  - run sheet (2026-10-29 walk lane, designer): run/warrior_run_sheet.png — a
+    5-frame vertical 192x192 spritesheet stitched from same-series static Hero
+    walk poses (Hero_Row01_Pose03/07/06/02/04, same equipment and facing).
+    It is deliberately NOT one of the 62 quality-gate keys: warrior_run.png
+    stays the frozen single-frame Pose03 export (sheet frame 0 is verified
+    pixel-identical to it in-build) so the independent 62-key gate remains
+    byte-compatible. Per-frame provenance, the "stitched from static poses,
+    not calibrated" declaration and the cycle timing live in the manifest
+    top-level "run_sheet" block.
 
 Sampling method (Gate R + fix1): premultiply alpha into RGB, zero-pad where
 the inverse-affine window leaves the source canvas, ONE LANCZOS resample of
@@ -198,6 +207,53 @@ TECHNICAL_SPEC = {
 KEYS = sorted(set(F_SPEC) | set(C_SPEC) | set(TERRAIN_SPEC) | set(COPY_SPEC) |
               set(COMPOSITE_SPEC) | set(TECHNICAL_SPEC))
 assert len(KEYS) == 62, f"spec tables must describe exactly 62 keys, got {len(KEYS)}"
+
+# 2026-10-29 walk lane (designer): multi-frame warrior_run spritesheet stitched
+# from same-series static Hero walk poses (screen-right facing, same equipment,
+# no big weapons; candidate pool Hero_Row01_Pose02..07). It is NOT a KEYS
+# member: warrior_run.png stays the frozen single-frame quality-gate export and
+# the sheet lives in the run/ subdirectory (outside the checker's top-level
+# *.png glob), with per-frame provenance + declarations in manifest.run_sheet.
+# Anchor convention per frame: gy = Generation_Records solid_alpha_bbox bottom
+# edge (the same convention the frozen idle/run/attack anchors use); gx rules
+# are recorded per frame — foot-band (bottom 6%) two-feet midpoint, validated
+# within 1.2 source px against the two known anchors (Pose02 -0.36px,
+# Pose03 -1.15px), with the bottom-25% alpha-weighted centroid fallback for the
+# one-foot-off-ground pose (Pose06). s0 = H(87) keeps the visible character
+# height at 87px in every frame (the exporter's own convention); frame 0 keeps
+# the frozen warrior_run row (incl. its literal 87/1081 s0) so its pixels stay
+# identical to the accepted single-frame export.
+# Frame order: cyclic TSP minimizing adjacent-frame leg-region MAE (least-jumpy
+# available stitch order), rotated so frame 0 = Pose03 for continuity with the
+# previously shipped single-frame run export. Selection/order evidence:
+# .superpowers/sdd/2026-10-29-ground-i18n-walk/lane-a/pose-analysis.json.
+RUN_SHEET = {
+    "file": "run/warrior_run_sheet.png",
+    "frame_size": (192, 192),
+    "frame_anchor": (96, 136),
+    "frames": [
+        (HERO + "Hero_Row01_Pose03", (720, 1168), 87 / 1081,
+         "frozen warrior_run F row (foot-band two-feet midpoint validated "
+         "-1.15 source px); frame 0 stays pixel-identical to warrior_run.png"),
+        (HERO + "Hero_Row01_Pose07", (688.09, 1140), H(87),
+         "foot-band (bottom 6%) two-feet midpoint"),
+        (HERO + "Hero_Row01_Pose06", (687.75, 1148), H(87),
+         "fallback: bottom-25% alpha-weighted centroid (one foot off ground "
+         "in the 6% band)"),
+        (HERO + "Hero_Row01_Pose02", (703.64, 1145), H(87),
+         "foot-band (bottom 6%) two-feet midpoint"),
+        (HERO + "Hero_Row01_Pose04", (701.56, 1111), H(87),
+         "foot-band (bottom 6%) two-feet midpoint"),
+    ],
+}
+# Mirrors TS_ANIMS.ts_warrior_run in src/assets/ts.js (keep in sync): dur is
+# PER-FRAME ms — createTSAnimations sets frameRate = 1000/dur, Phaser derives
+# msPerFrame = dur and anim.duration = N * dur. 96ms/frame is the slowest
+# first-frame change that deterministically falls inside the walk-repro frame
+# diversity window (7 fixed 16.667ms accumulator samples = 100ms); a 600-900ms
+# whole-cycle draft would need 120-180ms/frame and cannot pass that gate at
+# N=5 (cycle <= 500ms). Cadence stays a draft pending user feel.
+RUN_SHEET_PER_FRAME_MS = 96
 
 
 # ---------------------------------------------------------------- sampling ----
@@ -418,8 +474,11 @@ def check_ts_shadow_pin(before):
 
 def preflight_destinations(output):
     """B1: check the COMPLETE destination set up front (62 PNGs + manifest +
-    README) so a symlink discovered late can never leave a partial export."""
-    for name in [f"{key}.png" for key in KEYS] + ["manifest.json", "README.md"]:
+    README + the run/ spritesheet) so a symlink discovered late can never
+    leave a partial export."""
+    names = [f"{key}.png" for key in KEYS] + ["manifest.json", "README.md",
+                                              RUN_SHEET["file"]]
+    for name in names:
         dest = Path(output) / name
         if dest.is_symlink():
             raise GuardError(f"destination file is a symlink: {dest}")
@@ -527,8 +586,75 @@ def build(source_root, output, before, trees):
         else:  # pragma: no cover - KEYS is the union of the tables above
             raise KeyError(key)
 
+    # ---- 2026-10-29 walk lane: multi-frame warrior_run spritesheet ----
+    fw, fh = RUN_SHEET["frame_size"]
+    frame_anchor = RUN_SHEET["frame_anchor"]
+    n_frames = len(RUN_SHEET["frames"])
+    sheet = Image.new("RGBA", (fw, fh * n_frames))
+    run_frames_meta = []
+    for idx, (rel, g, s0, rule) in enumerate(RUN_SHEET["frames"]):
+        spec_row = (rel, (fw, fh), g, frame_anchor, s0)
+        s, t = sources.f_transform(spec_row)
+        frame = unpremultiply(sample_f(sources.premult(rel), s, t, (fw, fh)))
+        sheet.paste(frame, (0, idx * fh))
+        run_frames_meta.append({
+            "index": idx,
+            **sources.source_meta(rel),
+            "sampling": {"mode": "F", "scale": round(s, 12),
+                         "translate_xy": [round(t[0], 12), round(t[1], 12)],
+                         "source_anchor_xy": list(g),
+                         "frame_anchor_xy": list(frame_anchor),
+                         "method": METHOD},
+            "anchor_rule": rule,
+        })
+    sheet_path = output / RUN_SHEET["file"]
+    sheet_path.parent.mkdir(parents=True, exist_ok=True)
+    sheet.save(sheet_path, format="PNG")
+    # Continuity contract: sheet frame 0 must be pixel-identical to the frozen
+    # single-frame warrior_run export (same pipeline, same spec row).
+    with Image.open(output / "warrior_run.png") as wr_im:
+        warrior_run_frame = wr_im.convert("RGBA")
+    if ImageChops.difference(warrior_run_frame, sheet.crop((0, 0, fw, fh))).getbbox() is not None:
+        raise RuntimeError("run sheet frame 0 must be pixel-identical to "
+                           "warrior_run.png (frozen single-frame export)")
+    run_sheet_meta = {
+        "url": f"/nli-preview/{RUN_SHEET['file']}",
+        "file": RUN_SHEET["file"],
+        "sha256": digest(sheet_path),
+        "size": [sheet.width, sheet.height],
+        "frame_size": [fw, fh],
+        "frame_count": n_frames,
+        "layout": ("vertical stack; Phaser spritesheet frameWidth/frameHeight "
+                   "192x192, frame k at y = k*192"),
+        "sheet_key": "warrior_run",
+        "anim": "ts_warrior_run",
+        "ts_anims_entry": ["warrior_run", n_frames, RUN_SHEET_PER_FRAME_MS, True],
+        "declaration": "stitched from static poses, not calibrated",
+        "not_gate_key": ("supplementary spritesheet in the run/ subdirectory, NOT one of the "
+                         "62 quality-gate keys; warrior_run.png stays the frozen single-frame "
+                         "Pose03 export and sheet frame 0 is pixel-identical to it "
+                         "(verified in-build)"),
+        "frame0_identical_to_warrior_run_png": True,
+        "frame_order": [f[0] for f in RUN_SHEET["frames"]],
+        "frame_order_note": ("cyclic TSP minimizing adjacent-frame leg-region MAE; frame 0 = "
+                             "Hero_Row01_Pose03 for continuity with the previous single-frame "
+                             "export; NOT calibrated gait phasing"),
+        "dur_semantics": ("ts.js TS_ANIMS third element is PER-FRAME ms: createTSAnimations "
+                          "sets frameRate = 1000/dur (frames/sec), so Phaser msPerFrame = dur "
+                          "and anim.duration = N * dur is the whole cycle"),
+        "cycle": {"per_frame_ms": RUN_SHEET_PER_FRAME_MS,
+                  "cycle_ms": RUN_SHEET_PER_FRAME_MS * n_frames,
+                  "rationale": ("96ms/frame is the slowest first-frame change that falls inside "
+                                "the walk-repro frame-diversity window (7 fixed 16.667ms "
+                                "accumulator samples = 100ms); a 600-900ms whole-cycle draft "
+                                "would need 120-180ms/frame and cannot pass that gate at N=5 "
+                                "(cycle <= 500ms); cadence remains a draft pending user feel")},
+        "frames": run_frames_meta,
+        "selection_evidence": ".superpowers/sdd/2026-10-29-ground-i18n-walk/lane-a/pose-analysis.json",
+    }
+
     manifest = {
-        "preview": "NLI 素材预览 · v0.2 全量替换 · 静态姿态",
+        "preview": "NLI 素材预览 · v0.2 全量替换 · 静态姿态 + 拼接跑动条",
         "source_package": "NLI_SoftFantasy_ARPG_v0.2 (read-only)",
         "source_version": SOURCE_VERSION,
         "style_code": "NL-ARPG-SOFT-766DF2B7",
@@ -551,8 +677,9 @@ def build(source_root, output, before, trees):
             "C-mode WorldMap.ART decorations (complete-source contain)",
             "runtime_integrated (designer handoff in src, task-2): operations the "
             "runtime performs over these exported PNGs, distinct from the offline "
-            "PNG derivation above. Scene ground: recipe nli02-ground-v1, per-scene "
-            "cache key ground_${def.key}_nli02-ground-v1_${orderedInputHashPrefixes} "
+            "PNG derivation above. Scene ground: recipe nli02-ground-v2 (raised "
+            "material alpha 2026-10-29), per-scene cache key "
+            "ground_${def.key}_nli02-ground-v2_${orderedInputHashPrefixes} "
             "over the input order grass/forest/path/water/floor/wall/"
             "ground_flowers (sha256 8-hex prefixes; current revision a74f521f-"
             "db6e0d35-1ff97190-ddfb6fff-d90c0441-bfc07375-e588e05c); canvas "
@@ -561,9 +688,21 @@ def build(source_root, output, before, trees):
             "ground profiles: 16 per-scene profiles (src/textures/"
             "nliGroundProfiles.js) select the material and B/path/water colors; "
             "runtime fills opaque base B then overlays the exported opaque 512x512 "
-            "terrain Q with material alpha .32/.26/.40/.18/.34/.30 (grass/forest/"
-            "path/water/floor/wall). The ground stays this derived planar material, "
+            "terrain Q with material alpha .62/.50/.55/.35/.34/.30 (grass/forest/"
+            "path/water/floor/wall; single predetermined 2026-10-29 legibility "
+            "raise from the previous .32/.26/.40/.18/.34/.30 — floor/wall "
+            "unchanged, grid/water-edge clipping/sizes/depth/collision untouched). "
+            "The ground stays this derived planar material, "
             "NOT the source package's seamless autotile",
+            "warrior run sheet (2026-10-29 walk lane): run/warrior_run_sheet.png "
+            "recorded in manifest.run_sheet — 5-frame stitched loop consumed by "
+            "TS_SHEETS.warrior_run / TS_ANIMS.ts_warrior_run "
+            "['warrior_run', 5, 96, true]; dur is PER-FRAME ms (frameRate = "
+            "1000/dur, Phaser msPerFrame = dur, whole cycle = 5 x 96 = 480ms); "
+            "96ms/frame is the slowest first-frame change inside the walk-repro "
+            "7x16.667ms frame-diversity sample window (a 600-900ms whole-cycle "
+            "draft cannot pass that gate at N=5); stitched from static poses, "
+            "not calibrated; idle/attack remain single-frame",
             "ground detail on final grid cells (128-world-px): final PATH union; "
             "W=WATER|WATER2|WATER3; no inner path borders; 24px road shoulder "
             "alpha .30 only on exterior non-PATH/non-water/non-colliding cells; "
@@ -621,8 +760,12 @@ def build(source_root, output, before, trees):
             "limitations)",
         ],
         "limitations": [
-            "static poses only: single-frame exports; no natural walk/run animation; runtime "
-            "flipX and the 21 TS_ANIMS contracts are untouched",
+            "static poses only: idle/attack remain single-frame exports; "
+            "ts_warrior_run is a 5-pose stitched loop (see run_sheet: 'stitched "
+            "from static poses, not calibrated'), not a calibrated gait; its "
+            "cadence (96ms/frame, 480ms whole cycle) is a gate-constrained draft "
+            "pending user feel; runtime flipX and the other 20 TS_ANIMS "
+            "contracts are untouched",
             "tree2 visible source height is 987 * 21/123 = 168.51px (bottom canvas cap "
             "(256-235)/(1254-1131), per the settled tree2 verification and spec line 60) — "
             "the ~169px prose is CORRECT, not an erratum; table parameters and PNG unchanged",
@@ -637,6 +780,7 @@ def build(source_root, output, before, trees):
             "validation have not been run; this metadata describes the implementation, "
             "not final validation",
         ],
+        "run_sheet": run_sheet_meta,
         "entries": entries,
     }
     (output / "manifest.json").write_text(
@@ -670,6 +814,12 @@ Derived offline from the read-only package `NLI_SoftFantasy_ARPG_v0.2`
 - **7 technical outputs** (spec §6): `fire` 64² and `cloud1..5` 576×256 fully
   transparent compatibility frames; `ts_shadow` 192² byte-frozen (copied from
   the immutable `v02-before` snapshot, never regenerated).
+- **1 supplementary run sheet** (2026-10-29 walk lane): `run/warrior_run_sheet.png`
+  — a 5-frame 192² stitched `warrior_run` loop (Hero_Row01_Pose03/07/06/02/04;
+  manifest `run_sheet` block). It is deliberately not one of the 62 quality-gate
+  keys: `warrior_run.png` remains the frozen single-frame Pose03 export and the
+  sheet's frame 0 is pixel-identical to it. Stitched from static poses,
+  not calibrated.
 
 ## Sampling
 
@@ -696,16 +846,23 @@ expectations ignore it (no snow variant is produced).
   `native_size`, `source_domain_xyxy` and the actual `sampling` transform;
   technical outputs declare no package provenance.
 - This directory holds exactly the 62 exported PNGs (plus `manifest.json` and
-  this README) — the offline derivation described above. The runtime consumers
-  are implemented separately in `src`: the `nli02-ground-v1` per-scene ground
-  recipe over the terrain Q textures, the two body-free Village landmarks
+  this README) — the offline derivation described above — and the `run/`
+  subdirectory with the supplementary stitched warrior run sheet (outside the
+  62-key gate set). The runtime consumers
+  are implemented separately in `src`: the `nli02-ground-v2` per-scene ground
+  recipe (2026-10-29 material alpha raise: .62/.50/.55/.35/.34/.30 for
+  grass/forest/path/water/floor/wall; floor/wall unchanged) over the terrain Q
+  textures, the multi-frame `ts_warrior_run` loop
+  (`['warrior_run', 5, 96, true]`, dur = per-frame ms, 480ms whole cycle), the
+  two body-free Village landmarks
   (`castle_medium`, `portal_blue_gold`) with occlusion and dedicated shadows,
   fixedFxDepth/torch glow/crystal shadow, the eight inline-SVG WorldMap
   illustrations, and the fail-closed Boot loader. The manifest's
   `runtime_derivatives` records those operations as implemented; it does not
   claim final validation.
-- Remaining limitations: static single-frame poses (no natural walk/run
-  animation), explicit enemy/boss visual proxies, terrain repeat quality left
+- Remaining limitations: static poses (idle/attack single-frame; the run loop
+  is a stitched 5-pose sequence, not calibrated, cadence draft pending user
+  feel), explicit enemy/boss visual proxies, terrain repeat quality left
   to observer judgment (the single Dungeon frame triage pass is not full scene
   acceptance), and full runtime/visual regression still pending — see the
   manifest `limitations`.

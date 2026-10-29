@@ -19,6 +19,7 @@ import { sfx } from '../audio/sfx.js';
 import { wipeTransition } from '../ui/wipe.js';
 import { T } from '../data/maps.js';
 import { makeGroundTexture } from '../textures/ground.js';
+import { t, L, localizeDoorLabel, localizeLockLines, localizeLockHint } from '../core/i18n.js';
 import { initNliDisplay, fixedFxDepth, addVillageCastle, createDoorlinkImage, registerDoorOcclusion, framePoint, torchFlamePoint } from '../display/nliDisplay.js';
 
 // ---------- 交互判定半径（玩法冻结：数值即原字面量，勿改） ----------
@@ -165,7 +166,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-SPACE', () => this.player.tryAttack());
     this.input.keyboard.on('keydown-M', () => {
       const muted = sfx.toggleMute();
-      this.hud.hint(muted ? '🔇 已静音（按 M 恢复）' : '🔊 声音已开启');
+      this.hud.hint(muted ? t('🔇 已静音（按 M 恢复）', '🔇 Muted (press M to restore)') : t('🔊 声音已开启', '🔊 Sound on'));
       this.time.delayedCall(1400, () => this.hud.hint(null));
     });
 
@@ -397,7 +398,7 @@ export class WorldScene extends Phaser.Scene {
     }
     for (const it of this.interactables) {
       if (it.kind === 'rune' && dist(it.x, it.y) < INTERACT_RUNE_RADIUS) {
-        if (!it.alive) { this.floatText(it.x, it.y - 300, '咒语已领悟 ✓', '#3ddad7'); return; }
+        if (!it.alive) { this.floatText(it.x, it.y - 300, t('咒语已领悟 ✓', 'Spell learned ✓'), '#3ddad7'); return; }
         this.openRuneQuiz(it);
         return;
       }
@@ -426,11 +427,11 @@ export class WorldScene extends Phaser.Scene {
           // 祝福符文：不产碎片，答对回复 1 颗心
           healHearts(1);
           sfx.heal();
-          this.floatText(it.x, it.y - 300, '+1 ❤ 符文祝福', '#ff8aa0');
+          this.floatText(it.x, it.y - 300, t('+1 ❤ 符文祝福', '+1 ❤ Rune blessing'), '#ff8aa0');
           this.spawnShardFx(it.x, it.y - 88, 0xff8aa0);
         } else {
           addShards(1, this.ch.id);
-          this.floatText(it.x, it.y - 300, `+1 ${this.ch.shardLabel}`, '#ffd257');
+          this.floatText(it.x, it.y - 300, t(`+1 ${this.ch.shardLabel}`, `+1 ${L(this.ch).shardLabel}`), '#ffd257');
           this.spawnShardFx(it.x, it.y - 88);
         }
       },
@@ -459,13 +460,14 @@ export class WorldScene extends Phaser.Scene {
       if (this.gate.sprite.body) this.gate.sprite.body.enable = false;
       updateHud();
       this.cameras.main.shake(240, 0.004);
-      this.floatText(this.gate.x, this.gate.y + 180, '轰隆—— 石门打开了！', '#ffd257');
+      this.floatText(this.gate.x, this.gate.y + 180, t('轰隆—— 石门打开了！', 'Rumble — the stone gate opens!'), '#ffd257');
     } else {
+      const P2 = L(this.ch);
       this.dialogue.say({
-        name: '石门',
+        name: t('石门', 'Stone Gate'),
         lines: [
-          `石门上刻着一行小字：「以 ${P.shardsNeeded} 枚${this.ch.shardLabel}作为钥匙」。`,
-          `（当前碎片 ${P.shards} / ${P.shardsNeeded}，去找野外的符文石答题吧）`,
+          t(`石门上刻着一行小字：「以 ${P.shardsNeeded} 枚${this.ch.shardLabel}作为钥匙」。`, `A line is carved on the gate: "Offer ${P.shardsNeeded} ${P2.shardLabel} as the key."`),
+          t(`（当前碎片 ${P.shards} / ${P.shardsNeeded}，去找野外的符文石答题吧）`, `(You hold ${P.shards} / ${P.shardsNeeded} shards — go answer the rune stones in the field)`),
         ],
       });
     }
@@ -479,7 +481,7 @@ export class WorldScene extends Phaser.Scene {
       if (now < (p._lockCd || 0)) return;
       p._lockCd = now + 1500;
       sfx.hitEnemy();
-      this.floatText(this.player.x, this.player.y - 160, p.lockHint || '被魔法封印着……', '#9fb8ff');
+      this.floatText(this.player.x, this.player.y - 160, localizeLockHint(p) || t('被魔法封印着……', 'Sealed by magic…'), '#9fb8ff');
       return;
     }
     this.transitioning = true;
@@ -548,21 +550,21 @@ export class WorldScene extends Phaser.Scene {
     let hint = null;
 
     if (this.npc && dist(this.npc.x, this.npc.y) < 300) {
-      hint = this.npc.id === 'elder' ? '按 <kbd>E</kbd> 与长老对话' : '按 <kbd>E</kbd> 阅读石碑';
+      hint = this.npc.id === 'elder' ? t('按 <kbd>E</kbd> 与长老对话', 'Press <kbd>E</kbd> to talk to the Elder') : t('按 <kbd>E</kbd> 阅读石碑', 'Press <kbd>E</kbd> to read the tablet');
     } else {
       for (const it of this.interactables) {
         if (it.kind === 'rune' && dist(it.x, it.y) < INTERACT_RUNE_RADIUS) {
-          hint = it.alive ? '按 <kbd>E</kbd> 解读符文石' : null;
+          hint = it.alive ? t('按 <kbd>E</kbd> 解读符文石', 'Press <kbd>E</kbd> to read the rune stone') : null;
           break;
         }
         if (it.kind === 'doorlink' && it.locked && dist(it.x, it.y) < 280) {
-          hint = `按 <kbd>E</kbd> 检查${it.prop.label || '封印之门'}`;
+          hint = t(`按 <kbd>E</kbd> 检查${localizeDoorLabel(it.prop, this.ch) || '封印之门'}`, `Press <kbd>E</kbd> to inspect the ${localizeDoorLabel(it.prop, this.ch) || 'Sealed Gate'}`);
           break;
         }
       }
     }
     if (!hint && this.gate && !cp(this.ch.id).gateOpen && dist(this.gate.x, this.gate.y + 140) < INTERACT_GATE_RADIUS) {
-      hint = '按 <kbd>E</kbd> 检查石门';
+      hint = t('按 <kbd>E</kbd> 检查石门', 'Press <kbd>E</kbd> to inspect the stone gate');
     }
     this.hud.hint(hint);
   }
@@ -575,8 +577,8 @@ export class WorldScene extends Phaser.Scene {
   /** 封印之门被检查时触发（如：函数之森里集齐碎片即可当场解锁） */
   onDoorLocked(it) {
     this.dialogue.say({
-      name: it.prop.label || '封印之门',
-      lines: it.prop.lockLines || ['一道魔法封印挡住了去路……'],
+      name: localizeDoorLabel(it.prop, this.ch) || t('封印之门', 'Sealed Gate'),
+      lines: localizeLockLines(it.prop, this.ch) || [t('一道魔法封印挡住了去路……', 'A magical seal blocks the way…')],
     });
   }
 }

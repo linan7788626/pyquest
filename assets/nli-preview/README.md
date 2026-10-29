@@ -22,6 +22,12 @@ Derived offline from the read-only package `NLI_SoftFantasy_ARPG_v0.2`
 - **7 technical outputs** (spec §6): `fire` 64² and `cloud1..5` 576×256 fully
   transparent compatibility frames; `ts_shadow` 192² byte-frozen (copied from
   the immutable `v02-before` snapshot, never regenerated).
+- **1 supplementary run sheet** (2026-10-29 walk lane): `run/warrior_run_sheet.png`
+  — a 5-frame 192² stitched `warrior_run` loop (Hero_Row01_Pose03/07/06/02/04;
+  manifest `run_sheet` block). It is deliberately not one of the 62 quality-gate
+  keys: `warrior_run.png` remains the frozen single-frame Pose03 export and the
+  sheet's frame 0 is pixel-identical to it. Stitched from static poses,
+  not calibrated.
 
 ## Sampling
 
@@ -46,16 +52,23 @@ expectations ignore it (no snow variant is produced).
   `native_size`, `source_domain_xyxy` and the actual `sampling` transform;
   technical outputs declare no package provenance.
 - This directory holds exactly the 62 exported PNGs (plus `manifest.json` and
-  this README) — the offline derivation described above. The runtime consumers
-  are implemented separately in `src`: the `nli02-ground-v1` per-scene ground
-  recipe over the terrain Q textures, the two body-free Village landmarks
+  this README) — the offline derivation described above — and the `run/`
+  subdirectory with the supplementary stitched warrior run sheet (outside the
+  62-key gate set). The runtime consumers
+  are implemented separately in `src`: the `nli02-ground-v2` per-scene ground
+  recipe (2026-10-29 material alpha raise: .62/.50/.55/.35/.34/.30 for
+  grass/forest/path/water/floor/wall; floor/wall unchanged) over the terrain Q
+  textures, the multi-frame `ts_warrior_run` loop
+  (`['warrior_run', 5, 96, true]`, dur = per-frame ms, 480ms whole cycle), the
+  two body-free Village landmarks
   (`castle_medium`, `portal_blue_gold`) with occlusion and dedicated shadows,
   fixedFxDepth/torch glow/crystal shadow, the eight inline-SVG WorldMap
   illustrations, and the fail-closed Boot loader. The manifest's
   `runtime_derivatives` records those operations as implemented; it does not
   claim final validation.
-- Remaining limitations: static single-frame poses (no natural walk/run
-  animation), explicit enemy/boss visual proxies, terrain repeat quality left
+- Remaining limitations: static poses (idle/attack single-frame; the run loop
+  is a stitched 5-pose sequence, not calibrated, cadence draft pending user
+  feel), explicit enemy/boss visual proxies, terrain repeat quality left
   to observer judgment (the single Dungeon frame triage pass is not full scene
   acceptance), and full runtime/visual regression still pending — see the
   manifest `limitations`.

@@ -4,6 +4,7 @@
 import { G, chapterShards, cp } from '../core/state.js';
 import { phaseOf, PHASE } from '../core/phase.js';
 import { CHAPTERS, getChapter } from '../data/chapters.js';
+import { L, t } from '../core/i18n.js';
 import { ICON } from './icons.js';
 
 // 保持 SVG 外壳、尺寸与 #hearts svg 测试契约；内嵌 NLI 平滑 PNG。
@@ -92,15 +93,15 @@ export class HUD {
 
     // 目标提示：按章内阶段（core/phase.js）推导
     // （#11：目标行已与碎片计数胶囊分层，独立悬挂在胶囊下方）
-    const ch = getChapter(G.current);
+    const ch = L(getChapter(G.current));
     const next = CHAPTERS.find((c) => c.id === ch.id + 1);
     const allDone = CHAPTERS.every((c) => cp(c.id).done);
     const phase = phaseOf(ch.id);
     let objective;
-    if (allDone) objective = `${ICON.star}全部通关！自由探索吧`;
-    else if (phase === PHASE.DONE) objective = next ? `本章通关！前往${next.fieldName}` : '本章通关！';
-    else if (phase === PHASE.OPEN) objective = `进入${ch.lairName}，击败${ch.bossName}！`;
-    else objective = `收集${ch.shardLabel}，解开巢穴封印`;
+    if (allDone) objective = `${ICON.star}${t('全部通关！自由探索吧', 'All chapters clear! Explore freely')}`;
+    else if (phase === PHASE.DONE) objective = next ? t(`本章通关！前往${next.fieldName}`, `Chapter clear! Head for ${L(next).fieldName}`) : t('本章通关！', 'Chapter clear!');
+    else if (phase === PHASE.OPEN) objective = t(`进入${ch.lairName}，击败${ch.bossName}！`, `Enter the ${ch.lairName} and defeat the ${ch.bossName}!`);
+    else objective = t(`收集${ch.shardLabel}，解开巢穴封印`, `Collect ${ch.shardLabel} to break the lair seal`);
     this.objectiveEl.innerHTML = objective;
   }
 

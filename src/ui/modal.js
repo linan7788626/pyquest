@@ -6,6 +6,7 @@
 import { G } from '../core/state.js';
 import { CHAPTERS } from '../data/chapters.js';
 import { hasSave, clearSave, saveChapter } from '../core/save.js';
+import { L, t } from '../core/i18n.js';
 import { ICON } from './icons.js';
 
 // 标题里的 emoji 前缀（chapters.js 的 victory.title 仍写着 🎉👑⚡…）
@@ -16,11 +17,20 @@ export function initTitle({ onNew, onContinue }) {
   const el = document.getElementById('title');
   const btnStart = document.getElementById('btn-start');
   const btnNew = document.getElementById('btn-new');
+  // 标题按钮文案随语言即时刷新（保存与否的逻辑不变）
+  const saved = hasSave();
+  const contCh = saved ? saveChapter() : 0;
+  const refreshTitle = () => {
+    if (!saved) { btnStart.textContent = t('开始冒险', 'Start Adventure'); return; }
+    btnStart.textContent = contCh >= 2
+      ? t(`继续冒险 · 第${contCh}章`, `Continue · Chapter ${contCh}`)
+      : t('继续冒险', 'Continue Adventure');
+  };
+  refreshTitle();
+  document.addEventListener('pyquest:lang', refreshTitle);
 
-  if (hasSave()) {
+  if (saved) {
     // 有存档：主按钮变「继续冒险」，副按钮「新的冒险」
-    const ch = saveChapter();
-    btnStart.textContent = ch >= 2 ? `继续冒险 · 第${ch}章` : '继续冒险';
     btnStart.addEventListener('click', () => {
       el.classList.add('hidden');
       onContinue();
@@ -28,7 +38,7 @@ export function initTitle({ onNew, onContinue }) {
     btnNew.style.display = '';
     btnNew.addEventListener('click', () => {
       // eslint-disable-next-line no-alert
-      if (!window.confirm('开始新的冒险会覆盖当前存档，确定吗？')) return;
+      if (!window.confirm(t('开始新的冒险会覆盖当前存档，确定吗？', 'Starting a new adventure will overwrite your current save. Continue?'))) return;
       el.classList.add('hidden');
       onNew();
     });
@@ -42,8 +52,8 @@ export function initTitle({ onNew, onContinue }) {
 
 export function showVictory(ch, { hasNext, onNext, onRestart } = {}) {
   const el = document.getElementById('victory');
-  const cfg = (ch && ch.victory) || {
-    title: '冒险成功！', text: '你完成了试炼！', next: '继续冒险',
+  const cfg = (L(ch) && L(ch).victory) || {
+    title: t('冒险成功！', 'Adventure Complete!'), text: t('你完成了试炼！', 'You have completed the trial!'), next: t('继续冒险', 'Continue Adventure'),
   };
   // 标题用 textContent（纯文字，兼容断言/读屏）；emoji 前缀已在渲染层剥离
   document.getElementById('victory-title').textContent = cfg.title.replace(STRIP_EMOJI, '');
@@ -59,9 +69,9 @@ export function showVictory(ch, { hasNext, onNext, onRestart } = {}) {
   const solved = G.answered.size;
   const doneCount = CHAPTERS.filter((c) => G.progress[c.id].done).length;
   document.getElementById('victory-stats').innerHTML =
-    `<div class="stat-seal">${ICON.hourglass}<b class="stat-num">${mm}:${ss}</b><span class="stat-lbl">冒险用时</span></div>` +
-    `<div class="stat-seal">${ICON.key}<b class="stat-num">${solved}</b><span class="stat-lbl">解开谜题</span></div>` +
-    `<div class="stat-seal">${ICON.flag}<b class="stat-num">${doneCount} / ${CHAPTERS.length}</b><span class="stat-lbl">章节进度</span></div>`;
+    `<div class="stat-seal">${ICON.hourglass}<b class="stat-num">${mm}:${ss}</b><span class="stat-lbl">${t('冒险用时', 'Time Spent')}</span></div>` +
+    `<div class="stat-seal">${ICON.key}<b class="stat-num">${solved}</b><span class="stat-lbl">${t('解开谜题', 'Puzzles Solved')}</span></div>` +
+    `<div class="stat-seal">${ICON.flag}<b class="stat-num">${doneCount} / ${CHAPTERS.length}</b><span class="stat-lbl">${t('章节进度', 'Chapter Progress')}</span></div>`;
 
   const btnNext = document.getElementById('btn-next');
   const btnRestart = document.getElementById('btn-restart');
@@ -74,7 +84,7 @@ export function showVictory(ch, { hasNext, onNext, onRestart } = {}) {
   };
   btnRestart.onclick = () => {
     // 对齐标题界面「新的冒险」的安全标准：清档前确认
-    if (!window.confirm('确定要放弃这次冒险吗？八周进度将被清除。')) return;
+    if (!window.confirm(t('确定要放弃这次冒险吗？八周进度将被清除。', 'Abandon this adventure? All eight-week progress will be erased.'))) return;
     clearSave();
     location.reload();
   };

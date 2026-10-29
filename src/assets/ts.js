@@ -6,7 +6,10 @@ const png = (key) => `${P}/${key}.png`;
 
 export const TS_SHEETS = {
   warrior_idle: [png('warrior_idle'), 192, 192],
-  warrior_run: [png('warrior_run'), 192, 192],
+  // 拼接跑动条：5 帧竖排（assets/nli-preview/run/warrior_run_sheet.png，帧 k 在 y=k*192），
+  // 帧契约 192×192；warrior_run.png 仍是 62 键质量门冻结的单帧导出（条的第 0 帧与其逐像素一致，
+  // 溯源见 manifest.json 顶层 run_sheet：stitched from static poses, not calibrated）。
+  warrior_run: [png('run/warrior_run_sheet'), 192, 192],
   warrior_attack: [png('warrior_attack'), 192, 192],
   pawn_red_idle: [png('pawn_red_idle'), 192, 192],
   pawn_red_run: [png('pawn_red_run'), 192, 192],
@@ -45,10 +48,18 @@ export const NLI_REQUIRED_KEYS = [
   ...Object.keys(TS_SHEETS), ...Object.keys(TS_IMAGES), ...Object.keys(TS_TILESETS),
 ];
 
-// 独立静态姿态，各动画只有一帧。攻击/扬尘总时长沿用原行为。
+// dur 语义（Phaser 3.90 源码实证，createTSAnimations 见下）：createTSAnimations 传
+// frameRate = 1000/dur（帧/秒），Phaser 由此得 msPerFrame = dur —— 即本表第三个元素是
+// 「每帧毫秒」；anims.create 推导的 anim.duration = 帧数 × dur 才是整循环时长。
+// ts_warrior_run：5 帧拼接姿态 × 96ms/帧 = 480ms 整循环。96 的取舍：walk-repro 帧多样性
+// gate 以 7 个 16.667ms 固定步采样（合计 100ms 动画累加器窗口），首次换帧必须 ≤100ms 才能稳定
+// 转 GREEN；计划初稿 600–900ms 整循环（120–180ms/帧）在 N=5 时数学上不可能通过该 gate
+// （整循环上限 500ms），故取可通过 gate 的最慢节奏 480ms。节奏仍为初稿，待用户体感再调
+//（这与源姿态未校准的声明一起记录在 manifest.json 的 run_sheet 块中）。
+// 其余动画保持单帧（静态姿态）；攻击/扬尘总时长沿用原行为。
 export const TS_ANIMS = {
   ts_warrior_idle: ['warrior_idle', 1, 880, true],
-  ts_warrior_run: ['warrior_run', 1, 480, true],
+  ts_warrior_run: ['warrior_run', 5, 96, true],
   ts_warrior_attack: ['warrior_attack', 1, 280, false],
   ts_pawn_red_idle: ['pawn_red_idle', 1, 960, true],
   ts_pawn_red_run: ['pawn_red_run', 1, 540, true],

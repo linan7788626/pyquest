@@ -1,5 +1,5 @@
 {
-  "preview": "NLI 素材预览 · v0.2 全量替换 · 静态姿态",
+  "preview": "NLI 素材预览 · v0.2 全量替换 · 静态姿态 + 拼接跑动条",
   "source_package": "NLI_SoftFantasy_ARPG_v0.2 (read-only)",
   "source_version": "0.2.1-npc-elder",
   "style_code": "NL-ARPG-SOFT-766DF2B7",
@@ -14,8 +14,9 @@
   ],
   "runtime_derivatives": [
     "implemented_offline (this export): map_forest, map_highland, map_tower, map_forge, map_temple, map_signal, map_halo — 256x256 C-mode WorldMap.ART decorations (complete-source contain)",
-    "runtime_integrated (designer handoff in src, task-2): operations the runtime performs over these exported PNGs, distinct from the offline PNG derivation above. Scene ground: recipe nli02-ground-v1, per-scene cache key ground_${def.key}_nli02-ground-v1_${orderedInputHashPrefixes} over the input order grass/forest/path/water/floor/wall/ground_flowers (sha256 8-hex prefixes; current revision a74f521f-db6e0d35-1ff97190-ddfb6fff-d90c0441-bfc07375-e588e05c); canvas def.w*128 x def.h*128, origin (0,0), depth -10, built once and cached per scene/revision (no per-frame redraw, no random calls)",
-    "ground profiles: 16 per-scene profiles (src/textures/nliGroundProfiles.js) select the material and B/path/water colors; runtime fills opaque base B then overlays the exported opaque 512x512 terrain Q with material alpha .32/.26/.40/.18/.34/.30 (grass/forest/path/water/floor/wall). The ground stays this derived planar material, NOT the source package's seamless autotile",
+    "runtime_integrated (designer handoff in src, task-2): operations the runtime performs over these exported PNGs, distinct from the offline PNG derivation above. Scene ground: recipe nli02-ground-v2 (raised material alpha 2026-10-29), per-scene cache key ground_${def.key}_nli02-ground-v2_${orderedInputHashPrefixes} over the input order grass/forest/path/water/floor/wall/ground_flowers (sha256 8-hex prefixes; current revision a74f521f-db6e0d35-1ff97190-ddfb6fff-d90c0441-bfc07375-e588e05c); canvas def.w*128 x def.h*128, origin (0,0), depth -10, built once and cached per scene/revision (no per-frame redraw, no random calls)",
+    "ground profiles: 16 per-scene profiles (src/textures/nliGroundProfiles.js) select the material and B/path/water colors; runtime fills opaque base B then overlays the exported opaque 512x512 terrain Q with material alpha .62/.50/.55/.35/.34/.30 (grass/forest/path/water/floor/wall; single predetermined 2026-10-29 legibility raise from the previous .32/.26/.40/.18/.34/.30 — floor/wall unchanged, grid/water-edge clipping/sizes/depth/collision untouched). The ground stays this derived planar material, NOT the source package's seamless autotile",
+    "warrior run sheet (2026-10-29 walk lane): run/warrior_run_sheet.png recorded in manifest.run_sheet — 5-frame stitched loop consumed by TS_SHEETS.warrior_run / TS_ANIMS.ts_warrior_run ['warrior_run', 5, 96, true]; dur is PER-FRAME ms (frameRate = 1000/dur, Phaser msPerFrame = dur, whole cycle = 5 x 96 = 480ms); 96ms/frame is the slowest first-frame change inside the walk-repro 7x16.667ms frame-diversity sample window (a 600-900ms whole-cycle draft cannot pass that gate at N=5); stitched from static poses, not calibrated; idle/attack remain single-frame",
     "ground detail on final grid cells (128-world-px): final PATH union; W=WATER|WATER2|WATER3; no inner path borders; 24px road shoulder alpha .30 only on exterior non-PATH/non-water/non-colliding cells; water-edge 14px #92b6a5 alpha .22 and land-edge 12px #54674a alpha .22 nearest-edge masks (128x128 cached templates, alpha=round(255*a*max(0,1-d/width)) at pixel centers); per-shared-edge wave line inset 4+2*sin(2*pi*s/96), width 2, rgba(194,217,188,.45), clipped to water; indoor DWALL/DFLOOR use the wall/floor profiles, VOID #242833",
     "Village ground extras: FLOWER 76x76 at the original deterministic offsets, skipped only when the draw rectangle intersects [1408,1856,640,896]; two soil pads (1088,1424,320x64) and (4352,1392,208x64) drawn from path Q with alpha<=.18, clipped to non-water, 16px edge fade",
     "Village landmarks (body-free images): the original castle image/body/creation order is retained and hidden (visible=false) with castle_medium 704x704 origin (0.4,0.94) at (1024,1444) depth 1444 overlaid; the single east portal_door image at (4288,1392), with interaction anchor (4288,1344), is REPLACED by portal_blue_gold 480x480 origin (0.5,0.9) at (4352,1392) depth 1392, while the original locked body (4178,1184,220,160) and interaction remain unchanged; two dedicated landmark shadows (1088,1432,600x96) and (4352,1400,320x64) alpha .18 depth -9, tagged nliDisplayRole=landmark-shadow for exactly these two",
@@ -26,12 +27,220 @@
     "runtime status: the operations above are implemented in src and consume the exported PNGs at the shipped hashes; a single Dungeon frame visual triage passed, but full scene/UI/animation visual acceptance and the final all-writer validation remain pending (see limitations)"
   ],
   "limitations": [
-    "static poses only: single-frame exports; no natural walk/run animation; runtime flipX and the 21 TS_ANIMS contracts are untouched",
+    "static poses only: idle/attack remain single-frame exports; ts_warrior_run is a 5-pose stitched loop (see run_sheet: 'stitched from static poses, not calibrated'), not a calibrated gait; its cadence (96ms/frame, 480ms whole cycle) is a gate-constrained draft pending user feel; runtime flipX and the other 20 TS_ANIMS contracts are untouched",
     "tree2 visible source height is 987 * 21/123 = 168.51px (bottom canvas cap (256-235)/(1254-1131), per the settled tree2 verification and spec line 60) — the ~169px prose is CORRECT, not an erratum; table parameters and PNG unchanged",
     "ground material is the derived planar Q overlay, not the source seamless autotile; terrain repeat quality (possible four-petal mirror / tiling bands) needs observer judgment — the single Dungeon frame triage pass is not full scene visual acceptance",
     "boss/enemy art is an explicit visual proxy (Crimson Knight etc.); the package has no continuous snake/minotaur/dragon bodies",
     "final runtime/visual verification is still pending: full 16-scene visual regression, UI/animation acceptance and the parent-owned all-writer validation have not been run; this metadata describes the implementation, not final validation"
   ],
+  "run_sheet": {
+    "url": "/nli-preview/run/warrior_run_sheet.png",
+    "file": "run/warrior_run_sheet.png",
+    "sha256": "f62626d56e99612c1cf2d3abf6191e283591d14d0521973de95c071a63337601",
+    "size": [
+      192,
+      960
+    ],
+    "frame_size": [
+      192,
+      192
+    ],
+    "frame_count": 5,
+    "layout": "vertical stack; Phaser spritesheet frameWidth/frameHeight 192x192, frame k at y = k*192",
+    "sheet_key": "warrior_run",
+    "anim": "ts_warrior_run",
+    "ts_anims_entry": [
+      "warrior_run",
+      5,
+      96,
+      true
+    ],
+    "declaration": "stitched from static poses, not calibrated",
+    "not_gate_key": "supplementary spritesheet in the run/ subdirectory, NOT one of the 62 quality-gate keys; warrior_run.png stays the frozen single-frame Pose03 export and sheet frame 0 is pixel-identical to it (verified in-build)",
+    "frame0_identical_to_warrior_run_png": true,
+    "frame_order": [
+      "Characters/Hero_Poses/Hero_Row01_Pose03",
+      "Characters/Hero_Poses/Hero_Row01_Pose07",
+      "Characters/Hero_Poses/Hero_Row01_Pose06",
+      "Characters/Hero_Poses/Hero_Row01_Pose02",
+      "Characters/Hero_Poses/Hero_Row01_Pose04"
+    ],
+    "frame_order_note": "cyclic TSP minimizing adjacent-frame leg-region MAE; frame 0 = Hero_Row01_Pose03 for continuity with the previous single-frame export; NOT calibrated gait phasing",
+    "dur_semantics": "ts.js TS_ANIMS third element is PER-FRAME ms: createTSAnimations sets frameRate = 1000/dur (frames/sec), so Phaser msPerFrame = dur and anim.duration = N * dur is the whole cycle",
+    "cycle": {
+      "per_frame_ms": 96,
+      "cycle_ms": 480,
+      "rationale": "96ms/frame is the slowest first-frame change that falls inside the walk-repro frame-diversity window (7 fixed 16.667ms accumulator samples = 100ms); a 600-900ms whole-cycle draft would need 120-180ms/frame and cannot pass that gate at N=5 (cycle <= 500ms); cadence remains a draft pending user feel"
+    },
+    "frames": [
+      {
+        "index": 0,
+        "source_image_path": "Assets/NLI_SoftFantasy_ARPG/Sprites/Characters/Hero_Poses/Hero_Row01_Pose03.png",
+        "source_sha256": "573cb8907e4e70983c29bb70449bfa3683eb3be05767d8995c7107f9fef2431f",
+        "native_size": [
+          1254,
+          1254
+        ],
+        "source_domain_xyxy": [
+          0,
+          0,
+          1254,
+          1254
+        ],
+        "sampling": {
+          "mode": "F",
+          "scale": 0.080481036078,
+          "translate_xy": [
+            38.053654024052,
+            41.99814986124
+          ],
+          "source_anchor_xy": [
+            720,
+            1168
+          ],
+          "frame_anchor_xy": [
+            96,
+            136
+          ],
+          "method": "premult-pad-resize-lanczos"
+        },
+        "anchor_rule": "frozen warrior_run F row (foot-band two-feet midpoint validated -1.15 source px); frame 0 stays pixel-identical to warrior_run.png"
+      },
+      {
+        "index": 1,
+        "source_image_path": "Assets/NLI_SoftFantasy_ARPG/Sprites/Characters/Hero_Poses/Hero_Row01_Pose07.png",
+        "source_sha256": "bd8b363a9546017f8854a19b6e9c4a9c0a53731bb33ac59434808133735ae3e0",
+        "native_size": [
+          1254,
+          1254
+        ],
+        "source_domain_xyxy": [
+          0,
+          0,
+          1254,
+          1254
+        ],
+        "sampling": {
+          "mode": "F",
+          "scale": 0.08630952381,
+          "translate_xy": [
+            36.611279761905,
+            37.607142857143
+          ],
+          "source_anchor_xy": [
+            688.09,
+            1140
+          ],
+          "frame_anchor_xy": [
+            96,
+            136
+          ],
+          "method": "premult-pad-resize-lanczos"
+        },
+        "anchor_rule": "foot-band (bottom 6%) two-feet midpoint"
+      },
+      {
+        "index": 2,
+        "source_image_path": "Assets/NLI_SoftFantasy_ARPG/Sprites/Characters/Hero_Poses/Hero_Row01_Pose06.png",
+        "source_sha256": "8941433828fedab1c487176219774f6e243d8fb0a6479e440e8ec807950b8d04",
+        "native_size": [
+          1254,
+          1254
+        ],
+        "source_domain_xyxy": [
+          0,
+          0,
+          1254,
+          1254
+        ],
+        "sampling": {
+          "mode": "F",
+          "scale": 0.08504398827,
+          "translate_xy": [
+            37.510997067449,
+            38.369501466276
+          ],
+          "source_anchor_xy": [
+            687.75,
+            1148
+          ],
+          "frame_anchor_xy": [
+            96,
+            136
+          ],
+          "method": "premult-pad-resize-lanczos"
+        },
+        "anchor_rule": "fallback: bottom-25% alpha-weighted centroid (one foot off ground in the 6% band)"
+      },
+      {
+        "index": 3,
+        "source_image_path": "Assets/NLI_SoftFantasy_ARPG/Sprites/Characters/Hero_Poses/Hero_Row01_Pose02.png",
+        "source_sha256": "5bf4465967316a132bd6d7fa7afe7ca9b9a23b3882f6442453827110e51b1264",
+        "native_size": [
+          1254,
+          1254
+        ],
+        "source_domain_xyxy": [
+          0,
+          0,
+          1254,
+          1254
+        ],
+        "sampling": {
+          "mode": "F",
+          "scale": 0.086223984143,
+          "translate_xy": [
+            35.32935579782,
+            37.273538156591
+          ],
+          "source_anchor_xy": [
+            703.64,
+            1145
+          ],
+          "frame_anchor_xy": [
+            96,
+            136
+          ],
+          "method": "premult-pad-resize-lanczos"
+        },
+        "anchor_rule": "foot-band (bottom 6%) two-feet midpoint"
+      },
+      {
+        "index": 4,
+        "source_image_path": "Assets/NLI_SoftFantasy_ARPG/Sprites/Characters/Hero_Poses/Hero_Row01_Pose04.png",
+        "source_sha256": "b0dcca2d9560a9b119627ce4dca5d15175667f96da9cac28b05cdc1cbdc333e0",
+        "native_size": [
+          1254,
+          1254
+        ],
+        "source_domain_xyxy": [
+          0,
+          0,
+          1254,
+          1254
+        ],
+        "sampling": {
+          "mode": "F",
+          "scale": 0.091578947368,
+          "translate_xy": [
+            31.751873684211,
+            34.255789473684
+          ],
+          "source_anchor_xy": [
+            701.56,
+            1111
+          ],
+          "frame_anchor_xy": [
+            96,
+            136
+          ],
+          "method": "premult-pad-resize-lanczos"
+        },
+        "anchor_rule": "foot-band (bottom 6%) two-feet midpoint"
+      }
+    ],
+    "selection_evidence": ".superpowers/sdd/2026-10-29-ground-i18n-walk/lane-a/pose-analysis.json"
+  },
   "entries": [
     {
       "key": "bush1",
