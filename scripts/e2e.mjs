@@ -15,6 +15,8 @@ const page = await browser.newPage({ viewport: { width: 1000, height: 700 } });
 page.on('console', (msg) => { if (msg.type() === 'error') errors.push(`[console] ${msg.text()}`); });
 page.on('pageerror', (err) => errors.push(`[pageerror] ${err.message}`));
 
+await page.route('**/*', route => /^(http:\/\/localhost|http:\/\/127\.0\.0\.1)/.test(route.request().url()) ? route.continue() : route.fulfill({status:200,body:''}));
+
 const shot = async (name) => {
   await page.screenshot({ path: `scripts/shots/${name}.png` });
   steps.push(`📷 ${name}`);

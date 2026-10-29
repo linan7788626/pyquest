@@ -9,7 +9,7 @@ import { G, cp } from '../core/state.js';
 import { phaseOf, PHASE } from '../core/phase.js';
 import { CHAPTERS } from '../data/chapters.js';
 import { sfx } from '../audio/sfx.js';
-import { wipeTransition } from './wipe.js';
+import { wipeTransition, transitionRunning } from './wipe.js';
 import { ICON } from './icons.js';
 
 const MAP_W = 1000;
@@ -305,7 +305,7 @@ export class WorldMap {
     // 答题 / 对话 / 转场 / 濒死期间不打开
     if (s.quiz && s.quiz.isOpen) return;
     if (s.dialogue && s.dialogue.isOpen) return;
-    if (s.transitioning) return;
+    if (s.transitioning || transitionRunning() || s.settling) return;
     if (s.player && s.player.dying) return;
 
     this.isOpen = true;
@@ -429,12 +429,12 @@ export class WorldMap {
     if (!this.isOpen) return;
     const s = this.scene;
     this.close();
-    if (s.transitioning || s.player.dying) return;
+    if (s.transitioning || transitionRunning() || s.settling || s.player.dying) return;
     s.transitioning = true;
     s.player.setVelocity(0, 0);
-    s.player.invulUntil = Number.MAX_SAFE_INTEGER;
+
     sfx.openGate();
-    wipeTransition(() => s.scene.start(ch.fieldKey, { spawn: ch.id === 1 ? 'start' : 'fromPrev' }));
+    wipeTransition(() => s.scene.start(ch.fieldKey, { spawn: ch.id === 1 ? 'start' : 'fromPrev' }), { onFinish: () => { s.transitioning = false; } });
   }
 
   destroy() {

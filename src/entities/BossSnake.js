@@ -8,10 +8,10 @@
 import Phaser from 'phaser';
 import { G } from '../core/state.js';
 import { sfx } from '../audio/sfx.js';
+import { pointAlongTrail, recordTrail } from '../core/trail.js';
 import { Slime } from './Slime.js';
 
-const SEG_GAP = 184;      // 体节间距（头部轨迹采样间隔；角色 ×2 后等比）
-const MAX_TRAIL = 4800;  // 头部轨迹记录长度
+const SEG_GAP = 184;      // 体节沿轨迹的世界距离
 const HEAD_SCALE = 2.5; // 基础 ×2 后保持 1.25 比例
 const SEG_SCALE = 1.24;
 
@@ -43,6 +43,15 @@ export class BossSnake extends Slime {
       this.segs.push(s);
     }
     this.trail = [];
+    const limit = scene.def.h * 128 - 192;
+    // Fold a full-length starting trail into the arena rather than stacking it.
+    let tx = x, ty = y - 32, direction = 1;
+    for (let d = 0; d <= SEG_GAP * 7; d += 8) {
+      this.trail.push({x: tx, y: ty});
+      ty += 8 * direction;
+      if (ty >= limit) { ty = limit; direction = -1; tx = Math.max(192, tx - SEG_GAP); }
+    }
+    this.segs.forEach((seg,i) => { const t=pointAlongTrail(this.trail,(i+1)*SEG_GAP); seg.setPosition(t.x,t.y); });
 
     if (G.progress[scene.ch.id].bossShielded) this.setTint(0x7f9dff);
     this.shadow.setDisplaySize(180, 90);
@@ -105,10 +114,9 @@ export class BossSnake extends Slime {
     this.shadow.setPosition(this.x, this.y + 2).setDepth(this.y - 0.5);
 
     // 记录轨迹 + 让体节跟随
-    this.trail.unshift({ x: this.x, y: this.y - 32 });
-    if (this.trail.length > MAX_TRAIL) this.trail.pop();
+    recordTrail(this.trail, { x: this.x, y: this.y - 32 }, SEG_GAP * 8);
     this.segs.forEach((s, i) => {
-      const t = this.trail[Math.min((i + 1) * SEG_GAP, this.trail.length - 1)];
+      const t = pointAlongTrail(this.trail, (i + 1) * SEG_GAP);
       if (t) s.setPosition(t.x, t.y);
       s.setFlipX(this.body.velocity.x < 0);
       s.setDepth(s.y);
@@ -132,10 +140,11 @@ export class BossSnake extends Slime {
       this.knockUntil = now + 160;
       return;
     }
+    const previousHp = this.hp;
     super.hurt(dmg, fromX, fromY);
     if (this.dead) return;
     // 每损失 2 HP 断一节尾巴，并变得更快
-    if (this.hp % 2 === 0) this.popSegment();
+    if (this.hp < previousHp && this.hp % 2 === 0) this.popSegment();
   }
 
   popSegment() {

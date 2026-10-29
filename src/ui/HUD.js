@@ -46,6 +46,7 @@ export class HUD {
   show() { this.root.style.display = 'flex'; }
 
   destroy() {
+    clearTimeout(this._flightT); clearTimeout(this._hurtT);
     document.removeEventListener('pyquest:hud', this._onHud);
     document.removeEventListener('pyquest:shardflight', this._onFlight);
   }

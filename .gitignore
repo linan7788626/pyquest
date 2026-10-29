@@ -23,3 +23,7 @@ scripts/tmp-*.mjs
 .idea/
 .vscode/
 .slim/deepwork/
+
+# Derived runtime assets and test reports
+.cache/
+test-results/

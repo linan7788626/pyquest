@@ -1,3 +1,4 @@
+import { assetUrl } from './urls.js';
 // ============================================================
 // Tiny Swords 素材清单（Pixel Frog · Free Pack）
 // 统一管理：资源路径、spritesheet 帧配置、动画定义
@@ -8,7 +9,7 @@
 // tileset：64×64/格（行 0-3 列 0-3 = 16 草变体）
 // ============================================================
 
-const P = '/TinySwordsFreePack';
+const P = 'TinySwordsFreePack';
 const U = (team, unit) => `${P}/Units/${team} Units/${unit}`;
 
 // ---------- spritesheet（key → [路径, 帧宽, 帧高]） ----------
@@ -47,6 +48,7 @@ export const TS_SHEETS = {
 
 // ---------- 静态图片 ----------
 export const TS_IMAGES = {
+  npc_elder: 'NLI/NPC_Elder.png',
   ts_shadow: `${P}/Terrain/Tileset/Shadow.png`,     // 192×192 官方椭圆阴影
   castle: `${P}/Buildings/Blue Buildings/Monastery.png`, // 192×320 修道院（村庄主建筑）
   tower: `${P}/Buildings/Blue Buildings/Tower.png`,      // 128×256 塔（森林引导石碑位）
@@ -96,10 +98,10 @@ export const TS_ANIMS = {
 /** BootScene.preload：加载全部 TS 素材 */
 export function loadTSAssets(scene) {
   for (const [key, [url, fw, fh]] of Object.entries(TS_SHEETS)) {
-    scene.load.spritesheet(key, url, { frameWidth: fw, frameHeight: fh });
+    scene.load.spritesheet(key, assetUrl(url), { frameWidth: fw, frameHeight: fh });
   }
-  for (const [key, url] of Object.entries(TS_IMAGES)) scene.load.image(key, url);
-  for (const [key, url] of Object.entries(TS_TILESETS)) scene.load.image(key, url);
+  for (const [key, url] of Object.entries(TS_IMAGES)) scene.load.image(key, assetUrl(url));
+  for (const [key, url] of Object.entries(TS_TILESETS)) scene.load.image(key, assetUrl(url));
 }
 
 /** BootScene.create：注册 TS 动画 */

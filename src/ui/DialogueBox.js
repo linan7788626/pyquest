@@ -51,7 +51,8 @@ export class DialogueBox {
     // 「继续」提示：像素下箭头 + 键帽（▼ emoji → 像素图标；写死内容，重复调用幂等）
     this.nextEl.innerHTML = `${ICON.chevron}按 <kbd>E</kbd> / 点击 继续`;
 
-    this.el.addEventListener('click', () => this.advance());
+    this._clickHandler = () => this.advance();
+    this.el.addEventListener('click', this._clickHandler);
     this._keyHandler = (e) => {
       if (!this.isOpen) return;
       if (e.key === 'e' || e.key === 'E' || e.key === ' ' || e.key === 'Enter') {
@@ -127,5 +128,9 @@ export class DialogueBox {
 
   destroy() {
     document.removeEventListener('keydown', this._keyHandler);
+    this.el.removeEventListener('click', this._clickHandler);
+    clearInterval(this.timer);
+    this.el.classList.remove('show');
+    this.isOpen = false;
   }
 }

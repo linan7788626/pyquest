@@ -80,3 +80,9 @@ export function showVictory(ch, { hasNext, onNext, onRestart } = {}) {
   };
   el.classList.remove('hidden');
 }
+
+export function hideVictory() {
+  document.getElementById('victory').classList.add('hidden');
+  document.getElementById('btn-next').onclick = null;
+  document.getElementById('btn-restart').onclick = null;
+}

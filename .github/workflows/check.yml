@@ -1,0 +1,31 @@
+name: PyQuest checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  logic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+  full-game:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, pyquest-assets]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare private test assets
+        shell: bash
+        run: |
+          test -n "$PYQUEST_ASSET_ROOT" || { echo 'PYQUEST_ASSET_ROOT must contain the real test assets'; exit 1; }
+          mkdir -p assets
+          cp -R "$PYQUEST_ASSET_ROOT/TinySwordsFreePack" assets/
+          cp -R "$PYQUEST_ASSET_ROOT/NLI_SoftFantasy_ARPG_v0.2" assets/
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm run check:release

@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.mjs && node scripts/smoke.mjs",
+    "test:e2e": "node scripts/test-game.mjs",
+    "check:release": "npm test && node scripts/verify-quiz.mjs && npm run build && node scripts/check-build.mjs && npm run test:e2e"
   },
   "dependencies": {
     "phaser": "^3.90.0"

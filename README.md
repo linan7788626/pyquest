@@ -5,8 +5,8 @@
 画风致敬《塞尔达传说：织梦岛》Switch 重制版 + 欧美 Q 版卡通：俯视角、大头小身比例、
 描边卡通渲染（帽子/羽毛/肩带/宝珠等层叠细节）、柔和粉彩配色、无像素马赛克的矢量渲染。
 **全部角色以 4 倍尺寸显示**，环境物件按 2.5 倍跟随缩放。
-美术采用 [Tiny Swords](https://pixelfrog-assets.itch.io/tiny-swords)（Pixel Frog · Free Pack，本地素材包）
-+ 少量同风格程序化贴图（代码碎片/爱心/传送门等游戏专属元素）。
+美术以 [Tiny Swords](https://pixelfrog-assets.itch.io/tiny-swords)（Pixel Frog · Free Pack，本地素材包）
++ 少量程序化贴图（代码碎片/爱心/传送门等游戏专属元素），第一章长老已接入 NLI 软绘风格静态图。
 
 > [!NOTE]
 > **本项目完全由 GLM-5.3 Vibe Coding 而成** —— 从玩法设计、架构搭建、场景/实体实现、
@@ -212,3 +212,21 @@ node scripts/e2e-ch8.mjs     # E2E：第八章（深空晕环/核心符文/NFW �
 - **`assets/cc0/` 素材**：CC0 公共领域（0x72 / Kenney），可自由商用与再分发
   （当前版本未加载，留作第二部备用素材）
 - **Tiny Swords 素材**：仅本地开发使用，许可证禁止再分发（未入库，需自行下载）
+
+## 稳定性修复与 NLI 长老试点
+
+当前实现保护标题页已有存档，并修复快速折返传送、题面高亮、长题布局、结算保护与运动一致性。第一章长老默认使用 NLI 原生透明图；在游戏地址后添加 `?art=tiny` 可切回 Tiny Swords 长老。该试点只包含静态 NPC 展示。
+
+运行素材由 `src/assets/ts.js` 的共享清单选取，开发和构建自动生成 `.cache/pyquest-public/`。`assets/` 下的素材包、ZIP、Unity 包和生成记录仍供创作与预览使用，构建只包含运行资源。资源缺失会列出源文件路径并停止启动。
+
+```bash
+npm test                 # 逻辑回归、地图与题库数据
+npm run test:e2e          # 自动本机服务、隔离浏览器存储、新增回归与八章流程
+npm run check:release     # 全检查、Python题目校验、生产构建及两种部署路径
+```
+
+浏览器测试需要先安装 Chromium（`npx playwright install chromium`），完整发布检查还需要可执行原题校验的 Python 科学计算环境。测试证据保存在 `test-results/`，章节日志和失败截图可用于定位。
+
+自动持续检查运行纯逻辑检查。完整游戏工作流通过手动触发，在带 `pyquest-assets` 标签的自托管 runner 运行；其 `PYQUEST_ASSET_ROOT` 必须包含真实的 `TinySwordsFreePack/` 和 `NLI_SoftFantasy_ARPG_v0.2/`。缺少素材时完整检查失败，不使用空白图片代替。
+
+部署时上传 `dist/`，支持站点根目录及 `/pyquest/` 等子目录。发布检查要求当前试点构建总文件体积不超过20MB，并确认资源能够真实解码。

@@ -73,6 +73,7 @@ function fitStage() {
   const h = Math.round(GAME_H * s);
   stage.style.width = `${w}px`;
   stage.style.height = `${h}px`;
+  document.documentElement.style.setProperty('--quiz-height', `${Math.max(100, (window.innerHeight - 32) / (w / UI_W))}px`);
   const k = w / UI_W; // 与画布同系数：画布 1920 设计宽 → stage 宽 w
   const portrait = window.innerHeight > window.innerWidth;
   document.body.classList.toggle('portrait', portrait);
@@ -102,3 +103,9 @@ function fitStage() {
 window.addEventListener('resize', fitStage);
 window.addEventListener('orientationchange', fitStage);
 fitStage();
+
+document.addEventListener('pyquest:save-error', () => {
+  let notice = document.getElementById('save-error');
+  if (!notice) { notice = document.createElement('div'); notice.id = 'save-error'; notice.setAttribute('role', 'status'); notice.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:9999;background:#fff0cf;color:#653711;padding:8px;border-radius:6px'; document.body.append(notice); }
+  notice.textContent = '当前进度未能保存，请检查浏览器存储空间或隐私设置。';
+});
