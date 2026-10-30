@@ -66,8 +66,9 @@ block) — **not** part of the 62 quality-gate keys. Two groups:
   no longer draws the two ellipse dirt pads (castle/portal surroundings are
   carried by native grass plus the grid PATH paving), and grid PATH tiles —
   the paving toward doorways — are approximated with the recolored `path`
-  material as native stone paving (no native counterpart exists; the
-  manifest records this approximation). Water/path/flower regions reuse the
+  material as native stone paving (no native counterpart exists; this
+  approximation is documented here in this README, not in the manifest).
+  Water/path/flower regions reuse the
   grid as the sole boundary; the old composite details (path shoulders,
   water-edge masks, wave lines) are not drawn in the native branch.
 
