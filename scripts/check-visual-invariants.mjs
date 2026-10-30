@@ -7,6 +7,9 @@
 //   4. ts_warrior_run 为 5 帧拼接条（start=0,end=4）；idle/attack 保持单帧
 //   5. Village 构建器 grid/colliding/spawns/portals/qid 可序列化，
 //      与 scripts/fixtures/village-logic-before.json 基线比对
+//   6. NLI 地面 recipe 常量为 nli02-ground-v3（Phase 1 Village 原生地面试点）
+//   7. Village computeCliffCells(def) 确定性快照：崖格总数与 4 邻边位组合分布
+//      （崖面为渲染层，不触网格语义；与第 5 条 fixture 比对共同构成双契约）
 //
 // 用法：
 //   node scripts/check-visual-invariants.mjs                     # 只读校验（默认）
@@ -196,6 +199,8 @@ export async function checkVisualInvariants({ updateFixture = false } = {}) {
   const { createTSAnimations } = await import('../src/assets/ts.js');
   const { buildVillage } = await import('../src/data/maps.js');
   const { CHAPTERS } = await import('../src/data/chapters.js');
+  const { NLI_GROUND_RECIPE } = await import('../src/textures/nliGroundProfiles.js');
+  const { computeCliffCells } = await import('../src/textures/nliCliffs.js');
 
   // ---- 1. 玩家碰撞体：60×26 @ (66,132)（运行真实 Player 构造器）----
   {
@@ -399,6 +404,55 @@ export async function checkVisualInvariants({ updateFixture = false } = {}) {
           }
         }
       }
+    }
+  }
+
+  // ---- 6. NLI 地面 recipe 常量：nli02-ground-v3 ----
+  // 2026-10-30 Phase 1（Village 原生地面试点）：recipe v2 → v3，升版强制每场景
+  // 地面缓存失效（native 分支整片铺原生调色材质，旧合成路径仅非 native 场景保留）。
+  {
+    if (NLI_GROUND_RECIPE !== 'nli02-ground-v3') {
+      fail(`NLI_GROUND_RECIPE 应为 'nli02-ground-v3'（Phase 1 Village 原生地面），实际 '${NLI_GROUND_RECIPE}'`);
+    } else {
+      ok('NLI_GROUND_RECIPE = nli02-ground-v3');
+    }
+  }
+
+  // ---- 7. Village 崖格确定性快照（computeCliffCells；渲染层不触网格语义）----
+  // explicit contract change per 2026-10-29 spec, fixtures untouched
+  // 首次运行（2026-10-30，main @ 9047cce，buildVillage(CHAPTERS[0]) 真实网格）记录：
+  //   崖格总数 N = 23；4 邻边位组合分布（W=1,E=2,N=4,S=8）：
+  //     bit 1 (W)  : 3 格
+  //     bit 2 (E)  : 4 格
+  //     bit 4 (N)  : 8 格
+  //     bit 8 (S)  : 7 格
+  //     bit 9 (S|W): 1 格
+  // 本断言冻结该输出（computeCliffCells 行主序、无随机、无外部状态，确定性由
+  // tests/cliffs.test.mjs 独立保证）。崖面 overlay 是纯渲染层：若网格语义被改动，
+  // 此处与第 5 条 fixture 比对二者必有其一报警。
+  {
+    const ch2 = CHAPTERS[0];
+    const def2 = buildVillage(ch2);
+    const cells = computeCliffCells(def2);
+    const dist = {};
+    for (const { edges } of cells) dist[edges] = (dist[edges] || 0) + 1;
+    const EXPECT_COUNT = 23;
+    const EXPECT_DIST = { '1': 3, '2': 4, '4': 8, '8': 7, '9': 1 };
+    let cliffOk = true;
+    if (cells.length !== EXPECT_COUNT) {
+      fail(`Village computeCliffCells 崖格总数应为 ${EXPECT_COUNT}，实际 ${cells.length}（网格语义被改动？）`);
+      cliffOk = false;
+    }
+    const distKeys = [...new Set([...Object.keys(EXPECT_DIST), ...Object.keys(dist)])].sort((a, b) => a - b);
+    for (const k of distKeys) {
+      if ((dist[k] || 0) !== EXPECT_DIST[k]) {
+        fail(`Village 崖格边位组合 bit=${k} 分布应为 ${EXPECT_DIST[k] ?? 0}，实际 ${dist[k] || 0}（网格语义被改动？）`);
+        cliffOk = false;
+      }
+    }
+    if (cliffOk) {
+      ok(`Village computeCliffCells 确定性快照一致（N=${EXPECT_COUNT}；分布 ` +
+        Object.entries(EXPECT_DIST).map(([k, v]) => `bit ${k}×${v}`).join(', ') + '）');
     }
   }
 

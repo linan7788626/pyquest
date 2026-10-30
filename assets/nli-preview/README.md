@@ -37,6 +37,40 @@ resize would apply the alpha weighting twice on Pillow ≥ 11.2) → clamp
 RGB ≤ alpha → unpremultiply. No v0.1 crop domains, masks, or edge trimming;
 no orientation flips.
 
+## Terrain cliffs (2026-10-30 Phase 1, Village pilot)
+
+Supplementary assets under `run/ground/` (manifest top-level `terrain_cliffs`
+block) — **not** part of the 62 quality-gate keys. Two groups:
+
+- **Native slices (raw native crop; no resample, no recolor)** from
+  `Island_Cliff_Composition.png`:
+  `cliff_s_band.png` 550×510 (slice [350, 405, 900, 915], south-facing
+  cliff band), `cliff_ew_strip.png` 54×515 (slice [274, 400, 328, 915],
+  east/west side wall), `cliff_n_lip.png` 450×40 (slice [400, 228, 850, 268],
+  north grass lip trim).
+- **Recolored terrain materials** `terrain_grass/path/water/flower`
+  (1024²/768²): display-layer transform from the terrain spike — LANCZOS
+  resize + 2×2 mirror mosaic + grade toward olive/deep-blue
+  (flower keeps native color). Declared `display_transform`: recolor is
+  display-layer only, source pixels untouched.
+- **N-direction lip + shadow are synthetic**: the art package ships no
+  north-facing cliff material, so the runtime composes a synthetic
+  deep blue-green gradient shadow band (rgba(20,44,60), 0→0.35) over the
+  north water tile plus the native `cliff_n_lip` grass patch as edge trim.
+  S/E/W faces use the native slices above. Runtime draw geometry (display
+  layer, source PNGs untouched): the south band is drawn in 128-wide
+  windows (stride 64, ~50% overlap, 7 windows) stretched from the 510px-tall
+  source slice into 128×104 tile strips (≈4.9:1 vertical squash); the side
+  walls are drawn 52×140 from the 54×515 slice (slightly non-uniform).
+- **Pads/paving nativization decisions**: the native Village ground branch
+  no longer draws the two ellipse dirt pads (castle/portal surroundings are
+  carried by native grass plus the grid PATH paving), and grid PATH tiles —
+  the paving toward doorways — are approximated with the recolored `path`
+  material as native stone paving (no native counterpart exists; the
+  manifest records this approximation). Water/path/flower regions reuse the
+  grid as the sole boundary; the old composite details (path shoulders,
+  water-edge masks, wave lines) are not drawn in the native branch.
+
 ## Verification
 
 ```
@@ -55,9 +89,11 @@ expectations ignore it (no snow variant is produced).
   this README) — the offline derivation described above — and the `run/`
   subdirectory with the supplementary stitched warrior run sheet (outside the
   62-key gate set). The runtime consumers
-  are implemented separately in `src`: the `nli02-ground-v2` per-scene ground
-  recipe (2026-10-29 material alpha raise: .62/.50/.55/.35/.34/.30 for
-  grass/forest/path/water/floor/wall; floor/wall unchanged) over the terrain Q
+  are implemented separately in `src`: the `nli02-ground-v3` per-scene ground
+  recipe (2026-10-30 Phase 1: native Village pilot laying the recolored
+  native materials at full alpha; non-native scenes keep the composite path
+  with material alpha .62/.50/.55/.35/.34/.30 for
+  grass/forest/path/water/floor/wall) over the terrain Q
   textures, the multi-frame `ts_warrior_run` loop
   (`['warrior_run', 5, 96, true]`, dur = per-frame ms, 480ms whole cycle), the
   two body-free Village landmarks
