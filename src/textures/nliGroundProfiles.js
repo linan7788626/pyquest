@@ -7,7 +7,7 @@
 // 旧合成路径仅对非 native 场景保留）；Village profile 增 native:true，其余 profile 无此字段。
 export const NLI_GROUND_RECIPE = 'nli02-ground-v3';
 
-// 原生地面/崖面资产（Task 1 导出于 assets/nli-preview/run/ground/，manifest terrain_cliffs 块）。
+// 原生地面/崖面资产（Task 1 导出，现位于 public/nli-preview/run/ground/，manifest terrain_cliffs 块）。
 // 注意：值（相对 nli-preview 的路径）同时用作 Phaser 纹理 key —— 不能用 grass/path/water 等
 // 属性名做 key，否则会覆盖 TS_TILESETS 的同名旧贴图，破坏非 native 场景渲染。
 export const NLI_TERRAIN_ASSETS = Object.freeze({

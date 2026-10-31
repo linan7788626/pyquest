@@ -55,13 +55,18 @@ ignore it (no snow variant is produced).
 
 Usage:
   python3 scripts/build-nli-preview.py [--source <pkg root>] [--output <dir>]
-                                       [--before <v02-before assets dir>]
+                                       [--before <technical seed dir>]
                                        [--trees keep|snow]
+  Defaults come from scripts/lib/nli_paths.py: raw source is the read-only
+  external project ($PYQUEST_ASSET_ROOT, else the sibling
+  soft-fantasy-arpg-assets), persistent output is public/nli-preview (the
+  tracked runtime bundle served at /nli-preview/*), and --before is the
+  committed technical seed scripts/inputs/nli (frozen ts_shadow).
 Output safety: the persistent destination is only this worktree's
-assets/nli-preview; --output is a test escape hatch restricted to a fresh,
+public/nli-preview; --output is a test escape hatch restricted to a fresh,
 non-existing directory under the approved opencode temp root. Leaf and
 destination-file symlinks, resolved output inside the source package or the
-before snapshot, and a non-pinned frozen ts_shadow are all refused with exit 2
+before seed, and a non-pinned frozen ts_shadow are all refused with exit 2
 before any write (full destination-set preflight, no partial exports).
 Exit codes: 0 built, 2 invalid inputs or refused unsafe output.
 """
@@ -76,21 +81,29 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageEnhance, ImageMath, ImageOps
 
+sys.path.insert(0, str(Path(__file__).resolve().parent / "lib"))
+sys.dont_write_bytecode = True  # keep scripts/ free of __pycache__ side effects
+from nli_paths import before_root, project_root, runtime_root, source_root
+
 SRC_PREFIX = "Assets/NLI_SoftFantasy_ARPG/Sprites/"
 SOURCE_VERSION = "0.2.1-npc-elder"
 METHOD = "premult-pad-resize-lanczos"
 RESAMPLE = Image.Resampling.LANCZOS
-DEFAULT_SOURCE = Path("/Users/uranus/Developer/GitHub/pyquest/assets/NLI_SoftFantasy_ARPG_v0.2")
-DEFAULT_OUTPUT = Path(__file__).resolve().parent.parent / "assets" / "nli-preview"
-DEFAULT_BEFORE = (Path(__file__).resolve().parent.parent / ".slim" / "deepwork" /
-                  "nli-systematic-2026-10-27" / "v02-before" / "assets" / "nli-preview")
+# Raw source: read-only external project (PYQUEST_ASSET_ROOT or default
+# sibling soft-fantasy-arpg-assets) — see scripts/lib/nli_paths.py. Explicit
+# --source stays authoritative; this is only the default.
+DEFAULT_SOURCE = None  # resolved via nli_paths.source_root() in main()
+DEFAULT_OUTPUT = runtime_root()
+DEFAULT_BEFORE = before_root()
 
 # M3: pinned sha256 of the frozen programmatic ts_shadow, taken from the
 # accepted quality checker's frozen expectation and cross-checked against the
 # immutable v02-before snapshot (and the shipped asset). Never derived from
-# the mutable --before input at runtime.
+# the mutable --before input at runtime. The byte-frozen file itself is now
+# committed as the tiny technical seed scripts/inputs/nli/ts_shadow.png
+# (provenance README there) instead of the ephemeral .slim snapshot.
 TS_SHADOW_SHA256 = "4a1da387613e4fb91db3d60a85e16935ba13484e7df3044c954e37a5e131d5dd"
-# Parent ruling: persistent output is ONLY this worktree's assets/nli-preview;
+# Parent ruling: persistent output is ONLY this worktree's public/nli-preview;
 # --output is solely a test escape hatch for a fresh, non-existing destination
 # under the approved opencode temp root (ancestor aliases like /var resolved).
 APPROVED_TEMP_ROOT = (Path(tempfile.gettempdir()) / "opencode").resolve()
@@ -510,9 +523,9 @@ def validate_output_path(output_arg, worktree_root, source, before, is_default):
       ancestor aliases such as macOS /var -> /private/var stay permitted as
       long as the RESOLVED destination remains allowed;
     - resolved output may never sit inside the read-only source package or the
-      immutable before snapshot;
+      committed before seed;
     - default (persistent) output must resolve to EXACTLY this worktree's
-      assets/nli-preview (no intra- or extra-worktree redirect);
+      public/nli-preview (no intra- or extra-worktree redirect);
     - --output is a test escape hatch only: a fresh, non-existing destination
       under the approved opencode temp root, never the root itself.
     """
@@ -523,13 +536,13 @@ def validate_output_path(output_arg, worktree_root, source, before, is_default):
     if resolved.is_relative_to(source):
         raise GuardError(f"output resolves inside the read-only source package: {resolved}")
     if resolved.is_relative_to(before):
-        raise GuardError(f"output resolves inside the immutable before snapshot: {resolved}")
+        raise GuardError(f"output resolves inside the before seed: {resolved}")
     if is_default:
         # Parent ruling: the persistent output is EXACTLY this worktree's
-        # assets/nli-preview. worktree_root is fully resolved from __file__,
-        # so macOS root aliases stay impossible here while an assets/nli-preview
+        # public/nli-preview. worktree_root is fully resolved from __file__,
+        # so macOS root aliases stay impossible here while a public/nli-preview
         # symlink redirect (intra- or extra-worktree) is rejected by equality.
-        persistent = worktree_root / "assets" / "nli-preview"
+        persistent = runtime_root()
         if resolved != persistent:
             raise GuardError(
                 f"persistent output is fixed to {persistent}; refusing redirected "
@@ -815,11 +828,13 @@ def build(source_root, output, before, trees):
             "implemented_offline (this export): map_forest, map_highland, "
             "map_tower, map_forge, map_temple, map_signal, map_halo — 256x256 "
             "C-mode WorldMap.ART decorations (complete-source contain)",
-            "runtime_integrated (designer handoff in src, task-2): operations the "
+            "runtime_integrated (src): operations the "
             "runtime performs over these exported PNGs, distinct from the offline "
-            "PNG derivation above. Scene ground: recipe nli02-ground-v2 (raised "
-            "material alpha 2026-10-29), per-scene cache key "
-            "ground_${def.key}_nli02-ground-v2_${orderedInputHashPrefixes} "
+            "PNG derivation above. Scene ground: recipe nli02-ground-v3 "
+            "(NLI_GROUND_RECIPE in src/textures/nliGroundProfiles.js; 2026-10-30 "
+            "Phase 1 native terrain pilot; supersedes the 2026-10-29 "
+            "nli02-ground-v2 material alpha raise), per-scene cache key "
+            "ground_${def.key}_nli02-ground-v3_${orderedInputHashPrefixes} "
             "over the input order grass/forest/path/water/floor/wall/"
             "ground_flowers (sha256 8-hex prefixes; current revision a74f521f-"
             "db6e0d35-1ff97190-ddfb6fff-d90c0441-bfc07375-e588e05c); canvas "
@@ -827,13 +842,21 @@ def build(source_root, output, before, trees):
             "per scene/revision (no per-frame redraw, no random calls)",
             "ground profiles: 16 per-scene profiles (src/textures/"
             "nliGroundProfiles.js) select the material and B/path/water colors; "
-            "runtime fills opaque base B then overlays the exported opaque 512x512 "
-            "terrain Q with material alpha .62/.50/.55/.35/.34/.30 (grass/forest/"
-            "path/water/floor/wall; single predetermined 2026-10-29 legibility "
-            "raise from the previous .32/.26/.40/.18/.34/.30 — floor/wall "
-            "unchanged, grid/water-edge clipping/sizes/depth/collision untouched). "
-            "The ground stays this derived planar material, "
-            "NOT the source package's seamless autotile",
+            "Village adds native:true (Phase 1 pilot; every other profile has no "
+            "native field — semantics falsy). Village native branch: full alpha "
+            "tiled fill of the recolored native materials exported under "
+            "run/ground/ (manifest terrain_cliffs block) — grass base material, "
+            "then path/water/FLOWER regions clipped to the grid — with NO opaque "
+            "base color and NO legacy composite details (road shoulders, "
+            "water-edge masks, wave lines, soil pads and the 76x76 flower "
+            "patches are not drawn in the native branch). Non-native scenes "
+            "keep the legacy composite path verbatim: opaque base B overlaid "
+            "with the exported opaque 512x512 terrain Q with material alpha "
+            ".62/.50/.55/.35/.34/.30 (grass/forest/path/water/floor/wall; the "
+            "single predetermined 2026-10-29 legibility raise — floor/wall "
+            "unchanged, grid/water-edge clipping/sizes/depth/collision "
+            "untouched), still the derived planar material, NOT the source "
+            "package's seamless autotile",
             "warrior run sheet (2026-10-29 walk lane): run/warrior_run_sheet.png "
             "recorded in manifest.run_sheet — 5-frame stitched loop consumed by "
             "TS_SHEETS.warrior_run / TS_ANIMS.ts_warrior_run "
@@ -843,7 +866,9 @@ def build(source_root, output, before, trees):
             "7x16.667ms frame-diversity sample window (a 600-900ms whole-cycle "
             "draft cannot pass that gate at N=5); stitched from static poses, "
             "not calibrated; idle/attack remain single-frame",
-            "ground detail on final grid cells (128-world-px): final PATH union; "
+            "ground detail on final grid cells (128-world-px) — legacy "
+            "composite path, non-native outdoor scenes ONLY (not drawn in the "
+            "Village native branch): final PATH union; "
             "W=WATER|WATER2|WATER3; no inner path borders; 24px road shoulder "
             "alpha .30 only on exterior non-PATH/non-water/non-colliding cells; "
             "water-edge 14px #92b6a5 alpha .22 and land-edge 12px #54674a alpha "
@@ -851,11 +876,39 @@ def build(source_root, output, before, trees):
             "max(0,1-d/width)) at pixel centers); per-shared-edge wave line inset "
             "4+2*sin(2*pi*s/96), width 2, rgba(194,217,188,.45), clipped to water; "
             "indoor DWALL/DFLOOR use the wall/floor profiles, VOID #242833",
-            "Village ground extras: FLOWER 76x76 at the original deterministic "
-            "offsets, skipped only when the draw rectangle intersects "
-            "[1408,1856,640,896]; two soil pads (1088,1424,320x64) and "
-            "(4352,1392,208x64) drawn from path Q with alpha<=.18, clipped to "
-            "non-water, 16px edge fade",
+            "Village ground extras (2026-10-30 Phase 1 nativization): the legacy "
+            "composite extras are NOT drawn in the native branch — no FLOWER "
+            "76x76 ground_flowers patches (FLOWER tiles are covered by the "
+            "native flower material terrain_flower.png), and no soil pads (the "
+            "two VILLAGE_GROUND_PADS ellipses (1088,1424,320x64) and "
+            "(4352,1392,208x64) with their 16px edge fades are skipped; "
+            "castle/portal surroundings are carried by native grass plus the "
+            "grid PATH paving). Doorway paving approximation, declared here and "
+            "in the README: grid PATH tiles — the paving toward doorways — are "
+            "approximated with the recolored path material as native stone "
+            "paving; no native counterpart exists in the source package",
+            "cliff overlay (2026-10-30 Phase 1, Village native only; display "
+            "layer, no gameplay changes): a transparent full-map canvas "
+            "(def.w*128 x def.h*128, never larger than the ground/world canvas) "
+            "auto-grows cliffs from grid water adjacency (computeCliffCells in "
+            "src/textures/nliCliffs.js; edge bits W=1,E=2,N=4,S=8): S faces tile "
+            "the native cliff_s_band slice in source windows, E/W use "
+            "cliff_ew_strip (west mirrored), N uses the native cliff_n_lip "
+            "grass trim plus a SYNTHETIC deep blue-green gradient shadow band "
+            "over the north water tile (the package ships no north-facing "
+            "cliff material — synthetic, honestly declared). Cache/recipe: "
+            "nli02-cliff-v4 (CLIFF_RECIPE in src/textures/nliCliffs.js), cache "
+            "key ${CLIFF_RECIPE}:${def.key}. Exact display geometry (land-"
+            "overlap lip, total band height, water reach, side-wall and N-lip "
+            "sizes) is canonical in CLIFF and the render constants of "
+            "src/textures/nliCliffs.js — this manifest deliberately does NOT "
+            "duplicate those numbers (display-layer only, adjusted 2026-10-30 "
+            "with user approval; source PNGs, colliders and gameplay "
+            "untouched). The overlay canvas is drawn above entities for depth "
+            "occlusion; because entity visible sprites differ from their "
+            "colliders, occlusion correctness is a property of the chosen "
+            "display geometry, not a universal guarantee from water "
+            "impassability",
             "Village landmarks (body-free images): the original castle image/body/creation "
             "order is retained and hidden (visible=false) with castle_medium 704x704 origin "
             "(0.4,0.94) at (1024,1444) depth 1444 overlaid; the single east portal_door "
@@ -894,9 +947,10 @@ def build(source_root, output, before, trees):
             "restricted to that same nonbrowser stub; no legacy decorative "
             "fallback",
             "runtime status: the operations above are implemented in src and "
-            "consume the exported PNGs at the shipped hashes; a single Dungeon "
-            "frame visual triage passed, but full scene/UI/animation visual "
-            "acceptance and the final all-writer validation remain pending (see "
+            "consume the exported PNGs at the shipped hashes; the 2026-10-30 "
+            "Phase 1 display layers (native ground v3, cliff overlay v4) are "
+            "visual-only, and full scene/UI/animation visual acceptance plus "
+            "the final all-writer validation remain pending (see "
             "limitations)",
         ],
         "limitations": [
@@ -909,10 +963,14 @@ def build(source_root, output, before, trees):
             "tree2 visible source height is 987 * 21/123 = 168.51px (bottom canvas cap "
             "(256-235)/(1254-1131), per the settled tree2 verification and spec line 60) — "
             "the ~169px prose is CORRECT, not an erratum; table parameters and PNG unchanged",
-            "ground material is the derived planar Q overlay, not the source seamless "
-            "autotile; terrain repeat quality (possible four-petal mirror / tiling bands) "
-            "needs observer judgment — the single Dungeon frame triage pass is not full "
-            "scene visual acceptance",
+            "ground material: non-native scenes use the derived planar Q "
+            "overlay, not the source seamless autotile; the Village pilot "
+            "instead renders full-alpha recolored native materials plus the "
+            "display-layer cliff overlay. Terrain repeat quality (possible "
+            "four-petal mirror / tiling bands in Q; mirror-mosaic seams in the "
+            "run/ground/ materials) and cliff occlusion/look need observer "
+            "and user judgment — no full scene visual acceptance is claimed "
+            "by this metadata",
             "boss/enemy art is an explicit visual proxy (Crimson Knight etc.); the package "
             "has no continuous snake/minotaur/dragon bodies",
             "final runtime/visual verification is still pending: full 16-scene visual "
@@ -961,6 +1019,10 @@ Derived offline from the read-only package `NLI_SoftFantasy_ARPG_v0.2`
   keys: `warrior_run.png` remains the frozen single-frame Pose03 export and the
   sheet's frame 0 is pixel-identical to it. Stitched from static poses,
   not calibrated.
+- **1 supplementary terrain set** (2026-10-30 Phase 1, Village pilot): the seven
+  `run/ground/` cliff slices and recolored native materials (manifest
+  `terrain_cliffs` block) — also outside the 62-key gate set. See
+  "Terrain cliffs" below.
 
 ## Sampling
 
@@ -970,13 +1032,59 @@ resize would apply the alpha weighting twice on Pillow ≥ 11.2) → clamp
 RGB ≤ alpha → unpremultiply. No v0.1 crop domains, masks, or edge trimming;
 no orientation flips.
 
+## Terrain cliffs (2026-10-30 Phase 1, Village pilot)
+
+Supplementary assets under `run/ground/` (manifest top-level `terrain_cliffs`
+block) — **not** part of the 62 quality-gate keys. Two groups:
+
+- **Native slices (raw native crop; no resample, no recolor)** from
+  `Island_Cliff_Composition.png`:
+  `cliff_s_band.png` 550×510 (slice [350, 405, 900, 915], south-facing
+  cliff band), `cliff_ew_strip.png` 54×515 (slice [274, 400, 328, 915],
+  east/west side wall), `cliff_n_lip.png` 450×40 (slice [400, 228, 850, 268],
+  north grass lip trim).
+- **Recolored terrain materials** `terrain_grass.png`, `terrain_path.png`,
+  `terrain_water.png`, `terrain_flower.png`
+  (1024²/768²): display-layer transform from the terrain spike — LANCZOS
+  resize + 2×2 mirror mosaic + grade toward olive/deep-blue
+  (flower keeps native color). Declared `display_transform`: recolor is
+  display-layer only, source pixels untouched.
+- **N-direction lip + shadow are synthetic**: the art package ships no
+  north-facing cliff material, so the runtime composes a synthetic
+  deep blue-green gradient shadow band over the north water tile plus the
+  native `cliff_n_lip` grass patch as edge trim. S/E/W faces use the native
+  slices above.
+- **Runtime draw geometry is display-layer only and lives canonically in
+  `src/textures/nliCliffs.js`** (`CLIFF` frozen constants and `CLIFF_RECIPE` =
+  `nli02-cliff-v4`; cache key `${CLIFF_RECIPE}:${def.key}`). This README
+  deliberately does not duplicate those numbers: the 2026-10-30 final-fix wave
+  adjusted the display-only land overlap for normal-play occlusion with user
+  approval, and `src/textures/nliCliffs.js` is the single source of truth for
+  the exact lip/band/side-wall sizes and source-window tiling (the side walls
+  are drawn non-uniformly from the 54×515 slice, west mirrored; the
+  S band is stretched vertically into its tile strips — anisotropic by
+  design). Source PNGs, colliders and gameplay are untouched.
+- **Pads/paving nativization decisions**: the native Village ground branch
+  no longer draws the two ellipse dirt pads (castle/portal surroundings are
+  carried by native grass plus the grid PATH paving), and grid PATH tiles —
+  the paving toward doorways — are approximated with the recolored `path`
+  material as native stone paving (no native counterpart exists; this
+  approximation is declared both here and in the manifest
+  `runtime_derivatives`). Water/path/flower regions reuse the
+  grid as the sole boundary; the old composite details (path shoulders,
+  water-edge masks, wave lines) are not drawn in the native branch.
+
 ## Verification
 
 ```
-python3 scripts/check-nli-quality.py \
-  --source /Users/uranus/Developer/GitHub/pyquest/assets/NLI_SoftFantasy_ARPG_v0.2 \
-  --assets assets/nli-preview --trees snow
+python3 scripts/check-nli-quality.py --trees snow
 ```
+
+Defaults come from `scripts/lib/nli_paths.py`: the raw source is the
+read-only external project (`$PYQUEST_ASSET_ROOT`, else the sibling
+`soft-fantasy-arpg-assets`) and the derived assets are this
+`public/nli-preview` directory; explicit `--source`/`--assets` overrides
+stay available.
 
 `--trees <keep|snow>` is accepted for CLI compatibility only; v0.2
 expectations ignore it (no snow variant is produced).
@@ -988,12 +1096,21 @@ expectations ignore it (no snow variant is produced).
   technical outputs declare no package provenance.
 - This directory holds exactly the 62 exported PNGs (plus `manifest.json` and
   this README) — the offline derivation described above — and the `run/`
-  subdirectory with the supplementary stitched warrior run sheet (outside the
-  62-key gate set). The runtime consumers
-  are implemented separately in `src`: the `nli02-ground-v2` per-scene ground
-  recipe (2026-10-29 material alpha raise: .62/.50/.55/.35/.34/.30 for
-  grass/forest/path/water/floor/wall; floor/wall unchanged) over the terrain Q
-  textures, the multi-frame `ts_warrior_run` loop
+  subdirectory with the two supplementary sets outside the 62-key gate: the
+  stitched warrior run sheet and the seven `run/ground/` terrain/cliff
+  assets. The runtime consumers
+  are implemented separately in `src`: the `nli02-ground-v3` per-scene ground
+  recipe (2026-10-30 Phase 1: the Village `native` pilot lays the recolored
+  `run/ground/` materials at full alpha — no base color, no road shoulders /
+  water-edge masks / wave lines / soil pads in the native branch; non-native
+  scenes keep the legacy composite path verbatim with material alpha
+  .62/.50/.55/.35/.34/.30 for grass/forest/path/water/floor/wall over the
+  terrain Q textures), the `nli02-cliff-v4` cliff overlay display layer
+  (geometry canonical in `CLIFF` / `CLIFF_RECIPE` in
+  `src/textures/nliCliffs.js`; N lip + synthetic shadow declared above; drawn
+  above entities for occlusion — correctness is a property of the chosen
+  display geometry, not a universal guarantee), the multi-frame
+  `ts_warrior_run` loop
   (`['warrior_run', 5, 96, true]`, dur = per-frame ms, 480ms whole cycle), the
   two body-free Village landmarks
   (`castle_medium`, `portal_blue_gold`) with occlusion and dedicated shadows,
@@ -1003,10 +1120,10 @@ expectations ignore it (no snow variant is produced).
   claim final validation.
 - Remaining limitations: static poses (idle/attack single-frame; the run loop
   is a stitched 5-pose sequence, not calibrated, cadence draft pending user
-  feel), explicit enemy/boss visual proxies, terrain repeat quality left
-  to observer judgment (the single Dungeon frame triage pass is not full scene
-  acceptance), and full runtime/visual regression still pending — see the
-  manifest `limitations`.
+  feel), explicit enemy/boss visual proxies, terrain repeat quality and cliff
+  occlusion/look left to observer and user judgment (no full scene visual
+  acceptance is claimed), and full runtime/visual regression still pending —
+  see the manifest `limitations`.
 """
 
 
@@ -1018,22 +1135,27 @@ def write_readme(output, trees):
 def main():
     parser = argparse.ArgumentParser(description="Build the v0.2 NLI preview assets")
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE,
-                        help="read-only NLI_SoftFantasy_ARPG_v0.2 package root")
+                        help="read-only NLI_SoftFantasy_ARPG_v0.2 package root (default: "
+                             "$PYQUEST_ASSET_ROOT or the sibling soft-fantasy-arpg-assets "
+                             "per scripts/lib/nli_paths.py)")
     parser.add_argument("--output", type=Path, default=None,
                         help="test escape hatch only: fresh non-existing directory under the "
                              "approved opencode temp root (default: this worktree's "
-                             "assets/nli-preview)")
+                             "public/nli-preview)")
     parser.add_argument("--before", type=Path, default=DEFAULT_BEFORE,
-                        help="immutable v02-before assets dir (source of the frozen ts_shadow)")
+                        help="technical seed dir (committed scripts/inputs/nli, source of the "
+                             "frozen ts_shadow)")
     parser.add_argument("--trees", choices=("keep", "snow"), default=None,
                         help="accepted for CLI compatibility only; ignored (no v0.2 snow variant)")
     args = parser.parse_args()
+    if args.source is None:
+        args.source = source_root()  # $PYQUEST_ASSET_ROOT or default sibling
     source = args.source.resolve()
     before = args.before.resolve()
     if not (source / SRC_PREFIX).is_dir():
         print(f"INPUT_ERROR: expected {SRC_PREFIX} under --source", file=sys.stderr)
         return 2
-    worktree_root = Path(__file__).resolve().parent.parent
+    worktree_root = project_root()
     try:
         if args.output is None:
             output = validate_output_path(DEFAULT_OUTPUT, worktree_root, source, before,

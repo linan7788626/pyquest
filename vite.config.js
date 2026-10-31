@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   base: './',
-  publicDir: 'assets', // CC0 素材（/cc0/... 运行时可访问）；TinySwordsFreePack 在 .gitignore 单独排除
+  publicDir: 'public', // 运行时素材（/nli-preview/... 由 public/nli-preview 提供；浏览器 URL 不变）
   server: {
     host: true,
     port: 5173,

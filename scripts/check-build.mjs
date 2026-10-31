@@ -5,10 +5,11 @@ import {resolve,extname,sep} from 'node:path';
 import assert from 'node:assert/strict';
 const root=resolve('dist');let bytes=0;const files=[];
 async function scan(dir){for(const e of await readdir(dir,{withFileTypes:true})){const p=resolve(dir,e.name);if(e.isDirectory())await scan(p);else{bytes+=(await stat(p)).size;files.push(p.slice(root.length+1));}}}await scan(root);
-// TODO(issue 13 / .scratch/project-hardening-2026-10-29/issues/13-runtime-pipeline-nli.md):
-// dist 体积 <20MB 与 zip/unitypackage 排除断言在 publicDir:'assets' 下必失败（dist 含
-// assets/ 全部内容，约 1.9GB）。待 runtime-assets 管线适配 NLI /nli-preview 路径模型并
-// 接线 vite.config 后恢复这两条断言。
+// dist 体积 <20MB 与 zip/unitypackage 排除断言已恢复：2026-10-30 素材外置迁移把
+// publicDir 切到 'public'（仅 /nli-preview 运行时束，实测 dist 约 18MB），
+// 解决 issue 13 中旧 publicDir:'assets'（dist 约 1.9GB）导致的两条断言必失败。
+assert(bytes < 20*1024*1024, `dist too large: ${bytes} bytes (>=20MB)`);
+assert(files.every(f=>!/\.zip$|\.unitypackage$/.test(f)), 'dist must exclude zip/unitypackage source archives');
 const mime={'.html':'text/html','.js':'text/javascript','.png':'image/png','.css':'text/css'};const results=[];
 for(const prefix of ['/','/pyquest/']){
  const server=createServer(async(req,res)=>{const path=decodeURIComponent(new URL(req.url,'http://localhost').pathname);if(!path.startsWith(prefix)){res.writeHead(404).end();return;}const p=resolve(root,path.slice(prefix.length)||'index.html');if(!p.startsWith(root+sep)&&p!==root){res.writeHead(403).end();return;}try{res.writeHead(200,{'Content-Type':mime[extname(p)]||'application/octet-stream'}).end(await readFile(p));}catch{res.writeHead(404).end();}});

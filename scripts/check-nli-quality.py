@@ -67,6 +67,10 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageOps, ImageStat
 
+sys.path.insert(0, str(Path(__file__).resolve().parent / "lib"))
+sys.dont_write_bytecode = True  # keep scripts/ free of __pycache__ side effects
+from nli_paths import runtime_root, source_root
+
 SRC_PREFIX = "Assets/NLI_SoftFantasy_ARPG/Sprites/"
 SOURCE_VERSION = "0.2.1-npc-elder"
 RESAMPLE = Image.Resampling.LANCZOS
@@ -697,13 +701,20 @@ class Checker:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--source", type=Path, required=True,
-                        help="read-only NLI_SoftFantasy_ARPG_v0.2 package root")
-    parser.add_argument("--assets", type=Path, required=True,
-                        help="derived PNG/manifest directory")
+    parser.add_argument("--source", type=Path, default=None,
+                        help="read-only NLI_SoftFantasy_ARPG_v0.2 package root (default: "
+                             "$PYQUEST_ASSET_ROOT or the sibling soft-fantasy-arpg-assets "
+                             "per scripts/lib/nli_paths.py)")
+    parser.add_argument("--assets", type=Path, default=None,
+                        help="derived PNG/manifest directory (default: "
+                             "public/nli-preview per scripts/lib/nli_paths.py)")
     parser.add_argument("--trees", choices=("keep", "snow"), default="snow",
                         help="accepted for CLI compatibility only; v0.2 expectations ignore it")
     args = parser.parse_args()
+    if args.source is None:
+        args.source = source_root()
+    if args.assets is None:
+        args.assets = runtime_root()
     source, assets = args.source.resolve(), args.assets.resolve()
     if not (source / SRC_PREFIX).is_dir():
         print(json.dumps({"status": "INPUT_ERROR",

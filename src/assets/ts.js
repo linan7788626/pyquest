@@ -1,12 +1,12 @@
 // NLI v0.2.1：保留 TS key/API 以冻结实体、碰撞和动画调用接口。
-// 新源完整画布归一化及技术例外见 assets/nli-preview/manifest.json。
+// 新源完整画布归一化及技术例外见 public/nli-preview/manifest.json。
 // 静态姿态不是完整动画；原始包与 Tiny Swords 均只读。
 const P = '/nli-preview';
 const png = (key) => `${P}/${key}.png`;
 
 export const TS_SHEETS = {
   warrior_idle: [png('warrior_idle'), 192, 192],
-  // 拼接跑动条：5 帧竖排（assets/nli-preview/run/warrior_run_sheet.png，帧 k 在 y=k*192），
+  // 拼接跑动条：5 帧竖排（public/nli-preview/run/warrior_run_sheet.png，帧 k 在 y=k*192），
   // 帧契约 192×192；warrior_run.png 仍是 62 键质量门冻结的单帧导出（条的第 0 帧与其逐像素一致，
   // 溯源见 manifest.json 顶层 run_sheet：stitched from static poses, not calibrated）。
   warrior_run: [png('run/warrior_run_sheet'), 192, 192],

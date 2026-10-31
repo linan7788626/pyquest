@@ -5,8 +5,15 @@
 import { T } from '../data/maps.js';
 import { NLI_TERRAIN_ASSETS } from './nliGroundProfiles.js';
 
-// 崖面渲染常量（供后续渲染任务使用；此处仅作纯数据导出）
-export const CLIFF = Object.freeze({ LIP: 8, REACH: 96, FH: 104 });
+// 崖面渲染常量（供后续渲染任务使用；此处仅作纯数据导出）。
+// 2026-10-30 显示层几何修订（用户批准的 display-only 变更；碰撞/网格/掩码一律不动）：
+// 南水缘真实碰撞停靠（Arcade body 底 = 水界 2432）时，可见内容最底只到
+// feet+6 = 边界−38（碰撞体低于脚锚 44px、精灵可见底低于脚锚 ≤6px ⇒ 38px 死区），
+// 旧 LIP=8 的 S 带顶在边界−8，整条带位于可见内容之下 → 停靠处 0px 遮挡（task5
+// 三拍法实测基线）。LIP=64（半格唇）后带顶 = 边界−64，越过死区 26px，下身被真实
+// 压住；REACH=96 保持不变（伸入水格量不动）；FH = LIP+REACH = 160，
+// S 带源 510px 高的纵向压缩由 4.9:1 改善为 510/160 ≈ 3.19:1。
+export const CLIFF = Object.freeze({ LIP: 64, REACH: 96, FH: 160 });
 
 // 边位序与 ground.js 的 adjacentMask 一致：W=1, E=2, N=4, S=8
 const SIDES = [[-1, 0], [1, 0], [0, -1], [0, 1]];
@@ -45,9 +52,10 @@ export function computeCliffCells(def) {
 const TILE = 128; // 与 ground.js 的 TILE 一致（世界格边长，世界像素）
 
 // 崖面 recipe 版本（缓存 key 前缀）：升级即强制崖 overlay 缓存失效。
+// v4 = 2026-10-30 显示层几何修订（CLIFF LIP 8→64 / FH 104→160，REACH 不变）。
 // 缓存 key = `${CLIFF_RECIPE}:${def.key}` —— 场景标识段 def.key 与 groundCacheKey(def)
 // 用的同一段（ground.js groundCacheKey 内部即 def.key），见 Task 4 控制方裁定。
-export const CLIFF_RECIPE = 'nli02-cliff-v3';
+export const CLIFF_RECIPE = 'nli02-cliff-v4';
 
 /** 崖 overlay 画布缓存 key（与 groundCacheKey 的场景标识段保持一致）。 */
 export function cliffCacheKey(def) {
@@ -55,7 +63,8 @@ export function cliffCacheKey(def) {
 }
 
 // —— 渲染几何常量（原型 build_spike.py 实测；S 几何即 CLIFF 常量的复述）——
-// S 正面崖：FH = LIP(8) + REACH(96)；条带底对齐陆格下缘（LIP 压陆格、REACH 伸入南水格）。
+// S 正面崖：FH = LIP(64) + REACH(96)；条带底对齐陆格下缘（LIP 压陆格、REACH 伸入南水格）。
+// 2026-10-30 显示层修订仅动 CLIFF 常量（LIP/FH），以下 E/W 与 N 常量一律未动。
 // E/W 侧壁窄条：6px 压陆格 + 46px 伸入水格（原型 EW=46 + 唇 6），高 TILE+12 上下各探 6px。
 const EW_LIP = 6;       // 侧壁压陆格宽（原型：侧壁条 6px 唇压陆格）
 const EW_REACH = 46;    // 侧壁伸入水格宽（原型 EW）

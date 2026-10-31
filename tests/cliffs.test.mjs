@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CLIFF, computeCliffCells, isWaterTile } from '../src/textures/nliCliffs.js';
+import { CLIFF, CLIFF_RECIPE, computeCliffCells, isWaterTile } from '../src/textures/nliCliffs.js';
 import { T } from '../src/data/maps.js';
 
 const W = 5, H = 5;
@@ -11,11 +11,39 @@ const make = (patches) => {
 };
 const at = (cells, x, y) => cells.find((c) => c.x === x && c.y === y);
 
-test('CLIFF constants are frozen and match the brief', () => {
-  assert.equal(CLIFF.LIP, 8);
+// 2026-10-30 显示层几何修订（用户批准，final-fix-brief）：原 LIP=8/FH=104 与冻结碰撞体
+// 几何上不可能产生可达遮挡（见下一用例推导）；S 带改为 LIP=64 压陆格 + REACH=96 伸入水格，
+// FH=160。REACH 不变（水面伸入量保持 96）。
+test('CLIFF constants are frozen and match the approved display-only geometry fix', () => {
+  assert.equal(CLIFF.LIP, 64);
   assert.equal(CLIFF.REACH, 96);
-  assert.equal(CLIFF.FH, 104);
+  assert.equal(CLIFF.FH, 160);
   assert.ok(Object.isFrozen(CLIFF));
+});
+
+test('S band is LIP over land + REACH into water (FH = LIP + REACH)', () => {
+  assert.equal(CLIFF.FH, CLIFF.LIP + CLIFF.REACH);
+  assert.ok(CLIFF.LIP > 0 && CLIFF.LIP < 128, 'lip must stay inside the land tile');
+  assert.ok(CLIFF.REACH > 0 && CLIFF.REACH < 128, 'reach must stay inside the water tile');
+});
+
+test('CLIFF_RECIPE is nli02-cliff-v4 (bumped to invalidate v3 cliff overlay canvases)', () => {
+  assert.equal(CLIFF_RECIPE, 'nli02-cliff-v4');
+});
+
+// 可达遮挡契约（final-fix-brief 要求的行为约束，非纯常量复述）：
+// Player.js 冻结几何：origin (0.5, 136/192) × scale2 + body 60×26 offset(66,132)
+//   ⇒ collider 底 = 脚点+44；warrior 帧 alpha bbox 底 y139 vs FOOT_Y 136 ⇒ 可见底 ≤ 脚点+6。
+// 南向碰撞停在 body 底 = 水界时，可见内容只能到界−38 —— LIP ≤ 38 ⇒ 可达位置 0px 遮挡
+// （task5 三拍法实测 0px，即本轮修复的诊断基线）。本契约要求 LIP 越过死区并留出
+// 跑动帧抬脚余量：界−64 带顶 ⇒ 真实停靠处 ≥24px 下身被遮挡。
+test('S-band lip clears the reachable-body dead zone at the real collision stop', () => {
+  const COLLIDER_BELOW_FEET = 44; // 冻结碰撞体低于脚锚点的量
+  const VISIBLE_BELOW_FEET = 6;   // 可见精灵低于脚锚点的最大量
+  const deadZone = COLLIDER_BELOW_FEET - VISIBLE_BELOW_FEET; // 38
+  const occlusionAtStop = CLIFF.LIP - deadZone;
+  assert.ok(occlusionAtStop >= 24,
+    `expected >=24px lower-body occlusion at the reachable stop, got ${occlusionAtStop}`);
 });
 
 test('isWaterTile recognizes all three water codes and rejects land/indoor codes', () => {

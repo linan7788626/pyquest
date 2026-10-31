@@ -5,16 +5,19 @@
 画风致敬《塞尔达传说：织梦岛》Switch 重制版 + 欧美 Q 版卡通：俯视角、大头小身比例、
 描边卡通渲染（帽子/羽毛/肩带/宝珠等层叠细节）、柔和粉彩配色、无像素马赛克的矢量渲染。
 **全部角色以 4 倍尺寸显示**，环境物件按 2.5 倍跟随缩放。
-美术为 NLI 软绘风格贴图（本地 `assets/nli-preview/` 归一化导出；第一章长老为 `monk_idle` 静态贴图，
+美术为 NLI 软绘风格贴图（运行时清单已入库于 `public/nli-preview/`；第一章长老为 `monk_idle` 静态贴图，
 无外观切换参数）+ 少量程序化贴图（代码碎片/爱心/传送门等游戏专属元素）。
-[Tiny Swords](https://pixelfrog-assets.itch.io/tiny-swords)（Pixel Frog · Free Pack）本地素材包仅保留创作与预览用途，不再参与运行时加载。
+原始 NLI 素材包位于**外部素材仓库**（默认为同级目录 `soft-fantasy-arpg-assets`，
+可用 `PYQUEST_ASSET_ROOT` 覆盖），仅供导出与素材质量检查使用，不再随本仓库分发；
+旧 Tiny Swords / CC0 素材包**不在该外部素材仓库**，保留在旧根 `assets/` 的外部迁移备份中
+——详见下文「素材来源与运行时」。
 
 > [!NOTE]
 > **本项目完全由 GLM-5.3 Vibe Coding 而成** —— 从玩法设计、架构搭建、场景/实体实现、
 > 题库编写到美术整合与 E2E 测试脚本，全部代码均通过与 [GLM-5.3](https://chat.z.ai)
 > 的对话式协作（Vibe Coding）生成，未手写一行代码。
 
-![技术栈](https://img.shields.io/badge/Phaser%203-90.x-green) ![构建](https://img.shields.io/badge/Vite-7.x-purple) ![素材](https://img.shields.io/badge/Art-Tiny%20Swords%20%2B%20程序化-blue) ![开发方式](https://img.shields.io/badge/GLM--5.3-Vibe%20Coding-ff6f00) ![许可证](https://img.shields.io/badge/License-MIT-blue)
+![技术栈](https://img.shields.io/badge/Phaser%203-90.x-green) ![构建](https://img.shields.io/badge/Vite-7.x-purple) ![素材](https://img.shields.io/badge/Art-NLI%20软绘%20%2B%20程序化-blue) ![开发方式](https://img.shields.io/badge/GLM--5.3-Vibe%20Coding-ff6f00) ![许可证](https://img.shields.io/badge/License-MIT-blue)
 
 ## 🎮 运行
 
@@ -119,7 +122,7 @@ src/
 │   ├── chapters.js          # 八章注册表：周次/地图/对话/胜利文本/BOSS/题池配置（关卡数据核心）
 │   ├── maps.js              # 地图构建器：W1/W2 手工地图 + W3-W8 通用生成器（theme 驱动）
 │   └── quizData.js          # Python 题库（190 题 · 25 个同难度题池）+ 语法高亮
-├── assets/ts.js             # Tiny Swords 素材清单/加载/动画（素材本体在 assets/TinySwordsFreePack/，未入库）
+├── assets/ts.js             # 运行时贴图清单/加载/动画（NLI 贴图本体在 public/nli-preview/，已入库）
 ├── textures/pixelArt.js     # 程序化补充贴图（代码碎片/爱心/传送门/石门等）
 ├── textures/ground.js       # 整图地面画布（草地 → 水/土路 → 岸沫分层绘制）
 ├── audio/sfx.js             # WebAudio 程序化 8-bit 音效
@@ -133,6 +136,8 @@ src/
     ├── WorldScene.js        # 世界基类：地图/交互/传送门封印/答题接线（章节驱动）
     └── ChapterScene.js      # 通用章节场景：FieldScene（野外）+ LairScene（巢穴）+ 工厂
 ui/                          # DOM 覆盖层：HUD、对话框、答题面板、结算（章节配置驱动）
+public/
+└── nli-preview/             # 已入库的 NLI 运行时贴图（70 张 PNG + 清单，浏览器 URL /nli-preview/*）
 scripts/
 ├── smoke.mjs                # 无头冒烟测试（贴图/八章地图/题库/题池/抽题校验）
 ├── verify-quiz.mjs          # 题库自动校验（用本机 python3 执行输出确定的题目，比对 stdout）
@@ -146,15 +151,30 @@ scripts/
 └── e2e-ch8.mjs              # 第八章 E2E（深空晕环/核心符文/NFW 幻龙/通关结算）
 ```
 
-## 🎨 画面技术（Tiny Swords 素材 + 程序化补充）
+## 🎨 画面技术（NLI 软绘贴图 + 程序化补充）
 
-- **主素材**：[Tiny Swords](https://pixelfrog-assets.itch.io/tiny-swords)（Pixel Frog · Free Pack，
-  本地 `assets/TinySwordsFreePack/`，**许可证禁止再分发 → .gitignore 排除，需自行下载**）——
-  角色全套（蓝勇士/僧侣/红小兵/黑勇士/紫勇士）、tileset 地形、树/灌木/云、
-  尘土/火焰特效、建筑（修道院/塔）
+- **主素材**：NLI 软绘贴图——由外部素材仓库（仓库根目录下直接是
+  `Assets/NLI_SoftFantasy_ARPG/Sprites`，没有额外的 `NLI_SoftFantasy_ARPG_v0.2` 包装目录）经
+  `scripts/build-nli-preview.py` 归一化导出到 `public/nli-preview/`（70 张 PNG + 清单，已入库）。
+  [Tiny Swords](https://pixelfrog-assets.itch.io/tiny-swords)（Pixel Frog · Free Pack）仅保留创作与预览参考，
+  不参与运行时加载，也不随本仓库或 `dist/` 分发。
+- **素材来源与运行时分离**：
+  - **运行时（已入库）**：`public/nli-preview/`，浏览器 URL 保持 `/nli-preview/*` 不变。
+    `npm run dev / build / preview`、`npm test`、`npm run test:e2e`、`npm run check:release`
+    都只消费这份已入库运行时，**不需要外部素材仓库**。
+  - **外部源**：外部素材仓库默认路径为仓库同级的 `soft-fantasy-arpg-assets/`
+    （可用环境变量 `PYQUEST_ASSET_ROOT` 覆盖；本机为 `/Users/uranus/Developer/GitHub/soft-fantasy-arpg-assets`）。
+    **该仓库只含 NLI 素材**（根目录下直接是 `Assets/NLI_SoftFantasy_ARPG/Sprites`，
+    没有额外的 `NLI_SoftFantasy_ARPG_v0.2` 包装目录），只有 NLI 导出器与素材级质量/采样检查需要它；
+    旧 Tiny Swords / CC0 包不在其中，保留在旧根 `assets/` 的外部迁移备份里。
+    该仓库含用户本地修改，请勿覆盖或推送。
+  - **更新素材流程**：在外部源更新素材 → `python3 scripts/build-nli-preview.py`
+    （默认读外部源、写 `public/nli-preview/`）→ 跑质量/采样检查（`scripts/check-nli-quality.py` 等）→
+    `npm run check:release` 构建与回归 → 提交新的 `public/nli-preview/`。
+    **外部源的变化不会自动出现在游戏里，必须显式重新导出。**
 - **TS 坐标系**：逻辑 tile 64px（相机 1x、单位帧 192×192 原尺寸 1:1 渲染，像素完美）
-- 角色映射：勇者=蓝军勇士（待机/奔跑/挥剑动画）、长老=蓝军僧侣、村庄小怪=红小兵、
-    森林小怪=黑勇士、第一章 BOSS=紫勇士巨型化+金徽（循环之王）、巨蟒=黑勇士头+黑小兵体节
+- **地形 v4 为迭代版本**（悬崖切片 + 地表细分）：细节更丰富，但整体画面仍偏杂乱，
+  美术梳理与玩法打磨仍在迭代，**不是最终视觉验收**
 - 符文石待解状态仅做 ±0.7% 微缩放呼吸（视觉跳动 < 1px），不干扰辨识
 - **像素完美渲染**：16px tile × 相机 4x 整数放大，`pixelArt: true`，无插值模糊
 - **地形拼接**：`ground.js` 把 tileset 拼成整图画布——野外只取图集无缝中心格平铺
@@ -210,15 +230,19 @@ node scripts/e2e-ch8.mjs     # E2E：第八章（深空晕环/核心符文/NFW �
 ## 📄 许可证
 
 - **本项目代码**：[MIT License](LICENSE)
-- **`assets/cc0/` 素材**：CC0 公共领域（0x72 / Kenney），可自由商用与再分发
-  （当前版本未加载，留作第二部备用素材）
-- **Tiny Swords 素材**：仅本地开发使用，许可证禁止再分发（未入库，需自行下载）
+- **NLI 软绘素材**：源包位于外部素材仓库（NLI only），仅通过导出器生成 `public/nli-preview/` 运行时贴图；
+  导出结果随本仓库分发
+- **CC0 素材**（0x72 / Kenney）：公共领域可自由商用与再分发；已随旧根 `assets/` 目录移出本仓库，
+  保留在外部迁移备份中（不在外部 NLI 素材仓库里），留作第二部备用素材
+- **Tiny Swords 素材**：仅历史创作参考/预览用途；已随旧根 `assets/` 移出本仓库，
+  保留在外部迁移备份中（不在外部 NLI 素材仓库里），许可证禁止再分发，
+  不随本仓库或 `dist/` 分发
 
 ## 稳定性修复与 NLI 长老试点
 
-当前实现保护标题页已有存档，并修复快速折返传送、题面高亮、长题布局、结算保护与运动一致性。运行美术（含第一章长老）使用 NLI 软绘贴图：长者为 `monk_idle` 静态贴图（`assets/nli-preview/`），没有 `?art` 之类的外观切换参数。
+当前实现保护标题页已有存档，并修复快速折返传送、题面高亮、长题布局、结算保护与运动一致性。运行美术（含第一章长老）使用 NLI 软绘贴图：长者为 `monk_idle` 静态贴图（`public/nli-preview/`，已入库），没有 `?art` 之类的外观切换参数。
 
-当前构建按 `vite.config.js` 的 `publicDir: 'assets'` 把 `assets/` 整个目录复制进 `dist/`，包括 NLI 源素材包、ZIP、Unity 包与生成记录（实测约 1.9 GB）；运行时实际只加载 `assets/nli-preview/` 清单内的贴图。收窄 dist 内容并恢复体积预算需要先把 runtime-assets 管线适配到 NLI 的 `/nli-preview` 路径模型，由 issue 跟踪（`.scratch/project-hardening-2026-10-29/issues/13-runtime-pipeline-nli.md`）。
+当前构建按 `vite.config.js` 的 `publicDir: 'public'` 只把 `public/`（即已入库的 NLI 运行时贴图）复制进 `dist/`，不再把整个根 `assets/`（实测约 1.9 GB，含 NLI 源素材包、ZIP、Unity 包）打进构建产物（public-only dist 实测约 18 MB）；运行时实际只加载 `public/nli-preview/` 清单内的贴图。**本次「素材来源与运行时」迁移消除了全量打包的体积成因并使原有的体积/归档断言恢复可行，但没有修复子目录部署问题**：运行贴图按绝对路径 `/nli-preview/*` 加载，挂到 `/pyquest/` 等子目录仍会 404，游戏停在素材加载失败画面——子目录支持仍由 issue 13 跟踪（`.scratch/project-hardening-2026-10-29/issues/13-runtime-pipeline-nli.md`）。
 
 ```bash
 npm test                 # 逻辑回归、地图与题库数据
@@ -226,8 +250,8 @@ npm run test:e2e          # 自动本机服务、隔离浏览器存储、新增�
 npm run check:release     # 全检查、Python题目校验、生产构建及两种部署路径
 ```
 
-以上命令真实可用；注意 `check:release` 需要本地具备完整素材和可执行原题校验的 Python 科学计算环境。此外 `scripts/check-build.mjs` 当前并不全绿：构建体积/内容断言已暂时移除（待 issue 13 恢复），且子目录部署检查会失败——运行贴图按绝对路径 `/nli-preview/*` 加载，挂到 `/pyquest/` 等子目录时会 404，游戏停在素材加载失败画面。浏览器测试需要先安装 Chromium（`npx playwright install chromium`）。测试证据保存在 `test-results/`，章节日志和失败截图可用于定位。
+以上命令真实可用；注意 `check:release` **不再需要本地完整素材目录**（运行贴图已入库于 `public/nli-preview/`），但仍需要可执行原题校验的 Python 科学计算环境。`scripts/check-build.mjs` 的 dist 体积上限（<20 MB）与 ZIP/Unity 包排除断言已随本次迁移恢复（public-only dist 实测约 18 MB 可满足）；但 **check-build 仍不全绿**——子目录部署检查会失败：运行贴图按绝对路径 `/nli-preview/*` 加载，挂到 `/pyquest/` 等子目录时会 404（issue 13）。浏览器测试需要先安装 Chromium（`npx playwright install chromium`）。测试证据保存在 `test-results/`，章节日志和失败截图可用于定位。
 
-自动持续检查运行纯逻辑检查。完整游戏工作流通过手动触发，在带 `pyquest-assets` 标签的自托管 runner 运行；其 `PYQUEST_ASSET_ROOT` 必须包含真实的 `TinySwordsFreePack/` 和 `NLI_SoftFantasy_ARPG_v0.2/`。缺少素材时完整检查失败，不使用空白图片代替。
+自动持续检查运行纯逻辑检查，不需要任何私有素材。完整游戏工作流通过手动触发，在自托管 runner 运行 `npm run check:release`：它消费已入库的 `public/` 运行时，**不再要求 `PYQUEST_ASSET_ROOT` 或把 TinySwords/NLI 素材包复制进仓库**；runner 只需提供可跑题目校验的 Python 科学计算环境与浏览器。涉及外部素材源的导出/素材质量检查不在 CI 中运行，需要时在本地执行。
 
-部署时上传 `dist/`。注意两点：运行贴图按绝对路径 `/nli-preview/*` 加载，目前只支持站点根目录部署（子目录挂载会 404，恢复方案见 issue 13）；当前 dist 约 1.9 GB、浏览器首次加载较慢，收窄到运行清单素材并恢复体积约束亦见 issue 13。
+部署时上传 `dist/`（现在只含 `public/` 下的运行时贴图，不再打包约 1.9 GB 的源素材包）。注意：运行贴图按绝对路径 `/nli-preview/*` 加载，目前只支持站点根目录部署（子目录挂载会 404，恢复方案见 issue 13）。
