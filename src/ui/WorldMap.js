@@ -1,4 +1,5 @@
 // 世界地图：NLI插画仅为装饰；原路线、节点、章节语义和点击范围不变。
+// 插画 PNG href 经 src/assets/urls.js 部署基座解析器发出（子目录挂载 404 修复）。
 import { G, cp } from '../core/state.js';
 import { phaseOf, PHASE } from '../core/phase.js';
 import { CHAPTERS } from '../data/chapters.js';
@@ -6,6 +7,7 @@ import { L, t } from '../core/i18n.js';
 import { sfx } from '../audio/sfx.js';
 import { wipeTransition, transitionRunning } from './wipe.js';
 import { ICON } from './icons.js';
+import { assetUrl } from '../assets/urls.js';
 
 const MAP_W = 1000;
 const MAP_H = 600;
@@ -26,7 +28,7 @@ const ILLUSTRATIONS = [
 const ART = () => `
   <rect width="1000" height="600" fill="#f3e7cc"/>
   <g opacity=".9">${ILLUSTRATIONS.map(([key, x, y, w, h]) =>
-    `<image href="/nli-preview/${key}.png" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet" style="image-rendering:auto"/>`).join('')}</g>
+    `<image href="${assetUrl(`nli-preview/${key}.png`)}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet" style="image-rendering:auto"/>`).join('')}</g>
   <g class="map-notes" fill="#7d5c2b" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif">
     <text x="176" y="448" font-size="12" letter-spacing="1" opacity=".55">${t('低语草原', 'Whispering Meadow')}</text>
     <text x="612" y="192" font-size="12" letter-spacing="1" opacity=".5">${t('星陨原野', 'Starfall Fields')}</text>

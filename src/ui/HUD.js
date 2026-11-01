@@ -8,14 +8,17 @@ import { L, t } from '../core/i18n.js';
 import { ICON } from './icons.js';
 
 // 保持 SVG 外壳、尺寸与 #hearts svg 测试契约；内嵌 NLI 平滑 PNG。
+// PNG href 经 src/assets/urls.js 部署基座解析器发出（子目录挂载 404 修复）。
+import { assetUrl } from '../assets/urls.js';
+
 const SVG_HEART = (state) => `
   <svg viewBox="0 0 64 64" aria-hidden="true">
-    <image href="/nli-preview/ui_heart_${state}.png" width="64" height="64"/>
+    <image href="${assetUrl(`nli-preview/ui_heart_${state}.png`)}" width="64" height="64"/>
   </svg>`;
 
 export const SVG_SHARD = `
   <svg viewBox="0 0 64 64" aria-hidden="true">
-    <image href="/nli-preview/ui_shard.png" width="64" height="64"/>
+    <image href="${assetUrl('nli-preview/ui_shard.png')}" width="64" height="64"/>
   </svg>`;
 
 function heartState(i) {

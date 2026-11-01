@@ -20,9 +20,12 @@ export const NLI_TERRAIN_ASSETS = Object.freeze({
   cliffN: 'run/ground/cliff_n_lip.png',
 });
 
-// BootScene.preload 在 loadTSAssets 之后调用；URL 前缀与 src/assets/ts.js 的 P 一致。
+// BootScene.preload 在 loadTSAssets 之后调用；URL 经 src/assets/urls.js 部署基座解析器
+// 与 src/assets/ts.js 的 P 前缀一致（子目录挂载 404 修复）。纹理 key 仍是路径值本身。
+import { assetUrl } from '../assets/urls.js';
+
 export function loadTerrainAssets(scene) {
-  for (const rel of Object.values(NLI_TERRAIN_ASSETS)) scene.load.image(rel, `/nli-preview/${rel}`);
+  for (const rel of Object.values(NLI_TERRAIN_ASSETS)) scene.load.image(rel, assetUrl(`nli-preview/${rel}`));
 }
 export const MATERIAL_ALPHA = Object.freeze({ grass: 0.62, forest: 0.50, path: 0.55, water: 0.35, floor: 0.34, wall: 0.30 });
 const outdoor = (material, base, path, water) => ({ material, base, path, water });

@@ -1,8 +1,10 @@
 // NLI v0.2.1：保留 TS key/API 以冻结实体、碰撞和动画调用接口。
 // 新源完整画布归一化及技术例外见 public/nli-preview/manifest.json。
 // 静态姿态不是完整动画；原始包与 Tiny Swords 均只读。
-const P = '/nli-preview';
-const png = (key) => `${P}/${key}.png`;
+// URL 经 src/assets/urls.js 的部署基座解析器发出（子目录挂载 404 修复，见 tests/asset-urls.test.mjs）。
+import { assetUrl } from './urls.js';
+const P = 'nli-preview';
+const png = (key) => assetUrl(`${P}/${key}.png`);
 
 export const TS_SHEETS = {
   warrior_idle: [png('warrior_idle'), 192, 192],
@@ -87,7 +89,7 @@ export function loadTSAssets(scene) {
   }
   for (const [key, url] of Object.entries(TS_IMAGES)) scene.load.image(key, url);
   for (const [key, url] of Object.entries(TS_TILESETS)) scene.load.image(key, url);
-  scene.load.json('nli_manifest', `${P}/manifest.json`);
+  scene.load.json('nli_manifest', assetUrl(`${P}/manifest.json`));
 }
 
 export function createTSAnimations(scene) {

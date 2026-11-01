@@ -159,7 +159,10 @@ export const ICON = {
 };
 
 // 仅替换有合适包内对应物的图标；保留原 SVG 外壳与布局类名。
-const nliIcon = (key) => `<svg class="pq-icon" viewBox="0 0 64 64" aria-hidden="true"><image href="/nli-preview/${key}.png" width="64" height="64"/></svg>`;
+// 部署基座感知 URL（子目录挂载 404 修复）：SVG <image> href 也必须走共享解析器。
+import { assetUrl } from '../assets/urls.js';
+
+const nliIcon = (key) => `<svg class="pq-icon" viewBox="0 0 64 64" aria-hidden="true"><image href="${assetUrl(`nli-preview/${key}.png`)}" width="64" height="64"/></svg>`;
 ICON.map = nliIcon('ui_map');
 ICON.stamp = nliIcon('ui_stamp');
 ICON.key = nliIcon('ui_key');

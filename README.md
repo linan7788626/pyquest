@@ -242,7 +242,7 @@ node scripts/e2e-ch8.mjs     # E2E：第八章（深空晕环/核心符文/NFW �
 
 当前实现保护标题页已有存档，并修复快速折返传送、题面高亮、长题布局、结算保护与运动一致性。运行美术（含第一章长老）使用 NLI 软绘贴图：长者为 `monk_idle` 静态贴图（`public/nli-preview/`，已入库），没有 `?art` 之类的外观切换参数。
 
-当前构建按 `vite.config.js` 的 `publicDir: 'public'` 只把 `public/`（即已入库的 NLI 运行时贴图）复制进 `dist/`，不再把整个根 `assets/`（实测约 1.9 GB，含 NLI 源素材包、ZIP、Unity 包）打进构建产物（public-only dist 实测约 18 MB）；运行时实际只加载 `public/nli-preview/` 清单内的贴图。**本次「素材来源与运行时」迁移消除了全量打包的体积成因并使原有的体积/归档断言恢复可行，但没有修复子目录部署问题**：运行贴图按绝对路径 `/nli-preview/*` 加载，挂到 `/pyquest/` 等子目录仍会 404，游戏停在素材加载失败画面——子目录支持仍由 issue 13 跟踪（`.scratch/project-hardening-2026-10-29/issues/13-runtime-pipeline-nli.md`）。
+当前构建按 `vite.config.js` 的 `publicDir: 'public'` 只把 `public/`（即已入库的 NLI 运行时贴图）复制进 `dist/`，不再把整个根 `assets/`（实测约 1.9 GB，含 NLI 源素材包、ZIP、Unity 包）打进构建产物（public-only dist 实测约 18 MB）；运行时实际只加载 `public/nli-preview/` 清单内的贴图。**子目录部署 404 已于 2026-11-01 修复**：所有运行时 nli-preview URL（清单 JSON、精灵表/贴图、原生地形材质、HUD/世界地图/图标的内联 SVG `<image>`）统一经共享部署基座解析器 `src/assets/urls.js` 依 Vite `BASE_URL`（本仓 `base:'./'`）发出相对 URL，挂到 `/pyquest/` 等子目录不再逃出挂载点（issue 13 的子目录部分收口；回归测试见 `tests/asset-urls.test.mjs`）。
 
 ```bash
 npm test                 # 逻辑回归、地图与题库数据
@@ -250,8 +250,8 @@ npm run test:e2e          # 自动本机服务、隔离浏览器存储、新增�
 npm run check:release     # 全检查、Python题目校验、生产构建及两种部署路径
 ```
 
-以上命令真实可用；注意 `check:release` **不再需要本地完整素材目录**（运行贴图已入库于 `public/nli-preview/`），但仍需要可执行原题校验的 Python 科学计算环境。`scripts/check-build.mjs` 的 dist 体积上限（<20 MB）与 ZIP/Unity 包排除断言已随本次迁移恢复（public-only dist 实测约 18 MB 可满足）；但 **check-build 仍不全绿**——子目录部署检查会失败：运行贴图按绝对路径 `/nli-preview/*` 加载，挂到 `/pyquest/` 等子目录时会 404（issue 13）。浏览器测试需要先安装 Chromium（`npx playwright install chromium`）。测试证据保存在 `test-results/`，章节日志和失败截图可用于定位。
+以上命令真实可用；注意 `check:release` **不再需要本地完整素材目录**（运行贴图已入库于 `public/nli-preview/`），但仍需要可执行原题校验的 Python 科学计算环境。`scripts/check-build.mjs` 的 dist 体积上限（<20 MB）与 ZIP/Unity 包排除断言已随素材迁移恢复（public-only dist 实测约 18 MB 可满足）；子目录部署 404 修复后（2026-11-01，见上节）`check-build` 的两种挂载（`/` 与 `/pyquest/`）均已通过、错误/失败断言为空（证据：`.scratch/subdirectory-assets/verification/check-build.log`）。浏览器测试需要先安装 Chromium（`npx playwright install chromium`）。测试证据保存在 `test-results/`，章节日志和失败截图可用于定位。
 
 自动持续检查运行纯逻辑检查，不需要任何私有素材。完整游戏工作流通过手动触发，在自托管 runner 运行 `npm run check:release`：它消费已入库的 `public/` 运行时，**不再要求 `PYQUEST_ASSET_ROOT` 或把 TinySwords/NLI 素材包复制进仓库**；runner 只需提供可跑题目校验的 Python 科学计算环境与浏览器。涉及外部素材源的导出/素材质量检查不在 CI 中运行，需要时在本地执行。
 
-部署时上传 `dist/`（现在只含 `public/` 下的运行时贴图，不再打包约 1.9 GB 的源素材包）。注意：运行贴图按绝对路径 `/nli-preview/*` 加载，目前只支持站点根目录部署（子目录挂载会 404，恢复方案见 issue 13）。
+部署时上传 `dist/`（现在只含 `public/` 下的运行时贴图，不再打包约 1.9 GB 的源素材包）。站点根目录与 `/pyquest/` 等子目录挂载均受支持（2026-11-01 起，运行时 URL 相对化，见上节）；换其他子路径部署时把 `vite.config.js` 的 `base` 设为对应前缀即可，无需改代码。

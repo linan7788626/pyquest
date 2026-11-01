@@ -1,5 +1,22 @@
 # 项目变更记录
 
+## 子目录部署 404 修复：运行时 URL 部署基座化（2026-11-01）
+
+- 新增共享解析器 `src/assets/urls.js`（`assetUrl(path, base?)`）：缺省基座取 Vite 注入的
+  `import.meta.env.BASE_URL`（本仓 `base:'./'` → 相对 URL），纯 Node 导入安全回落 `'./'`，
+  不依赖 window/document；`''`/`'./'` 保持相对，`'/'`、`'/pyquest/'`、`'/nested/game/'`
+  等绝对基座保留前缀且不产生重复斜杠，资源前导 `/` 被归一化以不逃出所选基座。
+- `src/assets/ts.js`（清单 JSON/精灵表/贴图）与 `src/textures/nliGroundProfiles.js`（原生地形）
+  改经该解析器发 URL；Phaser 纹理键、帧尺寸、动画与 fail-closed Boot 行为不变。
+  证据：`scripts/check-build.mjs`（未改动）两种挂载 `/` 与 `/pyquest/` 均通过、
+  errors/failures 均为空（`.scratch/subdirectory-assets/verification/check-build.log`）；
+  回归测试 `tests/asset-urls.test.mjs` 用最小 scene.load 记录器钉住挂载点内解析与键契约。
+- 顺带必要扩展（超出初版文件清单、由验收门槛驱动）：HUD/世界地图/图标的内联 SVG
+  `<image href>` 原同样按 `/nli-preview/*` 绝对路径请求，会在 `/pyquest/` 挂载下 404
+  （`.scratch/subdirectory-assets/verification/check-build-attempt1.log`），已一并接入同一
+  解析器；SVG 外壳与布局不变。
+- 未运行完整 `check:release`（属父任务评估范围）；本条不宣称全链路发布验证。
+
 ## 外部素材源迁移：运行时入库与 CI 简化（2026-10-30）
 
 - 运行时 NLI 贴图从根 `assets/nli-preview/` 迁移到已入库的 `public/nli-preview/`（70 张 PNG 字节不变），
