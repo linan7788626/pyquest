@@ -1,5 +1,22 @@
 # 项目变更记录
 
+## 地形接缝修正与旧注释清理（2026-11-24）
+
+- 崖面 S-band 段窗改为非重叠（`SEG_STEP` 64→128）并按 `x % n` 顺序平移，取代旧的
+  `(x*3+y*5)%n` 乱序 + 50% 重叠取窗：消除同一岩石特征在相邻两格重复出现的鬼影/万花筒感，
+  以及乱序造成的相邻崖面竖向断层。`src/textures/nliCliffs.js`。
+- 原生水面（Village）水格新增淡青岸缘渐变（`#1f4d57` α0.30），取代整格硬裁剪边，
+  使水陆过渡不再读作硬缝。`src/textures/ground.js`。
+- 清理误导性旧注释（英文）：`Player/Slime/BossSlime/BossSnake` 头注释与 `WorldScene` 长老注释
+  不再把运行时美术标为「Tiny Swords 蓝军勇士/单位/紫军勇士/黑勇士」，改为实际 NLI 资产
+  （Hero_Poses、蘑菇/史莱姆、深红骑士、NPC 长老）；地面/树/修道院/塔/灌木/云影/尘土/火焰/
+  阴影/石门/火炬注释去除「TS」前缀。纹理键与动画键名一律未动（`ts_warrior_*` 等为冻结 API）。
+- 已知剩余接缝（美术边界，非代码 bug，需重生成无缝素材才能根除）：崖面源图
+  `cliff_s_band.png`(550×510)、`cliff_ew_strip.png`(54×515)、`cliff_n_lip.png`(450×40)
+  均为从整幅插画切出的非无缝贴片，故 S-band 每 n 格换行仍有一次硬接缝、EW 侧壁条逐格重复；
+  另 FLOWER 格用 `terrain_flower.png`（实为干裂黏土纹理）整格硬裁剪铺成，边缘硬直未柔化。
+  这些属后续 asset generation / 美术柔化范围。
+
 ## 子目录部署 404 修复：运行时 URL 部署基座化（2026-11-01）
 
 - 新增共享解析器 `src/assets/urls.js`（`assetUrl(path, base?)`）：缺省基座取 Vite 注入的
