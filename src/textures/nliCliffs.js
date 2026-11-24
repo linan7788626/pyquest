@@ -73,11 +73,14 @@ const N_LIP_H = 18;     // N 草唇贴片高（原型 N_LIP → (128,18)）
 const N_LIP_OVER = 10;  // N 草唇上探量：画在 y*TILE-10（原型 lip 摆位）
 const N_SHADOW_H = 26;  // 合成阴影带高（原型 grad 26px；见下方 SYNTHETIC 注释）
 
-// S 源窗分段：源图 cliff_s_band.png 550×510；段窗宽 128（=TILE，1:1 横向取窗），
-// 步长 64（相邻段窗 50% 重叠）→ n=7 段。段号 (x*3+y*5)%n 按格换源窗，
-// 避免同向连续崖重复同一段纹理（原型 s_band 换窗做法的逐格化）。
+// S-band source windows: cliff_s_band.png is 550×510 and is NOT horizontally
+// tileable (a sliced illustration with distinct boulders). Cut it into
+// non-overlapping 128px windows (1:1 horizontal crop) and pan them sequentially
+// (seg[x % n]) so adjacent cells advance one full window with no overlap — the
+// old 64px step (50% overlap) ghosted each rock feature into two adjacent cells,
+// and the old (x*3+y*5)%n shuffle broke horizontal continuity.
 const SEG_W = 128;
-const SEG_STEP = 64;
+const SEG_STEP = 128;
 
 function canvasOf(w, h) {
   const canvas = document.createElement('canvas');
@@ -184,7 +187,10 @@ export function renderCliffOverlay(scene, def) {
   }
   for (const { x, y, edges } of cells) {
     if (edges & 8) { // S：底对齐陆格下缘 —— LIP 压陆格底、REACH 伸入南水格
-      const seg = sBand.segs[(x * 3 + y * 5) % sBand.n];
+      // Sequential x pan (seg[x % n]): adjacent cells advance one full 128px
+      // source window with no overlap, so the cliff face scrolls continuously;
+      // it wraps every n cells (non-tileable source → one hard seam at the wrap).
+      const seg = sBand.segs[x % sBand.n];
       ctx.drawImage(seg, x * TILE, (y + 1) * TILE - CLIFF.LIP);
     }
   }

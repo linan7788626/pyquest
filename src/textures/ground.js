@@ -60,6 +60,13 @@ function drawNativeOutdoor(ctx, def, nativePatterns, profile) {
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.restore();
   }
+  // Soft shore: fade water toward land so the hard clip edge does not read as a
+  // seam. Subtle dark teal, per water cell whose neighbour is land.
+  def.grid.forEach((row, y) => row.forEach((v, x) => {
+    if (!isWater(v)) return;
+    const edges = adjacentMask(def, x, y, (w) => !isWater(w));
+    if (edges) ctx.drawImage(edgeMask(edges, 16, 0.30, '#1f4d57'), x * TILE, y * TILE);
+  }));
 }
 
 // 以最近边距离取alpha，同一格拐角不重复叠加、不会突破指定最高alpha。
