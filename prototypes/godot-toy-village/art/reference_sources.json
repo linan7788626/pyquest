@@ -1,0 +1,27 @@
+{
+  "source_root": "/Users/uranus/Developer/GitHub/soft-fantasy-arpg-assets/Assets/NLI_SoftFantasy_ARPG/Sprites",
+  "sources": [
+    {
+      "file": "Characters/Hero_Poses/Hero_Row01_Pose01.png",
+      "sha256": "c0b6bf06d854673fb654075caaafdc36d057b2e2e498401031d3e0bfcbde0de1",
+      "modeled_features": "奶白头盔、金色开槽面甲、月牙饰件、蓝披风、蓝金盾牌"
+    },
+    {
+      "file": "Environment/Nature_And_Props/Tree_Large.png",
+      "sha256": "e49d6ec040c32cf589c34eb4bd6c9b074cb124c3b93cd50615c441b6aed36d31",
+      "modeled_features": "分叉与张开树根、层叠尖叶、深青下层与嫩黄绿上层"
+    },
+    {
+      "file": "Environment/Buildings_And_Props/House_Orange.png",
+      "sha256": "c262ee54093e56fbde109a8935e612c89e2b1b76e6725af5d1372371cce50f9a",
+      "modeled_features": "橙瓦、木框浅墙、石脚、屋顶小窗"
+    },
+    {
+      "file": "Environment/Terrain_Samples/Terrain_R1_C1.png",
+      "sha256": "1684145004680cbda090a07349635d1c116bb8e7ddc0ba7483895ca237d28fb4",
+      "modeled_features": "图像生成草地材质的原图风格参考"
+    }
+  ],
+  "note": "原图逐项参考的几何重建，尚未实现原图的完整手绘材质细节。无原 PNG 运行时依赖。",
+  "material_generation": "../textures/GENERATION.md"
+}

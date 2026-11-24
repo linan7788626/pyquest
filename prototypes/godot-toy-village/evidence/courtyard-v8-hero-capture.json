@@ -1,0 +1,29 @@
+{
+  "images": [
+    {
+      "direction": "north",
+      "height": 1440,
+      "path": "res://evidence/courtyard-v8-hero-north-1440p.png",
+      "width": 2560
+    },
+    {
+      "direction": "south",
+      "height": 1440,
+      "path": "res://evidence/courtyard-v8-hero-south-1440p.png",
+      "width": 2560
+    },
+    {
+      "direction": "west",
+      "height": 1440,
+      "path": "res://evidence/courtyard-v8-hero-west-1440p.png",
+      "width": 2560
+    },
+    {
+      "direction": "east",
+      "height": 1440,
+      "path": "res://evidence/courtyard-v8-hero-east-1440p.png",
+      "width": 2560
+    }
+  ],
+  "renderer": "forward_plus"
+}

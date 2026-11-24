@@ -1,0 +1,13 @@
+{
+  "all_passed": true,
+  "configured_1440p": true,
+  "detail_view_closer": true,
+  "grounded": true,
+  "house_collision": true,
+  "inspection_view": true,
+  "light_shortcut_switches_profile": true,
+  "lighting_profile_changes_light": true,
+  "main_view_cardinal": true,
+  "painted_materials": true,
+  "player_moves": true
+}

@@ -1,0 +1,32 @@
+{
+  "dof": false,
+  "height": 1440,
+  "model_sha256": "4808c83a9051d71584fdd10e6ed63831404ef9403432037ac5092d83913a32e2",
+  "views": [
+    {
+      "ambient_energy": 0.419999986886978,
+      "height": 1440,
+      "key_energy": 1.0,
+      "path": "res://evidence/cottage-v6-lighting-baseline-1440p.png",
+      "profile": "原版光照",
+      "width": 2560
+    },
+    {
+      "ambient_energy": 0.300000011920929,
+      "height": 1440,
+      "key_energy": 1.54999995231628,
+      "path": "res://evidence/cottage-v6-lighting-daylight-1440p.png",
+      "profile": "层次日光",
+      "width": 2560
+    },
+    {
+      "ambient_energy": 0.239999994635582,
+      "height": 1440,
+      "key_energy": 1.70000004768372,
+      "path": "res://evidence/cottage-v6-lighting-warm-1440p.png",
+      "profile": "暖光",
+      "width": 2560
+    }
+  ],
+  "width": 2560
+}

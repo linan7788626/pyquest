@@ -1,0 +1,27 @@
+{
+  "dof": false,
+  "images": [
+    {
+      "height": 1440,
+      "path": "res://evidence/courtyard-v7-game-1440p.png",
+      "width": 2560
+    },
+    {
+      "height": 1440,
+      "path": "res://evidence/courtyard-v7-tree-1440p.png",
+      "width": 2560
+    },
+    {
+      "height": 1440,
+      "path": "res://evidence/courtyard-v7-inspection-1440p.png",
+      "width": 2560
+    },
+    {
+      "height": 1440,
+      "path": "res://evidence/courtyard-v7-occlusion-1440p.png",
+      "width": 2560
+    }
+  ],
+  "lighting": "层次日光",
+  "renderer": "forward_plus"
+}

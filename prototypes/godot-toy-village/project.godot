@@ -1,0 +1,22 @@
+; PyQuest original 3D village prototype. Open this file in Godot.
+config_version=5
+[application]
+config/name="PyQuest · 星溪村 3D 样板"
+run/main_scene="res://observatory-study.tscn"
+[display]
+window/size/viewport_width=2560
+window/size/viewport_height=1440
+window/size/window_width_override=1440
+window/size/window_height_override=810
+window/stretch/mode="viewport"
+[rendering]
+renderer/rendering_method="forward_plus"
+renderer/rendering_method.mobile="mobile"
+textures/default_filters/use_nearest_mipmap_filter=false
+anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/use_taa=true
+anti_aliasing/quality/screen_space_aa=0
+lights_and_shadows/directional_shadow/size=8192
+environment/ssao/quality=3
+[environment]
+defaults/default_clear_color=Color(0.12,0.19,0.23,1)

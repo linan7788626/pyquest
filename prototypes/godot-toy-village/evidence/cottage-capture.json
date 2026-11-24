@@ -1,0 +1,23 @@
+{
+  "dof": false,
+  "images": [
+    {
+      "height": 1440,
+      "path": "res://evidence/cottage-game-1440p.png",
+      "width": 2560
+    },
+    {
+      "height": 1440,
+      "path": "res://evidence/cottage-detail-1440p.png",
+      "width": 2560
+    },
+    {
+      "height": 1440,
+      "path": "res://evidence/cottage-inspection-1440p.png",
+      "width": 2560
+    }
+  ],
+  "lighting": "层次日光",
+  "painted_surfaces": 19,
+  "renderer": "forward_plus"
+}

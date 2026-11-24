@@ -1,0 +1,708 @@
+{
+  "all_passed": true,
+  "parts": [
+    {
+      "name": "Overlapping terracotta shingle",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.001",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.002",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.003",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.004",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.005",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.006",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.007",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.008",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.009",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.010",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.011",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.012",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.013",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.014",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.015",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.016",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.017",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.018",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.019",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.020",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.021",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.022",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.023",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.024",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.025",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.026",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.027",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.028",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.029",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.030",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.031",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.032",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.033",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.034",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.035",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.036",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.037",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.038",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.039",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.040",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.041",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.042",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.043",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.044",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.045",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.046",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.047",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.048",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.049",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.050",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.051",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.052",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.053",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.054",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.055",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.056",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.057",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.058",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.059",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.060",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.061",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.062",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.063",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.064",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.065",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.066",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.067",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.068",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.069",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.070",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.071",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.072",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.073",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.074",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.075",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.076",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.077",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.078",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.079",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.080",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.081",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.082",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.083",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.084",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.085",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.086",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.087",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.088",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Overlapping terracotta shingle.089",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Closed rounded ridge cap",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Closed rounded ridge cap.001",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Closed rounded ridge cap.002",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Closed rounded ridge cap.003",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Closed rounded ridge cap.004",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Closed rounded ridge cap.005",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Closed rounded ridge cap.006",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Closed rounded ridge cap.007",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.001",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.002",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.003",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.004",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.005",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.006",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.007",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.008",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.009",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.010",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.011",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.012",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.013",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.014",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer miniature tile.015",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer closed ridge cap",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer closed ridge cap.001",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    },
+    {
+      "name": "Dormer closed ridge cap.002",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "positive_volume": true
+    }
+  ],
+  "course_vertical_clearance": 0.035
+}

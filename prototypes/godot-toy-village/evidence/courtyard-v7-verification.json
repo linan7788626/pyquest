@@ -1,0 +1,14 @@
+{
+  "all_passed": true,
+  "canopy_fades_over_player": true,
+  "canopy_restores_in_open_area": true,
+  "canopy_vertex_colors_visible": true,
+  "entrance_path_is_walkable": true,
+  "fence_blocks_player": true,
+  "lantern_blocks_player": true,
+  "light_shortcut": true,
+  "porch_steps_are_walkable": true,
+  "spawn_grounded": true,
+  "tree_loaded": true,
+  "trunk_blocks_player": true
+}

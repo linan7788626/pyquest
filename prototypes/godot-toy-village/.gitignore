@@ -1,0 +1,6 @@
+.godot/
+*.blend1
+*.blend.import
+__pycache__/
+*.pyc
+*.sb-*

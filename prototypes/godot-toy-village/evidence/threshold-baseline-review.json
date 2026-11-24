@@ -1,0 +1,105 @@
+{
+  "checks": {
+    "all_passed": true,
+    "captured_four_1440p_views": true,
+    "crosses_threshold": true,
+    "depth_of_field_disabled": true,
+    "door_prompt_available": true,
+    "walks_to_stone_steps": true,
+    "walks_to_workbench": true,
+    "walks_up_to_door": true,
+    "workbench_puzzle_opens": true
+  },
+  "renderer": "forward_plus",
+  "shots": [
+    {
+      "axis": [
+        0.0,
+        0.600000023841858,
+        0.800000011920929
+      ],
+      "camera": [
+        -0.5,
+        17.1000003814697,
+        20.3999996185303
+      ],
+      "camera_size": 14.1000003814697,
+      "height": 1440,
+      "hero": [
+        1.14999997615814,
+        0.00492837652564049,
+        5.63000011444092
+      ],
+      "name": "approach",
+      "path": "res://evidence/threshold-baseline-approach-1440p.png",
+      "width": 2560
+    },
+    {
+      "axis": [
+        0.0,
+        0.600000023841858,
+        0.800000011920929
+      ],
+      "camera": [
+        -0.5,
+        17.1000003814697,
+        20.3999996185303
+      ],
+      "camera_size": 14.1000003814697,
+      "height": 1440,
+      "hero": [
+        1.14999997615814,
+        0.338047564029694,
+        2.53872990608215
+      ],
+      "name": "threshold",
+      "path": "res://evidence/threshold-baseline-threshold-1440p.png",
+      "width": 2560
+    },
+    {
+      "axis": [
+        0.0,
+        0.600000023841858,
+        0.800000011920929
+      ],
+      "camera": [
+        36.0,
+        16.0,
+        19.0799999237061
+      ],
+      "camera_size": 10.1999998092651,
+      "height": 1440,
+      "hero": [
+        36.0,
+        0.00574218481779099,
+        2.82999992370605
+      ],
+      "name": "entry",
+      "path": "res://evidence/threshold-baseline-entry-1440p.png",
+      "width": 2560
+    },
+    {
+      "axis": [
+        0.0,
+        0.600000023841858,
+        0.800000011920929
+      ],
+      "camera": [
+        36.0,
+        16.0,
+        19.0799999237061
+      ],
+      "camera_size": 10.1999998092651,
+      "height": 1440,
+      "hero": [
+        38.2250137329102,
+        0.00574218481779099,
+        -1.60637021064758
+      ],
+      "name": "workbench",
+      "path": "res://evidence/threshold-baseline-workbench-1440p.png",
+      "width": 2560
+    }
+  ],
+  "variant": "baseline"
+}

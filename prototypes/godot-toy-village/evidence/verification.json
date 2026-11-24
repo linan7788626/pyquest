@@ -1,0 +1,21 @@
+{
+  "all_passed": true,
+  "bridge_crossable": true,
+  "closed_gate_blocks": true,
+  "correct_opens_gate": true,
+  "house_blocks": true,
+  "key_Down_screen_aligned": true,
+  "key_Left_screen_aligned": true,
+  "key_Right_screen_aligned": true,
+  "key_Up_screen_aligned": true,
+  "keyboard_moves_player": true,
+  "open_gate_crossable": true,
+  "painted_materials_loaded": true,
+  "rune_opens_quiz": true,
+  "spawn_grounded": true,
+  "tab_toggles_overview": true,
+  "vertical_horizontal_screen_speed_matches": true,
+  "water_blocks": true,
+  "world_axes_match_screen_axes": true,
+  "wrong_keeps_gate_closed": true
+}

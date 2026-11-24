@@ -1,0 +1,25 @@
+{
+  "dof": false,
+  "images": [
+    {
+      "height": 1440,
+      "path": "res://evidence/room-v9-porch-1440p.png",
+      "view": "porch",
+      "width": 2560
+    },
+    {
+      "height": 1440,
+      "path": "res://evidence/room-v9-game-1440p.png",
+      "view": "game",
+      "width": 2560
+    },
+    {
+      "height": 1440,
+      "path": "res://evidence/room-v9-wall-detail-1440p.png",
+      "view": "wall-detail",
+      "width": 2560
+    }
+  ],
+  "lighting": "层次日光",
+  "renderer": "forward_plus"
+}

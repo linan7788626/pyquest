@@ -1,0 +1,8 @@
+{
+  "source_components": 373,
+  "runtime_material_groups": 19,
+  "reference": "House_Orange.png; user-requested smooth clay interpretation",
+  "axes": "x horizontal, y up, z south",
+  "uvs": "Per-component structural-axis UVs before batching",
+  "note": "Original 3D mesh, no billboard facade"
+}
