@@ -1,6 +1,6 @@
 // ============================================================
-// 循环之王（第一章 BOSS）：紫军勇士 · 1.6x 巨型化 + 头顶金徽
-// 护盾状态下免伤（答对 boss 符文破盾），血量 6/3 时召唤小兵
+// Loop King (Chapter 1 boss): NLI Crimson Knight, giant + golden crest
+// Invulnerable while shielded (break with the boss rune quiz); summons minions at 6/3 HP
 // ============================================================
 import Phaser from 'phaser';
 import { G } from '../core/state.js';

@@ -1,7 +1,7 @@
 // ============================================================
-// 敌方小怪：Tiny Swords 单位
-// variant: 'red'（红小兵 · 村庄/地牢）| 'crimson'（黑勇士 · 森林，更快更硬）
-// 帧规格同玩家：192×192/帧，脚底 y≈134
+// Enemy minion: NLI soft-fantasy unit (mushroom / slime)
+// variant: 'red' (mushroom · Village/Dungeon) | 'crimson' (slime · Forest, faster, tougher)
+// Frame spec matches player: 192×192/frame, feet y≈134
 // ============================================================
 import Phaser from 'phaser';
 import { sfx } from '../audio/sfx.js';

@@ -78,7 +78,7 @@ export class WorldScene extends Phaser.Scene {
     const P = cp(this.ch.id); // 本章进度
     G.current = this.ch.id;   // 跟踪玩家所在章节（HUD / 碎片计数用）
 
-    // ---------- 地面（TS tileset 拼接画布，1:1 像素完美） + 碰撞体 ----------
+    // ---------- Ground (NLI terrain canvas) + collision bodies ----------
     const groundKey = makeGroundTexture(this, def);
     this.add.image(0, 0, groundKey).setOrigin(0, 0).setDepth(-10);
 
@@ -206,7 +206,7 @@ export class WorldScene extends Phaser.Scene {
     this.time.addEvent({ delay: 640, loop: true, callback: () => this.spawnAmbient() });
 
     if (!def.ambient) {
-      // 村庄/森林：TS 云影缓缓漂过
+      // Village/Forest: cloud shadows drift by
       const keys = ['cloud1', 'cloud2', 'cloud3', 'cloud4', 'cloud5'];
       for (let i = 0; i < 3; i++) {
         const c = this.add.image(
@@ -254,8 +254,8 @@ export class WorldScene extends Phaser.Scene {
   spawnProp(p) {
     switch (p.type) {
       case 'tree': {
-        // TS 树（×2：帧 256 宽 → 256/192 显示），静态首帧
-        // （TS 摆动动画帧间整体平移 ~65px，密集摆放会显得乱跑）
+        // Tree (×2: 256-wide frame → 256/192 display), static first frame
+        // (sway animation shifts ~65px between frames; dense placement looks jittery)
         const variants = [
           ['tree1', 256, 256], ['tree2', 256, 256], ['tree3', 256, 192], ['tree4', 256, 192],
         ];
@@ -267,7 +267,7 @@ export class WorldScene extends Phaser.Scene {
         break;
       }
       case 'house': {
-        // TS 修道院（Monastery 192×320，×2 显示 384×640）
+        // Monastery (192×320, ×2 → 384×640 display)
         const h = this.add.image(p.x, p.y + 100, 'castle').setOrigin(0.5, 1).setScale(2);
         this.solids.add(h);
         h.body.setSize(160, 180).setOffset(16, 140); // 纹素坐标（底部主体，×scale 生效）
@@ -277,7 +277,7 @@ export class WorldScene extends Phaser.Scene {
       }
       case 'npc': {
         if (p.id === 'tablet') {
-          // 引导石碑 → TS 塔（tower 128×256，×2 显示 256×512）+ 符文光晕
+          // Guidance tablet → tower (128×256, ×2 → 256×512) + rune glow
           const e = this.add.image(p.x, p.y + 24, 'tower').setOrigin(0.5, 0.94).setScale(2);
           e.setDepth(p.y);
           const aura = this.add.image(p.x, p.y - 120, 'particle')
@@ -285,7 +285,7 @@ export class WorldScene extends Phaser.Scene {
           this.tweens.add({ targets: aura, alpha: 0.24, scale: 52, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
           this.npc = { x: p.x, y: p.y, id: p.id, sprite: e };
         } else {
-          // 长老：TS 蓝军僧侣（放大一倍：192×192 → 384×384，origin 保持脚底）
+          // Elder: NLI NPC Elder (×2: 192×192 → 384×384, origin at feet)
           const e = this.add.sprite(p.x, p.y + 72, 'monk_idle').setOrigin(0.5, 136 / 192).setScale(2);
           e.play('ts_monk_idle');
           e.setDepth(p.y);
@@ -295,7 +295,7 @@ export class WorldScene extends Phaser.Scene {
         break;
       }
       case 'rune': {
-        // 符文石图标 → TS Tower（128×256 原尺寸；破解后变灰表示已领悟）
+        // Rune icon → tower (128×256 native; greyed out after solving)
         const s = this.add.image(p.x, p.y + 16, 'tower').setOrigin(0.5, 0.94);
         s.setDepth(p.y);
         this.add.image(p.x, p.y + 4, 'ts_shadow').setDisplaySize(120, 60).setAlpha(0.5).setDepth(p.y - 1);
@@ -320,7 +320,7 @@ export class WorldScene extends Phaser.Scene {
         break;
       }
       case 'gate': {
-        // 程序化石门（TS 尺度 ×3 = 192）
+        // Procedural gate (×3 = 192)
         const g = this.add.image(p.x, p.y, cp(this.ch.id).gateOpen ? 'gate_open' : 'gate_closed').setDisplaySize(384, 384);
         g.setDepth(p.y + 16);
         this.gate = { x: p.x, y: p.y, sprite: g };
@@ -344,7 +344,7 @@ export class WorldScene extends Phaser.Scene {
         break;
       }
       case 'bush': {
-        // TS 灌木（×2：128×128，静态首帧）
+        // Bush (×2: 128×128, static first frame)
         const tex = `bush${Phaser.Math.Between(1, 4)}`;
         this.add.image(p.x, p.y + 64, tex, 0).setOrigin(0.5, 0.92).setDisplaySize(128, 128).setDepth(p.y - 0.5);
         break;

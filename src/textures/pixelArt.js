@@ -175,7 +175,7 @@ function makeParticle(scene) {
 }
 
 // ============================================================
-// 石门（关/开）与火炬（TS 尺度模板，显示时 ×3 / ×3.5）
+// Stone gate (closed/open) and torch (legacy scale template, displayed ×3 / ×3.5)
 // ============================================================
 function drawGate(ctx, open) {
   const w = 64, h = 64;
@@ -217,7 +217,7 @@ function drawTorch(ctx) {
   px(ctx, cx - 1, 16, '#6e4426'); px(ctx, cx + 1, 20, '#6e4426');
   rect(ctx, cx - 2, 12, 5, 2, '#6e4426');
   edisc(ctx, cx, 11, 5, 2, P.stoneD);
-  // 火焰（静态柱；动态火焰由 TS fire 动画叠加）
+  // Flame (static pillar; animated flame overlaid by the fire animation)
   px(ctx, cx, 2, '#fff3b0');
   rect(ctx, cx - 1, 3, 3, 2, '#ffc35c');
   rect(ctx, cx - 2, 5, 5, 3, '#f07830');

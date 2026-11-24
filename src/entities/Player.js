@@ -1,6 +1,6 @@
 // ============================================================
-// 玩家：Tiny Swords 蓝军勇士 —— 移动/挥剑攻击/受击/死亡重生
-// 帧规格 192×192（本体 ~79×89，脚底在帧内 y≈136 → origin 0.71）
+// Player: NLI soft-fantasy chibi knight (Hero_Poses) — move / slash / hurt / respawn
+// Frame 192×192 (body ~79×89, feet at frame y≈136 → origin 0.71)
 // ============================================================
 import Phaser from 'phaser';
 import { G, updateHud } from '../core/state.js';
@@ -32,7 +32,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setDepth(this.y);
     this.play('ts_warrior_idle');
 
-    // 脚下软阴影（TS 官方椭圆阴影）
+    // Foot soft shadow (synthetic ellipse shadow)
     this.shadow = scene.add.image(x, y + 4, 'ts_shadow')
       .setDisplaySize(152, 76).setAlpha(0.55).setDepth(this.y - 0.5);
   }
@@ -66,7 +66,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setDepth(this.y);
     this.shadow.setPosition(this.x, this.y + 4).setDepth(this.y - 0.5);
 
-    // 跑步扬尘（TS 尘土动画）
+    // Run dust (dust animation)
     if (moving && now > this.nextDust) {
       this.nextDust = now + 240;
       const d = this.scene.add.sprite(this.x + Phaser.Math.Between(-20, 20), this.y + 8, 'dust')

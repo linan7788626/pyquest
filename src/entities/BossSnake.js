@@ -1,9 +1,9 @@
 // ============================================================
-// 列表巨蟒 毕森（第二章 BOSS）
-// - 身体 = 一条会动的「列表」：黑勇士蛇头 + 黑小兵体节沿轨迹跟随
-// - 符文护盾期免伤（答对 boss2 符文才能破盾）
-// - 破盾后攻击头部造成伤害；每损失 2 HP 断掉一节尾巴并提速
-// - 蓄力后向前冲刺突咬
+// List Serpent Bison (Chapter 2 boss)
+// - Body = a moving "list": slime head + slime body segments follow the trail
+// - Invulnerable during rune shield (break with the boss2 rune quiz)
+// - After shield break, damage the head; every 2 HP lost drops a tail segment and speeds up
+// - Charges forward in a lunging bite
 // ============================================================
 import Phaser from 'phaser';
 import { G } from '../core/state.js';
